@@ -1,0 +1,171 @@
+import React, { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Table } from "@/components/ui/table";
+
+const LoanMatchingPlatform = () => {
+  const [borrowers, setBorrowers] = useState([]);
+  const [lenders, setLenders] = useState([]);
+  const [borrowerInput, setBorrowerInput] = useState({ name: "", idCard: "", financialStatement: "", amount: "", rate: "" });
+  const [lenderInput, setLenderInput] = useState({ name: "", idCard: "", financialStatement: "", amount: "" });
+  const [notifications, setNotifications] = useState([]);
+
+  const handleBorrowerSubmit = () => {
+    if (borrowerInput.idCard && borrowerInput.financialStatement) {
+      setBorrowers([...borrowers, borrowerInput]);
+      setNotifications([...notifications, `Borrower ${borrowerInput.name} registered successfully.`]);
+      setBorrowerInput({ name: "", idCard: "", financialStatement: "", amount: "", rate: "" });
+    } else {
+      alert("Both ID Card and Financial Statement are required for borrowers.");
+    }
+  };
+
+  const handleLenderSubmit = () => {
+    if (lenderInput.idCard && lenderInput.financialStatement) {
+      setLenders([...lenders, lenderInput]);
+      setNotifications([...notifications, `Lender ${lenderInput.name} registered successfully.`]);
+      setLenderInput({ name: "", idCard: "", financialStatement: "", amount: "" });
+    } else {
+      alert("Both ID Card and Financial Statement are required for lenders.");
+    }
+  };
+
+  const calculateEscrowFee = (amount) => {
+    return (amount * 0.05).toFixed(2);
+  };
+
+  const handleTransaction = (borrower, lender) => {
+    const escrowFee = calculateEscrowFee(borrower.amount);
+    const netAmount = (borrower.amount - escrowFee).toFixed(2);
+    setNotifications([
+      ...notifications,
+      `Escrow: $${escrowFee} charged and sent to the company account. Borrower receives $${netAmount}.`,
+    ]);
+  };
+
+  const matchBorrowersAndLenders = () => {
+    const matches = borrowers.map((borrower) => {
+      const suitableLenders = lenders.filter((lender) => lender.amount >= borrower.amount);
+      return {
+        borrower,
+        lenders: suitableLenders,
+      };
+    });
+    return matches;
+  };
+
+  const matches = matchBorrowersAndLenders();
+
+  return (
+    <div className="p-4 bg-gray-100 min-h-screen">
+      <h1 className="text-2xl font-bold mb-6 text-center">Loan Matching Platform</h1>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <Card className="p-4">
+          <CardContent>
+            <h2 className="text-xl font-semibold mb-4">Borrower Registration</h2>
+            <Input
+              placeholder="Name"
+              value={borrowerInput.name}
+              onChange={(e) => setBorrowerInput({ ...borrowerInput, name: e.target.value })}
+              className="mb-2"
+            />
+            <Input
+              placeholder="National ID Card Number"
+              value={borrowerInput.idCard}
+              onChange={(e) => setBorrowerInput({ ...borrowerInput, idCard: e.target.value })}
+              className="mb-2"
+            />
+            <Input
+              placeholder="Financial Statement (URL or File Path)"
+              value={borrowerInput.financialStatement}
+              onChange={(e) => setBorrowerInput({ ...borrowerInput, financialStatement: e.target.value })}
+              className="mb-2"
+            />
+            <Input
+              placeholder="Loan Amount (USD)"
+              value={borrowerInput.amount}
+              onChange={(e) => setBorrowerInput({ ...borrowerInput, amount: e.target.value })}
+              className="mb-2"
+            />
+            <Input
+              placeholder="Preferred Rate (%)"
+              value={borrowerInput.rate}
+              onChange={(e) => setBorrowerInput({ ...borrowerInput, rate: e.target.value })}
+              className="mb-2"
+            />
+            <Button onClick={handleBorrowerSubmit}>Register Borrower</Button>
+          </CardContent>
+        </Card>
+
+        <Card className="p-4">
+          <CardContent>
+            <h2 className="text-xl font-semibold mb-4">Lender Registration</h2>
+            <Input
+              placeholder="Name"
+              value={lenderInput.name}
+              onChange={(e) => setLenderInput({ ...lenderInput, name: e.target.value })}
+              className="mb-2"
+            />
+            <Input
+              placeholder="National ID Card Number"
+              value={lenderInput.idCard}
+              onChange={(e) => setLenderInput({ ...lenderInput, idCard: e.target.value })}
+              className="mb-2"
+            />
+            <Input
+              placeholder="Financial Statement (URL or File Path)"
+              value={lenderInput.financialStatement}
+              onChange={(e) => setLenderInput({ ...lenderInput, financialStatement: e.target.value })}
+              className="mb-2"
+            />
+            <Input
+              placeholder="Lending Amount (USD)"
+              value={lenderInput.amount}
+              onChange={(e) => setLenderInput({ ...lenderInput, amount: e.target.value })}
+              className="mb-2"
+            />
+            <Button onClick={handleLenderSubmit}>Register Lender</Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="p-4">
+        <CardContent>
+          <h2 className="text-xl font-semibold mb-4">Matches and Notifications</h2>
+          {matches.map((match, index) => (
+            <div key={index} className="mb-4">
+              <h3 className="font-bold">Borrower: {match.borrower.name}</h3>
+              <p>Requested Amount: ${match.borrower.amount} at {match.borrower.rate}%</p>
+              <h4 className="font-semibold">Lender Options:</h4>
+              <ul>
+                {match.lenders.map((lender, idx) => (
+                  <li key={idx}>
+                    {lender.name} - Offering ${lender.amount} at {match.borrower.rate}%
+                  </li>
+                ))}
+              </ul>
+              <Button onClick={() => handleTransaction(match.borrower, match.lenders[0])}>
+                Finalize Transaction with {match.lenders[0]?.name}
+              </Button>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      <Card className="p-4 mt-6">
+        <CardContent>
+          <h2 className="text-xl font-semibold mb-4">Notifications</h2>
+          <ul>
+            {notifications.map((note, index) => (
+              <li key={index}>{note}</li>
+            ))}
+          </ul>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default LoanMatchingPlatform;
