@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reclain — Book Hair Dressing & Home Services</title>
+  <meta name="description" content="Reclain connects you with trusted hair stylists, barbers and service professionals. Book at the salon or at home in minutes.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="nav">
+  <div class="container nav-inner">
+    <a href="#" class="logo">Reclain<span>.</span></a>
+    <nav class="nav-links" id="navLinks">
+      <a href="#services">Services</a>
+      <a href="#hair">Hair Dressing</a>
+      <a href="#stylists">Stylists</a>
+      <a href="#how">How it works</a>
+      <a href="#faq">FAQ</a>
+      <a href="#join" class="btn btn-ghost">Become a Pro</a>
+      <button class="btn btn-primary" data-book>Book now</button>
+    </nav>
+    <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<main>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container hero-inner">
+      <div class="hero-copy">
+        <p class="eyebrow">New on Reclain · Hair Dressing</p>
+        <h1>Look good. Live easy.<br><em>Book it on Reclain.</em></h1>
+        <p class="lead">Braids, cuts, locs, styling and every everyday service you need, from verified professionals near you. Book a salon slot or have them come to your home.</p>
+        <form class="search" id="heroSearch">
+          <label class="sr-only" for="searchService">What do you need?</label>
+          <input id="searchService" list="serviceList" placeholder="Try “knotless braids” or “haircut”" autocomplete="off">
+          <datalist id="serviceList"></datalist>
+          <label class="sr-only" for="searchArea">Area</label>
+          <select id="searchArea">
+            <option>Kampala Central</option>
+            <option>Ntinda</option>
+            <option>Kira</option>
+            <option>Entebbe</option>
+            <option>Mukono</option>
+            <option>Wakiso</option>
+          </select>
+          <button class="btn btn-primary" type="submit">Find a pro</button>
+        </form>
+        <ul class="trust">
+          <li><strong>2,500+</strong> verified pros</li>
+          <li><strong>4.8★</strong> average rating</li>
+          <li><strong>Pay</strong> by mobile money or card</li>
+        </ul>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="hero-card c1">
+          <div class="avatar a1">AN</div>
+          <div><strong>Aisha N.</strong><small>Braids & locs · 4.9★</small></div>
+        </div>
+        <div class="hero-card c2">
+          <span class="dot"></span> Booking confirmed<br><small>Knotless braids · Sat 10:00</small>
+        </div>
+        <div class="hero-blob"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section id="services" class="section">
+    <div class="container">
+      <div class="section-head">
+        <h2>Everything you need, in one hub</h2>
+        <p>Choose a category to see services and starting prices.</p>
+      </div>
+      <div class="cat-tabs" id="catTabs" role="tablist"></div>
+      <div class="service-grid" id="serviceGrid"></div>
+    </div>
+  </section>
+
+  <!-- HAIR FEATURE -->
+  <section id="hair" class="section hair">
+    <div class="container hair-inner">
+      <div>
+        <p class="eyebrow">Hair Dressing</p>
+        <h2>Your stylist, your place, your time</h2>
+        <p>From a quick trim to a full bridal look, Reclain stylists are vetted for skill, hygiene and punctuality. Pick in-salon or at-home, choose your stylist from their portfolio, and pay only when you're happy.</p>
+        <ul class="checks">
+          <li>Portfolio photos and real reviews for every stylist</li>
+          <li>Upfront prices: no surprises at the chair</li>
+          <li>At-home visits include all tools and products</li>
+          <li>Free re-touch within 3 days if something isn't right</li>
+        </ul>
+        <button class="btn btn-primary" data-book data-category="hair">Book a stylist</button>
+      </div>
+      <div class="hair-list" id="hairList"></div>
+    </div>
+  </section>
+
+  <!-- STYLISTS -->
+  <section id="stylists" class="section">
+    <div class="container">
+      <div class="section-head">
+        <h2>Top-rated professionals</h2>
+        <p>Booked again and again by people near you.</p>
+      </div>
+      <div class="pro-grid" id="proGrid"></div>
+    </div>
+  </section>
+
+  <!-- HOW -->
+  <section id="how" class="section alt">
+    <div class="container">
+      <div class="section-head">
+        <h2>How Reclain works</h2>
+      </div>
+      <ol class="steps">
+        <li><span>1</span><h3>Choose a service</h3><p>Browse hair, beauty and home services with clear prices.</p></li>
+        <li><span>2</span><h3>Pick your pro &amp; time</h3><p>Compare portfolios and ratings, then pick a slot that suits you.</p></li>
+        <li><span>3</span><h3>Relax</h3><p>Your pro arrives or welcomes you at the salon. Pay by mobile money, card or cash.</p></li>
+        <li><span>4</span><h3>Rate &amp; rebook</h3><p>Leave a review and rebook your favourite in one tap.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head"><h2>What customers say</h2></div>
+      <div class="quotes">
+        <blockquote><p>“Booked knotless braids at home on a Sunday. She arrived on time and finished in five hours. I'm using Reclain for everything now.”</p><cite>Grace, Ntinda</cite></blockquote>
+        <blockquote><p>“My barber comes to the office every two weeks. Clean cut, no queue, no traffic.”</p><cite>Daniel, Kampala Central</cite></blockquote>
+        <blockquote><p>“Got my house cleaned and my hair done on the same day, all from one app.”</p><cite>Sharon, Kira</cite></blockquote>
+      </div>
+    </div>
+  </section>
+
+  <!-- JOIN -->
+  <section id="join" class="section join">
+    <div class="container join-inner">
+      <div>
+        <h2>Are you a stylist or service pro?</h2>
+        <p>Join Reclain to get new clients, manage bookings and get paid on time. No sign-up fee: we only take a small commission on completed jobs.</p>
+      </div>
+      <form class="join-form" id="joinForm">
+        <input name="name" required placeholder="Full name">
+        <input name="phone" required type="tel" placeholder="Phone (e.g. 0772 000 000)">
+        <select name="skill" required>
+          <option value="">Your main skill</option>
+          <option>Hair stylist</option>
+          <option>Barber</option>
+          <option>Braider / Locs specialist</option>
+          <option>Make-up &amp; nails</option>
+          <option>Cleaning</option>
+          <option>Repairs &amp; handyman</option>
+          <option>Other</option>
+        </select>
+        <button class="btn btn-light" type="submit">Apply to join</button>
+        <p class="form-msg" id="joinMsg" role="status"></p>
+      </form>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="section">
+    <div class="container narrow">
+      <div class="section-head"><h2>Frequently asked questions</h2></div>
+      <details><summary>Do stylists bring their own products?</summary><p>Yes. At-home stylists bring tools and standard products. Braiding hair and extensions can be supplied by the stylist (added to your quote) or you can provide your own.</p></details>
+      <details><summary>How do I pay?</summary><p>Pay with MTN Mobile Money, Airtel Money, card, or cash after your service. You only pay once the job is done.</p></details>
+      <details><summary>Can I cancel or reschedule?</summary><p>Free changes up to 4 hours before your booking. Late cancellations may carry a small fee that goes to the professional.</p></details>
+      <details><summary>Is there an extra charge for home visits?</summary><p>A small travel fee may apply, depending on distance. It is always shown before you confirm.</p></details>
+      <details><summary>How are professionals vetted?</summary><p>Every pro goes through an ID check, a skills assessment and reference checks before they can take bookings.</p></details>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <div>
+      <a href="#" class="logo">Reclain<span>.</span></a>
+      <p>Hair dressing and everyday services, booked in minutes.</p>
+    </div>
+    <div>
+      <h4>Services</h4>
+      <a href="#hair">Hair Dressing</a><a href="#services">Beauty</a><a href="#services">Cleaning</a><a href="#services">Repairs</a>
+    </div>
+    <div>
+      <h4>Company</h4>
+      <a href="#how">How it works</a><a href="#join">Become a Pro</a><a href="#faq">FAQ</a>
+    </div>
+    <div>
+      <h4>Contact</h4>
+      <a href="mailto:hello@reclain.com">hello@reclain.com</a>
+      <a href="tel:+256700000000">+256 700 000 000</a>
+    </div>
+  </div>
+  <p class="container copy">© <span id="year"></span> Reclain.com. All rights reserved.</p>
+</footer>
+
+<!-- BOOKING MODAL -->
+<dialog id="bookModal" class="modal">
+  <form id="bookForm" method="dialog">
+    <div class="modal-head">
+      <h2>Book a service</h2>
+      <button type="button" class="close" id="closeModal" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body" id="bookFields">
+      <label>Service
+        <select name="service" id="bookService" required></select>
+      </label>
+      <label>Professional
+        <select name="pro" id="bookPro">
+          <option value="">Any available pro</option>
+        </select>
+      </label>
+      <div class="row">
+        <label>Date <input type="date" name="date" id="bookDate" required></label>
+        <label>Time
+          <select name="time" required>
+            <option>08:00</option><option>10:00</option><option>12:00</option>
+            <option>14:00</option><option>16:00</option><option>18:00</option>
+          </select>
+        </label>
+      </div>
+      <fieldset class="where">
+        <legend>Where?</legend>
+        <label><input type="radio" name="where" value="salon" checked> At the salon</label>
+        <label><input type="radio" name="where" value="home"> At my home <small>(+UGX 10,000 travel)</small></label>
+      </fieldset>
+      <label id="addressWrap" hidden>Address <input name="address" placeholder="House, street, area"></label>
+      <div class="row">
+        <label>Name <input name="name" required autocomplete="name"></label>
+        <label>Phone <input name="phone" type="tel" required autocomplete="tel"></label>
+      </div>
+      <div class="total">Estimated total: <strong id="bookTotal">—</strong></div>
+    </div>
+    <div class="modal-done" id="bookDone" hidden>
+      <div class="tick">✓</div>
+      <h3>You're booked!</h3>
+      <p id="bookSummary"></p>
+    </div>
+    <div class="modal-foot">
+      <button type="submit" class="btn btn-primary" id="bookSubmit">Confirm booking</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="app.js"></script>
+</body>
+</html>
