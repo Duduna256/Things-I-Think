@@ -20,14 +20,39 @@ const CATEGORIES = [
       { id: "nails", icon: "💅🏾", name: "Manicure & pedicure", desc: "Gel or classic, with hand and foot massage.", price: 35000, duration: "1.5 hrs" },
       { id: "makeup", icon: "💄", name: "Make-up", desc: "Soft glam or full glam for any occasion.", price: 60000, duration: "1 hr" },
       { id: "lashes", icon: "👁️", name: "Lash extensions", desc: "Classic, hybrid or volume sets.", price: 50000, duration: "1.5 hrs" },
-      { id: "massage", icon: "🌿", name: "Massage", desc: "Swedish or deep tissue, at home.", price: 80000, duration: "1 hr" },
+    ]
+  },
+  {
+    id: "massage", name: "Massage & Spa", isNew: true, services: [
+      { id: "swedish", icon: "🌿", name: "Swedish massage", desc: "Full-body relaxation massage by a certified therapist.", price: 80000, duration: "1 hr" },
+      { id: "deep-tissue", icon: "💪🏾", name: "Deep tissue massage", desc: "Firm pressure for muscle tension and back pain.", price: 95000, duration: "1 hr" },
+      { id: "hot-stone", icon: "🪨", name: "Hot stone massage", desc: "Heated stones to ease stiffness and stress.", price: 110000, duration: "75 min" },
+      { id: "sports", icon: "🏃🏾", name: "Sports & recovery massage", desc: "Pre- or post-workout recovery and stretching.", price: 90000, duration: "1 hr" },
+      { id: "foot-reflex", icon: "🦶🏾", name: "Foot reflexology", desc: "Pressure-point foot and lower-leg massage.", price: 50000, duration: "45 min" },
+      { id: "couples", icon: "💞", name: "Couples massage", desc: "Two therapists, side-by-side sessions at home.", price: 170000, duration: "1 hr" },
+    ]
+  },
+  {
+    id: "laundry", name: "Laundry", isNew: true, services: [
+      { id: "wash-fold", icon: "🧺", name: "Wash & fold", desc: "Priced per 5 kg bag. Free pickup and delivery.", price: 25000, duration: "Next day" },
+      { id: "wash-iron", icon: "👕", name: "Wash & iron", desc: "Shirts, trousers and dresses washed and pressed.", price: 35000, duration: "Next day" },
+      { id: "dry-clean", icon: "🧥", name: "Dry cleaning", desc: "Suits, gomesi, kanzu and delicate fabrics.", price: 20000, duration: "2 days" },
+      { id: "bedding", icon: "🛏️", name: "Bedding & curtains", desc: "Duvets, sheets, blankets and curtains.", price: 40000, duration: "2 days" },
+      { id: "express", icon: "⚡", name: "Express same-day", desc: "Picked up by 10:00, back by 18:00.", price: 45000, duration: "Same day" },
     ]
   },
   {
     id: "cleaning", name: "Cleaning", services: [
       { id: "home-clean", icon: "🧽", name: "Home cleaning", desc: "Full clean for apartments and houses.", price: 70000, duration: "3–4 hrs" },
-      { id: "laundry", icon: "👕", name: "Laundry & ironing", desc: "Pickup, wash, iron and delivery.", price: 30000, duration: "Next day" },
       { id: "sofa", icon: "🛋️", name: "Sofa & carpet cleaning", desc: "Deep steam clean and stain removal.", price: 90000, duration: "2–3 hrs" },
+    ]
+  },
+  {
+    id: "escort", name: "Security & Escort", isNew: true, services: [
+      { id: "personal-escort", icon: "🛡️", name: "Personal security escort", desc: "Licensed guard to accompany you to meetings, banks or events.", price: 150000, duration: "Half day" },
+      { id: "airport-escort", icon: "✈️", name: "Airport pickup & escort", desc: "Meet-and-greet at Entebbe with a vetted driver and escort.", price: 120000, duration: "Per trip" },
+      { id: "event-security", icon: "🎟️", name: "Event security", desc: "Guards for weddings, parties and introductions.", price: 100000, duration: "Per guard / day" },
+      { id: "child-escort", icon: "🎒", name: "School run escort", desc: "Vetted escort to take children to and from school.", price: 60000, duration: "Per week" },
     ]
   },
   {
@@ -44,11 +69,38 @@ const PROS = [
   { name: "Brian Okello", initials: "BO", role: "Master barber", rating: 4.8, reviews: 540, area: "Kampala Central", color: "#b4462f", category: "hair", tags: ["Fades", "Beard", "Kids"] },
   { name: "Joan Atim", initials: "JA", role: "Bridal hair & make-up", rating: 5.0, reviews: 128, area: "Kira", color: "#7a4e9b", category: "hair", tags: ["Bridal", "Wigs", "Make-up"] },
   { name: "Ruth Namubiru", initials: "RN", role: "Natural hair stylist", rating: 4.9, reviews: 204, area: "Entebbe", color: "#c2873a", category: "hair", tags: ["Silk press", "Treatments"] },
+  { name: "Esther Achieng", initials: "EA", role: "Certified massage therapist", rating: 4.9, reviews: 187, area: "Kololo", color: "#6a8f3a", category: "massage", tags: ["Swedish", "Deep tissue", "At-home"] },
+  { name: "Fresh Fold Laundry", initials: "FF", role: "Laundry & dry cleaning", rating: 4.8, reviews: 451, area: "Kampala Central", color: "#2a7fa8", category: "laundry", tags: ["Pickup", "Same-day", "Dry clean"] },
+  { name: "Guardline Security", initials: "GS", role: "Licensed security escorts", rating: 4.7, reviews: 96, area: "Kampala", color: "#33424f", category: "escort", tags: ["Personal", "Events", "Airport"] },
   { name: "Peter Ssali", initials: "PS", role: "Home cleaning team lead", rating: 4.7, reviews: 389, area: "Wakiso", color: "#3b6ea5", category: "cleaning", tags: ["Deep clean", "Sofa"] },
   { name: "Moses Kato", initials: "MK", role: "Electrician & handyman", rating: 4.8, reviews: 276, area: "Mukono", color: "#555", category: "repairs", tags: ["Electrical", "Plumbing"] },
 ];
 
 const HOME_FEE = 10000;
+
+// Uganda mobile money prefixes (after the leading 0).
+const NETWORKS = {
+  mtn: { label: "MTN MoMo", prefixes: ["76", "77", "78", "39"] },
+  airtel: { label: "Airtel Money", prefixes: ["70", "74", "75", "20"] },
+};
+const PAYMENT_LABELS = { mtn: "MTN MoMo", airtel: "Airtel Money", card: "Card", cash: "Cash after service" };
+
+// Accepts 0772123456, 772123456, +256772123456 or 256 772 123 456; returns 9 digits or null.
+function normalizeMsisdn(raw) {
+  const digits = raw.replace(/\D/g, "").replace(/^256/, "").replace(/^0/, "");
+  return /^\d{9}$/.test(digits) ? digits : null;
+}
+
+function networkOf(msisdn) {
+  return Object.keys(NETWORKS).find(k => NETWORKS[k].prefixes.includes(msisdn.slice(0, 2)));
+}
+
+// Placeholder for the real collection request. In production this should call
+// your backend, which talks to the MTN MoMo / Airtel Money Collections APIs
+// (API keys must never live in front-end code).
+async function requestMobileMoneyPayment({ network, msisdn, amount, reference }) {
+  return { status: "PENDING", network, msisdn: "+256" + msisdn, amount, reference };
+}
 const allServices = CATEGORIES.flatMap(c => c.services.map(s => ({ ...s, category: c.id })));
 const findService = id => allServices.find(s => s.id === id);
 const ugx = n => "UGX " + n.toLocaleString("en-UG");
@@ -129,6 +181,34 @@ function updateProOptions() {
     pros.map(p => `<option ${p.name === current ? "selected" : ""}>${p.name}</option>`).join("");
 }
 
+function updatePayment() {
+  const momo = form.payment.value in NETWORKS;
+  $("#momoWrap").hidden = !momo;
+  form.momo.setCustomValidity("");
+  $("#momoHint").classList.remove("error");
+  if (momo) {
+    $("#momoNumber").placeholder = form.payment.value === "mtn" ? "077X XXX XXX" : "075X XXX XXX";
+    $("#momoHint").textContent = "Leave blank to use your contact phone. You'll get a prompt on it to approve with your PIN.";
+  }
+}
+
+// Payment number, falling back to the contact phone.
+const momoInput = () => form.momo.value.trim() || form.phone.value;
+
+// Returns an error message, or "" if the number fits the chosen network.
+function momoError() {
+  const method = form.payment.value;
+  if (!(method in NETWORKS)) return "";
+  const msisdn = normalizeMsisdn(momoInput());
+  if (!msisdn) return "Enter a valid Ugandan number, e.g. 0772 123 456.";
+  const net = networkOf(msisdn);
+  if (net !== method) {
+    return net ? `That number is on ${NETWORKS[net].label}. Switch the payment option or enter a number on ${NETWORKS[method].label}.`
+               : `That number isn't on ${NETWORKS[method].label}.`;
+  }
+  return "";
+}
+
 function updateTotal() {
   const service = findService($("#bookService").value);
   const home = form.where.value === "home";
@@ -154,6 +234,7 @@ function openBooking({ service, category, pro } = {}) {
   $("#bookDate").value = iso(new Date(today.getTime() + 86400000));
 
   updateTotal();
+  updatePayment();
   modal.showModal();
 }
 
@@ -166,12 +247,25 @@ document.addEventListener("click", e => {
 });
 
 $("#bookService").addEventListener("change", () => { updateProOptions(); updateTotal(); });
-form.addEventListener("change", e => { if (e.target.name === "where") updateTotal(); });
+form.addEventListener("change", e => {
+  if (e.target.name === "where") updateTotal();
+  if (e.target.name === "payment") updatePayment();
+});
+form.momo.addEventListener("input", () => {
+  form.momo.setCustomValidity("");
+  $("#momoHint").classList.remove("error");
+});
 $("#closeModal").addEventListener("click", () => modal.close());
 
-form.addEventListener("submit", e => {
+form.addEventListener("submit", async e => {
   if (!$("#bookDone").hidden) return; // second click on "Done" closes the dialog
   e.preventDefault();
+  const err = momoError();
+  form.momo.setCustomValidity(err);
+  if (err) {
+    $("#momoHint").textContent = err;
+    $("#momoHint").classList.add("error");
+  }
   if (!form.reportValidity()) return;
 
   const data = Object.fromEntries(new FormData(form));
@@ -180,13 +274,25 @@ form.addEventListener("submit", e => {
     ...data,
     serviceName: service.name,
     total: service.price + (data.where === "home" ? HOME_FEE : 0),
+    reference: "RCL-" + Date.now().toString(36).toUpperCase(),
     createdAt: new Date().toISOString(),
   };
+
+  let payLine = `Payment: ${PAYMENT_LABELS[data.payment]}`;
+  if (data.payment in NETWORKS) {
+    $("#bookSubmit").disabled = true;
+    const msisdn = normalizeMsisdn(momoInput());
+    booking.payment_request = await requestMobileMoneyPayment({
+      network: data.payment, msisdn, amount: booking.total, reference: booking.reference,
+    });
+    $("#bookSubmit").disabled = false;
+    payLine = `Check <strong>0${msisdn}</strong> for the ${NETWORKS[data.payment].label} prompt and enter your PIN to pay <strong>${ugx(booking.total)}</strong>. It's held until your service is done.`;
+  }
   saveBooking(booking);
 
   const when = new Date(`${data.date}T${data.time}`).toLocaleString("en-UG", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
   $("#bookSummary").innerHTML =
-    `<strong>${service.name}</strong> with ${data.pro || "the next available pro"}<br>${when} · ${data.where === "home" ? "At your home" : "At the salon"}<br>Total: <strong>${ugx(booking.total)}</strong><br><small>We'll confirm by SMS to ${data.phone}.</small>`;
+    `<strong>${service.name}</strong> with ${data.pro || "the next available pro"}<br>${when} · ${data.where === "home" ? "At your home" : "At the salon"}<br>Total: <strong>${ugx(booking.total)}</strong> · Ref ${booking.reference}<br>${payLine}<br><small>We'll confirm by SMS to ${data.phone}.</small>`;
   $("#bookFields").hidden = true;
   $("#bookDone").hidden = false;
   $("#bookSubmit").textContent = "Done";

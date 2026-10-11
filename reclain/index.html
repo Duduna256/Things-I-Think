@@ -37,7 +37,7 @@
       <div class="hero-copy">
         <p class="eyebrow">New on Reclain · Hair Dressing</p>
         <h1>Look good. Live easy.<br><em>Book it on Reclain.</em></h1>
-        <p class="lead">Braids, cuts, locs, styling and every everyday service you need, from verified professionals near you. Book a salon slot or have them come to your home.</p>
+        <p class="lead">Braids, cuts, locs, massage, laundry and every everyday service you need, from verified professionals near you. Book a salon slot or have them come to your home.</p>
         <form class="search" id="heroSearch">
           <label class="sr-only" for="searchService">What do you need?</label>
           <input id="searchService" list="serviceList" placeholder="Try “knotless braids” or “haircut”" autocomplete="off">
@@ -56,8 +56,13 @@
         <ul class="trust">
           <li><strong>2,500+</strong> verified pros</li>
           <li><strong>4.8★</strong> average rating</li>
-          <li><strong>Pay</strong> by mobile money or card</li>
+          <li><strong>Pay</strong> with MTN MoMo, Airtel Money or card</li>
         </ul>
+        <div class="pay-strip" aria-label="Accepted payments">
+          <span class="pay-badge mtn">MTN MoMo</span>
+          <span class="pay-badge airtel">Airtel Money</span>
+          <span class="pay-badge card">Visa / Mastercard</span>
+        </div>
       </div>
       <div class="hero-art" aria-hidden="true">
         <div class="hero-card c1">
@@ -123,7 +128,7 @@
       <ol class="steps">
         <li><span>1</span><h3>Choose a service</h3><p>Browse hair, beauty and home services with clear prices.</p></li>
         <li><span>2</span><h3>Pick your pro &amp; time</h3><p>Compare portfolios and ratings, then pick a slot that suits you.</p></li>
-        <li><span>3</span><h3>Relax</h3><p>Your pro arrives or welcomes you at the salon. Pay by mobile money, card or cash.</p></li>
+        <li><span>3</span><h3>Relax</h3><p>Your pro arrives or welcomes you at the salon. Pay by MTN MoMo, Airtel Money, card or cash.</p></li>
         <li><span>4</span><h3>Rate &amp; rebook</h3><p>Leave a review and rebook your favourite in one tap.</p></li>
       </ol>
     </div>
@@ -157,6 +162,9 @@
           <option>Barber</option>
           <option>Braider / Locs specialist</option>
           <option>Make-up &amp; nails</option>
+          <option>Massage therapist</option>
+          <option>Laundry / dry cleaning</option>
+          <option>Licensed security escort</option>
           <option>Cleaning</option>
           <option>Repairs &amp; handyman</option>
           <option>Other</option>
@@ -172,10 +180,11 @@
     <div class="container narrow">
       <div class="section-head"><h2>Frequently asked questions</h2></div>
       <details><summary>Do stylists bring their own products?</summary><p>Yes. At-home stylists bring tools and standard products. Braiding hair and extensions can be supplied by the stylist (added to your quote) or you can provide your own.</p></details>
-      <details><summary>How do I pay?</summary><p>Pay with MTN Mobile Money, Airtel Money, card, or cash after your service. You only pay once the job is done.</p></details>
+      <details><summary>How do I pay?</summary><p>Choose MTN MoMo or Airtel Money when you book and you'll get a prompt on your phone to approve with your PIN. The money is held safely and only released to your pro once the job is done. Card and cash are also accepted.</p></details>
       <details><summary>Can I cancel or reschedule?</summary><p>Free changes up to 4 hours before your booking. Late cancellations may carry a small fee that goes to the professional.</p></details>
       <details><summary>Is there an extra charge for home visits?</summary><p>A small travel fee may apply, depending on distance. It is always shown before you confirm.</p></details>
-      <details><summary>How are professionals vetted?</summary><p>Every pro goes through an ID check, a skills assessment and reference checks before they can take bookings.</p></details>
+      <details><summary>How are professionals vetted?</summary><p>Every pro goes through an ID check, a skills assessment and reference checks before they can take bookings. Massage therapists must show a recognised certification, and security escorts must be licensed guards from a registered security company.</p></details>
+      <details><summary>How does laundry pickup work?</summary><p>Book a slot and a rider collects your clothes from your door. Wash &amp; fold and wash &amp; iron come back the next day; express orders picked up by 10:00 come back the same evening.</p></details>
     </div>
   </section>
 </main>
@@ -188,7 +197,7 @@
     </div>
     <div>
       <h4>Services</h4>
-      <a href="#hair">Hair Dressing</a><a href="#services">Beauty</a><a href="#services">Cleaning</a><a href="#services">Repairs</a>
+      <a href="#hair">Hair Dressing</a><a href="#services">Massage &amp; Spa</a><a href="#services">Laundry</a><a href="#services">Security &amp; Escort</a><a href="#services">Cleaning</a><a href="#services">Repairs</a>
     </div>
     <div>
       <h4>Company</h4>
@@ -238,6 +247,17 @@
         <label>Name <input name="name" required autocomplete="name"></label>
         <label>Phone <input name="phone" type="tel" required autocomplete="tel"></label>
       </div>
+      <fieldset class="pay">
+        <legend>Pay with</legend>
+        <label class="pay-opt"><input type="radio" name="payment" value="mtn" checked><span class="pay-badge mtn">MTN</span> MoMo</label>
+        <label class="pay-opt"><input type="radio" name="payment" value="airtel"><span class="pay-badge airtel">airtel</span> Money</label>
+        <label class="pay-opt"><input type="radio" name="payment" value="card"><span class="pay-badge card">VISA</span> Card</label>
+        <label class="pay-opt"><input type="radio" name="payment" value="cash"><span class="pay-badge cash">UGX</span> Cash</label>
+      </fieldset>
+      <label id="momoWrap">Mobile money number
+        <input name="momo" id="momoNumber" type="tel" inputmode="numeric" placeholder="077X XXX XXX" autocomplete="tel">
+        <small class="hint" id="momoHint">You'll get a prompt on this phone to approve the payment with your PIN.</small>
+      </label>
       <div class="total">Estimated total: <strong id="bookTotal">—</strong></div>
     </div>
     <div class="modal-done" id="bookDone" hidden>
