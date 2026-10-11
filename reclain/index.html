@@ -2,275 +2,334 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Reclain — Book Hair Dressing & Home Services</title>
-  <meta name="description" content="Reclain connects you with trusted hair stylists, barbers and service professionals. Book at the salon or at home in minutes.">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Reclain</title>
+  <meta name="description" content="Book Kampala's best-rated braiders, barbers, massage therapists, laundry, cleaning and security pros. Pay with MTN MoMo or Airtel Money.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+<!-- RECLAIN:BODY-START -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11 12 4l8 7v9H4z"/><path d="M10 20v-5h4v5"/></symbol>
+  <symbol id="i-store" viewBox="0 0 24 24"><path d="M4 9.5 5.5 4h13L20 9.5M4 9.5h16M4 9.5V20h16V9.5"/><path d="M9.5 20v-5h5v5"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="4"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2.8 2.8 5.8 6.3.8-4.6 4.4 1.2 6.3L12 17.1l-5.7 3 1.2-6.3-4.6-4.4 6.3-.8z"/></symbol>
+</svg>
 
-<header class="nav">
-  <div class="container nav-inner">
-    <a href="#" class="logo">Reclain<span>.</span></a>
-    <nav class="nav-links" id="navLinks">
-      <a href="#services">Services</a>
-      <a href="#hair">Hair Dressing</a>
-      <a href="#stylists">Stylists</a>
-      <a href="#how">How it works</a>
-      <a href="#faq">FAQ</a>
-      <a href="#join" class="btn btn-ghost">Become a Pro</a>
-      <button class="btn btn-primary" data-book>Book now</button>
+<header class="nav" id="nav">
+  <div class="wrap nav-in">
+    <a class="brand" href="#top" aria-label="Reclain home">reclain</a>
+    <nav class="nav-actions" aria-label="Main">
+      <a class="nav-link hide-sm" href="#business">For business</a>
+      <button class="nav-link hide-sm" type="button" id="navLogin">Log in</button>
+      <div class="menu-wrap">
+        <button class="pill-btn" type="button" id="menuBtn" aria-expanded="false" aria-controls="menuPanel">
+          <span>Menu</span><svg class="ic"><use href="#i-menu"/></svg>
+        </button>
+        <div class="menu-panel" id="menuPanel" hidden>
+          <p class="menu-label">For customers</p>
+          <button type="button" class="menu-item" data-action="login" id="menuLogin">Log in or sign up</button>
+          <button type="button" class="menu-item" data-action="bookings">My bookings</button>
+          <a class="menu-item" href="#app">Download the app</a>
+          <a class="menu-item" href="#faq">Help and support</a>
+          <p class="menu-label">For business</p>
+          <button type="button" class="menu-item" data-action="join">List your business</button>
+          <a class="menu-item" href="#business">How Reclain works for pros</a>
+        </div>
+      </div>
     </nav>
-    <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false">
-      <span></span><span></span><span></span>
-    </button>
   </div>
 </header>
 
-<main>
-  <!-- HERO -->
+<main id="top">
   <section class="hero">
-    <div class="container hero-inner">
-      <div class="hero-copy">
-        <p class="eyebrow">New on Reclain · Hair Dressing</p>
-        <h1>Look good. Live easy.<br><em>Book it on Reclain.</em></h1>
-        <p class="lead">Braids, cuts, locs, massage, laundry and every everyday service you need, from verified professionals near you. Book a salon slot or have them come to your home.</p>
-        <form class="search" id="heroSearch">
-          <label class="sr-only" for="searchService">What do you need?</label>
-          <input id="searchService" list="serviceList" placeholder="Try “knotless braids” or “haircut”" autocomplete="off">
-          <datalist id="serviceList"></datalist>
-          <label class="sr-only" for="searchArea">Area</label>
-          <select id="searchArea">
-            <option>Kampala Central</option>
-            <option>Ntinda</option>
-            <option>Kira</option>
-            <option>Entebbe</option>
-            <option>Mukono</option>
-            <option>Wakiso</option>
+    <div class="hero-bg" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div class="wrap hero-in">
+      <h1>Good hair days, <em>booked.</em></h1>
+      <p class="hero-sub">Braids, fades, massages, clean laundry and the odd security escort. Book Kampala's best-rated pros in seconds, with no WhatsApp back-and-forth.</p>
+      <form class="search" id="search" role="search" autocomplete="off">
+        <label class="seg seg-what">
+          <svg class="ic"><use href="#i-search"/></svg>
+          <span class="sr-only">Treatment or venue</span>
+          <input id="q" name="q" placeholder="All treatments and venues" aria-autocomplete="list" aria-controls="suggest">
+        </label>
+        <span class="seg-div" aria-hidden="true"></span>
+        <label class="seg seg-where">
+          <svg class="ic"><use href="#i-pin"/></svg>
+          <span class="sr-only">Area</span>
+          <select id="area" name="area"></select>
+        </label>
+        <span class="seg-div" aria-hidden="true"></span>
+        <label class="seg seg-when">
+          <svg class="ic"><use href="#i-cal"/></svg>
+          <span class="sr-only">When</span>
+          <select id="when" name="when">
+            <option value="">Any time</option>
+            <option value="today">Today</option>
+            <option value="tomorrow">Tomorrow</option>
+            <option value="weekend">This weekend</option>
           </select>
-          <button class="btn btn-primary" type="submit">Find a pro</button>
-        </form>
-        <ul class="trust">
-          <li><strong>2,500+</strong> verified pros</li>
-          <li><strong>4.8★</strong> average rating</li>
-          <li><strong>Pay</strong> with MTN MoMo, Airtel Money or card</li>
-        </ul>
-        <div class="pay-strip" aria-label="Accepted payments">
-          <span class="pay-badge mtn">MTN MoMo</span>
-          <span class="pay-badge airtel">Airtel Money</span>
-          <span class="pay-badge card">Visa / Mastercard</span>
-        </div>
-      </div>
-      <div class="hero-art" aria-hidden="true">
-        <div class="hero-card c1">
-          <div class="avatar a1">AN</div>
-          <div><strong>Aisha N.</strong><small>Braids & locs · 4.9★</small></div>
-        </div>
-        <div class="hero-card c2">
-          <span class="dot"></span> Booking confirmed<br><small>Knotless braids · Sat 10:00</small>
-        </div>
-        <div class="hero-blob"></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- SERVICES -->
-  <section id="services" class="section">
-    <div class="container">
-      <div class="section-head">
-        <h2>Everything you need, in one hub</h2>
-        <p>Choose a category to see services and starting prices.</p>
-      </div>
-      <div class="cat-tabs" id="catTabs" role="tablist"></div>
-      <div class="service-grid" id="serviceGrid"></div>
-    </div>
-  </section>
-
-  <!-- HAIR FEATURE -->
-  <section id="hair" class="section hair">
-    <div class="container hair-inner">
-      <div>
-        <p class="eyebrow">Hair Dressing</p>
-        <h2>Your stylist, your place, your time</h2>
-        <p>From a quick trim to a full bridal look, Reclain stylists are vetted for skill, hygiene and punctuality. Pick in-salon or at-home, choose your stylist from their portfolio, and pay only when you're happy.</p>
-        <ul class="checks">
-          <li>Portfolio photos and real reviews for every stylist</li>
-          <li>Upfront prices: no surprises at the chair</li>
-          <li>At-home visits include all tools and products</li>
-          <li>Free re-touch within 3 days if something isn't right</li>
-        </ul>
-        <button class="btn btn-primary" data-book data-category="hair">Book a stylist</button>
-      </div>
-      <div class="hair-list" id="hairList"></div>
-    </div>
-  </section>
-
-  <!-- STYLISTS -->
-  <section id="stylists" class="section">
-    <div class="container">
-      <div class="section-head">
-        <h2>Top-rated professionals</h2>
-        <p>Booked again and again by people near you.</p>
-      </div>
-      <div class="pro-grid" id="proGrid"></div>
-    </div>
-  </section>
-
-  <!-- HOW -->
-  <section id="how" class="section alt">
-    <div class="container">
-      <div class="section-head">
-        <h2>How Reclain works</h2>
-      </div>
-      <ol class="steps">
-        <li><span>1</span><h3>Choose a service</h3><p>Browse hair, beauty and home services with clear prices.</p></li>
-        <li><span>2</span><h3>Pick your pro &amp; time</h3><p>Compare portfolios and ratings, then pick a slot that suits you.</p></li>
-        <li><span>3</span><h3>Relax</h3><p>Your pro arrives or welcomes you at the salon. Pay by MTN MoMo, Airtel Money, card or cash.</p></li>
-        <li><span>4</span><h3>Rate &amp; rebook</h3><p>Leave a review and rebook your favourite in one tap.</p></li>
-      </ol>
-    </div>
-  </section>
-
-  <!-- TESTIMONIALS -->
-  <section class="section">
-    <div class="container">
-      <div class="section-head"><h2>What customers say</h2></div>
-      <div class="quotes">
-        <blockquote><p>“Booked knotless braids at home on a Sunday. She arrived on time and finished in five hours. I'm using Reclain for everything now.”</p><cite>Grace, Ntinda</cite></blockquote>
-        <blockquote><p>“My barber comes to the office every two weeks. Clean cut, no queue, no traffic.”</p><cite>Daniel, Kampala Central</cite></blockquote>
-        <blockquote><p>“Got my house cleaned and my hair done on the same day, all from one app.”</p><cite>Sharon, Kira</cite></blockquote>
-      </div>
-    </div>
-  </section>
-
-  <!-- JOIN -->
-  <section id="join" class="section join">
-    <div class="container join-inner">
-      <div>
-        <h2>Are you a stylist or service pro?</h2>
-        <p>Join Reclain to get new clients, manage bookings and get paid on time. No sign-up fee: we only take a small commission on completed jobs.</p>
-      </div>
-      <form class="join-form" id="joinForm">
-        <input name="name" required placeholder="Full name">
-        <input name="phone" required type="tel" placeholder="Phone (e.g. 0772 000 000)">
-        <select name="skill" required>
-          <option value="">Your main skill</option>
-          <option>Hair stylist</option>
-          <option>Barber</option>
-          <option>Braider / Locs specialist</option>
-          <option>Make-up &amp; nails</option>
-          <option>Massage therapist</option>
-          <option>Laundry / dry cleaning</option>
-          <option>Licensed security escort</option>
-          <option>Cleaning</option>
-          <option>Repairs &amp; handyman</option>
-          <option>Other</option>
-        </select>
-        <button class="btn btn-light" type="submit">Apply to join</button>
-        <p class="form-msg" id="joinMsg" role="status"></p>
+        </label>
+        <button class="btn btn-black search-btn" type="submit">Search</button>
+        <div class="suggest" id="suggest" role="listbox" hidden></div>
       </form>
+      <p class="booked-today"><strong id="bookedCount">3,482</strong> appointments booked today</p>
     </div>
   </section>
 
-  <!-- FAQ -->
-  <section id="faq" class="section">
-    <div class="container narrow">
-      <div class="section-head"><h2>Frequently asked questions</h2></div>
-      <details><summary>Do stylists bring their own products?</summary><p>Yes. At-home stylists bring tools and standard products. Braiding hair and extensions can be supplied by the stylist (added to your quote) or you can provide your own.</p></details>
-      <details><summary>How do I pay?</summary><p>Choose MTN MoMo or Airtel Money when you book and you'll get a prompt on your phone to approve with your PIN. The money is held safely and only released to your pro once the job is done. Card and cash are also accepted.</p></details>
-      <details><summary>Can I cancel or reschedule?</summary><p>Free changes up to 4 hours before your booking. Late cancellations may carry a small fee that goes to the professional.</p></details>
-      <details><summary>Is there an extra charge for home visits?</summary><p>A small travel fee may apply, depending on distance. It is always shown before you confirm.</p></details>
-      <details><summary>How are professionals vetted?</summary><p>Every pro goes through an ID check, a skills assessment and reference checks before they can take bookings. Massage therapists must show a recognised certification, and security escorts must be licensed guards from a registered security company.</p></details>
-      <details><summary>How does laundry pickup work?</summary><p>Book a slot and a rider collects your clothes from your door. Wash &amp; fold and wash &amp; iron come back the next day; express orders picked up by 10:00 come back the same evening.</p></details>
+  <section class="wrap block" aria-label="Browse by category">
+    <div class="chips" id="chips"></div>
+  </section>
+
+  <section class="wrap block" id="results" hidden aria-live="polite">
+    <div class="block-head">
+      <h2 id="resultsTitle">Results</h2>
+      <button class="link-btn" type="button" id="clearSearch">Clear search</button>
     </div>
+    <div class="grid-venues" id="resultsGrid"></div>
+  </section>
+
+  <section class="wrap block" id="recommended">
+    <div class="block-head">
+      <h2>Recommended</h2>
+      <div class="rail-nav" data-rail="railRecommended">
+        <button type="button" class="icon-btn" data-dir="-1" aria-label="Scroll recommended left"><svg class="ic"><use href="#i-left"/></svg></button>
+        <button type="button" class="icon-btn" data-dir="1" aria-label="Scroll recommended right"><svg class="ic"><use href="#i-right"/></svg></button>
+      </div>
+    </div>
+    <div class="rail" id="railRecommended"></div>
+  </section>
+
+  <section class="wrap block">
+    <div class="block-head">
+      <h2>New to Reclain</h2>
+      <div class="rail-nav" data-rail="railNew">
+        <button type="button" class="icon-btn" data-dir="-1" aria-label="Scroll new venues left"><svg class="ic"><use href="#i-left"/></svg></button>
+        <button type="button" class="icon-btn" data-dir="1" aria-label="Scroll new venues right"><svg class="ic"><use href="#i-right"/></svg></button>
+      </div>
+    </div>
+    <div class="rail" id="railNew"></div>
+  </section>
+
+  <section class="wrap block">
+    <div class="block-head">
+      <h2>Trending this week</h2>
+      <p class="block-note">What Kampala booked while you were reading this.</p>
+    </div>
+    <div class="trending" id="trending"></div>
+  </section>
+
+  <section class="wrap block reviews">
+    <div class="reviews-intro">
+      <h2>The top-rated way to book in Kampala</h2>
+      <div class="score">
+        <span class="score-num">4.9<small>/5</small></span>
+        <span class="stars" aria-hidden="true"></span>
+        <span class="score-note">From 18,402 reviews. The other 0.1 was a traffic jam on Jinja Road.</span>
+      </div>
+    </div>
+    <div class="rail rail-reviews" id="reviewRail"></div>
+  </section>
+
+  <section class="wrap block stats" aria-label="Reclain in numbers">
+    <div><strong>2,500+</strong><span>verified pros across Kampala, Wakiso and Entebbe</span></div>
+    <div><strong>120k</strong><span>appointments booked, zero “I'm on my way” lies</span></div>
+    <div><strong>UGX 0</strong><span>to sign up, for customers and for businesses</span></div>
+  </section>
+
+  <section class="wrap block" id="app">
+    <div class="app-band">
+      <div class="app-copy">
+        <p class="eyebrow">The Reclain app</p>
+        <h2>Your next appointment lives in your pocket</h2>
+        <p>Rebook your braider in two taps, get a reminder the night before, and pay with MoMo when you're done. It's like having a personal assistant who never asks for a salary advance.</p>
+        <div class="store-row">
+          <span class="store-chip"><b>App Store</b><small>Coming soon</small></span>
+          <span class="store-chip"><b>Google Play</b><small>Coming soon</small></span>
+        </div>
+      </div>
+      <div class="phone" aria-hidden="true">
+        <div class="phone-screen">
+          <div class="ph-top"><b>reclain</b><span class="ph-dot"></span></div>
+          <div class="ph-cover cover" style="--c1:#2b1a4a;--c2:#7b4fd6;--c3:#f6b9a3"><span class="cover-word">braids</span></div>
+          <p class="ph-name">The Braid Republic</p>
+          <p class="ph-meta">4.9 ★ · Ntinda</p>
+          <div class="ph-appt">
+            <span class="ph-day"><small>SAT</small>18</span>
+            <span><b>Knotless braids</b><small>10:00 · with Aisha</small></span>
+            <span class="ph-ok">Confirmed</span>
+          </div>
+          <div class="ph-appt">
+            <span class="ph-day"><small>WED</small>22</span>
+            <span><b>Wash &amp; fold</b><small>Pickup 08:00</small></span>
+            <span class="ph-ok">Paid</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap block" id="business">
+    <div class="biz">
+      <div class="biz-copy">
+        <p class="eyebrow">Reclain for business</p>
+        <h2>Run your salon, <em>not</em> your WhatsApp.</h2>
+        <ul class="biz-list">
+          <li><svg class="ic"><use href="#i-check"/></svg>A calendar that fills itself while you're mid-braid</li>
+          <li><svg class="ic"><use href="#i-check"/></svg>MTN MoMo and Airtel Money payouts every evening</li>
+          <li><svg class="ic"><use href="#i-check"/></svg>Deposits that make no-shows think twice</li>
+          <li><svg class="ic"><use href="#i-check"/></svg>SMS reminders, so you stop sending “Are we still on?”</li>
+        </ul>
+        <div class="biz-cta">
+          <button class="btn btn-white" type="button" data-action="join">List your business</button>
+          <span>Free to join. A small commission on completed bookings only.</span>
+        </div>
+      </div>
+      <div class="cal" aria-hidden="true">
+        <div class="cal-head"><b>Saturday</b><span>09:00 – 15:00 · 3 stylists</span></div>
+        <div class="cal-grid">
+          <div class="cal-col"><b>Aisha</b><i class="appt a-lilac" style="grid-row:2/6">Knotless braids<small>Grace N. · 09:00</small></i><i class="appt a-mint" style="grid-row:6/8">Cornrows<small>Sarah K. · 13:00</small></i></div>
+          <div class="cal-col"><b>Nana</b><i class="appt a-peach" style="grid-row:2/4">Locs retwist<small>Ivan M. · 09:00</small></i><i class="appt a-lilac" style="grid-row:4/8">Boho braids<small>Peace A. · 11:00</small></i></div>
+          <div class="cal-col"><b>Joy</b><i class="appt a-mint" style="grid-row:3/5">Starter locs<small>Brian O. · 10:00</small></i><i class="appt a-free" style="grid-row:5/8">Free slot<small>Filling fast</small></i></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap block" id="areas">
+    <div class="block-head"><h2>Browse by area</h2></div>
+    <div class="area-tabs" id="areaTabs" role="tablist" aria-label="Region"></div>
+    <div class="area-list" id="areaList"></div>
+  </section>
+
+  <section class="wrap block faq" id="faq">
+    <div class="block-head"><h2>Questions people ask</h2></div>
+    <details><summary>How does paying with MTN MoMo or Airtel Money work?</summary><p>Pick MTN MoMo or Airtel Money when you book and you'll get a prompt on your phone. Enter your PIN and the money is held by Reclain until your service is done. If your pro doesn't show, you get it all back.</p></details>
+    <details><summary>Can my stylist come to my home?</summary><p>Look for the “Home visits” tag. Choose “At my place” when you book, add your address and your pro brings the tools. A travel fee of UGX 10,000 is shown before you confirm.</p></details>
+    <details><summary>What if I need to cancel?</summary><p>Cancel or move your booking for free up to 4 hours before. After that the venue may keep a small fee, because they turned someone else away for you.</p></details>
+    <details><summary>Who checks the professionals?</summary><p>Every pro passes an ID check and a skills review. Massage therapists show a recognised certification, and security escorts are licensed guards from registered security companies.</p></details>
+    <details><summary>How does laundry pickup work?</summary><p>Book a pickup slot and a rider collects from your door. Wash &amp; fold and wash &amp; iron come back the next day. Express orders collected by 10:00 come back the same evening.</p></details>
   </section>
 </main>
 
 <footer class="footer">
-  <div class="container footer-inner">
-    <div>
-      <a href="#" class="logo">Reclain<span>.</span></a>
-      <p>Hair dressing and everyday services, booked in minutes.</p>
+  <div class="wrap foot-in">
+    <div class="foot-brand">
+      <a class="brand" href="#top">reclain</a>
+      <p>Hair, beauty and home services in Kampala, booked in seconds and paid by mobile money.</p>
+      <p class="foot-contact">hello@reclain.com · +256 700 000 000</p>
     </div>
     <div>
-      <h4>Services</h4>
-      <a href="#hair">Hair Dressing</a><a href="#services">Massage &amp; Spa</a><a href="#services">Laundry</a><a href="#services">Security &amp; Escort</a><a href="#services">Cleaning</a><a href="#services">Repairs</a>
+      <h3>Customers</h3>
+      <a href="#recommended">Find a venue</a>
+      <button type="button" class="foot-link" data-action="bookings">My bookings</button>
+      <a href="#faq">Help and support</a>
     </div>
     <div>
-      <h4>Company</h4>
-      <a href="#how">How it works</a><a href="#join">Become a Pro</a><a href="#faq">FAQ</a>
+      <h3>Businesses</h3>
+      <button type="button" class="foot-link" data-action="join">List your business</button>
+      <a href="#business">Why Reclain</a>
     </div>
     <div>
-      <h4>Contact</h4>
-      <a href="mailto:hello@reclain.com">hello@reclain.com</a>
-      <a href="tel:+256700000000">+256 700 000 000</a>
+      <h3>Categories</h3>
+      <button type="button" class="foot-link" data-cat="braids">Braids &amp; locs</button>
+      <button type="button" class="foot-link" data-cat="barber">Barbers</button>
+      <button type="button" class="foot-link" data-cat="massage">Massage</button>
+      <button type="button" class="foot-link" data-cat="laundry">Laundry</button>
     </div>
   </div>
-  <p class="container copy">© <span id="year"></span> Reclain.com. All rights reserved.</p>
+  <div class="wrap foot-bottom">
+    <span>© <span id="year">2026</span> Reclain.com · Kampala, Uganda</span>
+    <span>Made for good hair days.</span>
+  </div>
 </footer>
 
-<!-- BOOKING MODAL -->
-<dialog id="bookModal" class="modal">
-  <form id="bookForm" method="dialog">
-    <div class="modal-head">
-      <h2>Book a service</h2>
-      <button type="button" class="close" id="closeModal" aria-label="Close">×</button>
+<!-- Booking flow -->
+<dialog class="flow" id="flow" aria-labelledby="flowHeading">
+  <header class="flow-top">
+    <button class="icon-btn" type="button" id="flowBack" aria-label="Back"><svg class="ic"><use href="#i-left"/></svg></button>
+    <ol class="crumbs" id="crumbs">
+      <li>Services</li><li>Professional</li><li>Time</li><li>Confirm</li>
+    </ol>
+    <button class="icon-btn" type="button" id="flowClose" aria-label="Close booking"><svg class="ic"><use href="#i-close"/></svg></button>
+  </header>
+  <div class="flow-scroll" id="flowScroll">
+    <div class="flow-body">
+      <div class="flow-main" id="flowMain"></div>
+      <aside class="summary" id="summary" aria-label="Booking summary"></aside>
     </div>
-    <div class="modal-body" id="bookFields">
-      <label>Service
-        <select name="service" id="bookService" required></select>
-      </label>
-      <label>Professional
-        <select name="pro" id="bookPro">
-          <option value="">Any available pro</option>
-        </select>
-      </label>
-      <div class="row">
-        <label>Date <input type="date" name="date" id="bookDate" required></label>
-        <label>Time
-          <select name="time" required>
-            <option>08:00</option><option>10:00</option><option>12:00</option>
-            <option>14:00</option><option>16:00</option><option>18:00</option>
-          </select>
-        </label>
-      </div>
-      <fieldset class="where">
-        <legend>Where?</legend>
-        <label><input type="radio" name="where" value="salon" checked> At the salon</label>
-        <label><input type="radio" name="where" value="home"> At my home <small>(+UGX 10,000 travel)</small></label>
-      </fieldset>
-      <label id="addressWrap" hidden>Address <input name="address" placeholder="House, street, area"></label>
-      <div class="row">
-        <label>Name <input name="name" required autocomplete="name"></label>
-        <label>Phone <input name="phone" type="tel" required autocomplete="tel"></label>
-      </div>
-      <fieldset class="pay">
-        <legend>Pay with</legend>
-        <label class="pay-opt"><input type="radio" name="payment" value="mtn" checked><span class="pay-badge mtn">MTN</span> MoMo</label>
-        <label class="pay-opt"><input type="radio" name="payment" value="airtel"><span class="pay-badge airtel">airtel</span> Money</label>
-        <label class="pay-opt"><input type="radio" name="payment" value="card"><span class="pay-badge card">VISA</span> Card</label>
-        <label class="pay-opt"><input type="radio" name="payment" value="cash"><span class="pay-badge cash">UGX</span> Cash</label>
-      </fieldset>
-      <label id="momoWrap">Mobile money number
-        <input name="momo" id="momoNumber" type="tel" inputmode="numeric" placeholder="077X XXX XXX" autocomplete="tel">
-        <small class="hint" id="momoHint">You'll get a prompt on this phone to approve the payment with your PIN.</small>
-      </label>
-      <div class="total">Estimated total: <strong id="bookTotal">—</strong></div>
-    </div>
-    <div class="modal-done" id="bookDone" hidden>
-      <div class="tick">✓</div>
-      <h3>You're booked!</h3>
-      <p id="bookSummary"></p>
-    </div>
-    <div class="modal-foot">
-      <button type="submit" class="btn btn-primary" id="bookSubmit">Confirm booking</button>
-    </div>
+  </div>
+  <div class="flow-bar" id="flowBar"></div>
+</dialog>
+
+<!-- Log in -->
+<dialog class="modal" id="loginDlg" aria-labelledby="loginTitle">
+  <button class="icon-btn modal-x" type="button" data-close aria-label="Close"><svg class="ic"><use href="#i-close"/></svg></button>
+  <form id="loginForm" novalidate>
+    <h2 id="loginTitle">Log in or sign up</h2>
+    <p class="modal-sub" id="loginSub">Enter your phone number. We'll text you a 6-digit code.</p>
+    <label class="field" id="loginPhoneWrap">Phone number
+      <input id="loginPhone" name="phone" type="tel" inputmode="tel" placeholder="0772 123 456" autocomplete="tel">
+    </label>
+    <label class="field" id="loginCodeWrap" hidden>6-digit code
+      <input id="loginCode" name="code" inputmode="numeric" maxlength="6" placeholder="••••••" autocomplete="one-time-code">
+      <small class="hint">Preview mode: any 6 digits will do.</small>
+    </label>
+    <p class="form-err" id="loginErr" role="alert"></p>
+    <button class="btn btn-black btn-wide" type="submit" id="loginSubmit">Send code</button>
   </form>
 </dialog>
 
+<!-- List your business -->
+<dialog class="modal" id="joinDlg" aria-labelledby="joinTitle">
+  <button class="icon-btn modal-x" type="button" data-close aria-label="Close"><svg class="ic"><use href="#i-close"/></svg></button>
+  <form id="joinForm">
+    <h2 id="joinTitle">List your business</h2>
+    <p class="modal-sub">Tell us who you are and our partner team will call you within 48 hours.</p>
+    <label class="field">Business or your name<input id="joinName" name="name" required autocomplete="organization"></label>
+    <label class="field">Phone number<input id="joinPhone" name="phone" type="tel" required placeholder="0772 123 456" autocomplete="tel"></label>
+    <label class="field">What do you do?
+      <select id="joinSkill" name="skill" required>
+        <option value="">Choose one</option>
+        <option>Hair salon</option><option>Braids &amp; locs</option><option>Barbershop</option>
+        <option>Massage &amp; spa</option><option>Nails &amp; beauty</option><option>Bridal styling</option>
+        <option>Laundry &amp; dry cleaning</option><option>Cleaning</option>
+        <option>Licensed security escort</option><option>Repairs &amp; handyman</option>
+      </select>
+    </label>
+    <label class="field">Area<select id="joinArea" name="area" required></select></label>
+    <button class="btn btn-black btn-wide" type="submit">Send application</button>
+  </form>
+  <div class="modal-done" id="joinDone" hidden>
+    <span class="done-tick"><svg class="ic"><use href="#i-check"/></svg></span>
+    <h2>Application received</h2>
+    <p id="joinDoneText"></p>
+    <button class="btn btn-black btn-wide" type="button" data-close>Done</button>
+  </div>
+</dialog>
+
+<!-- My bookings -->
+<dialog class="modal" id="bookingsDlg" aria-labelledby="bookingsTitle">
+  <button class="icon-btn modal-x" type="button" data-close aria-label="Close"><svg class="ic"><use href="#i-close"/></svg></button>
+  <h2 id="bookingsTitle">My bookings</h2>
+  <div id="bookingsList"></div>
+</dialog>
+
+<div class="toast" id="toast" role="status" hidden></div>
+<!-- RECLAIN:BODY-END -->
 <script src="app.js"></script>
 </body>
 </html>
