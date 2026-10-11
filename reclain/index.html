@@ -7,7 +7,7 @@
   <meta name="description" content="Book Kampala's best-rated braiders, barbers, massage therapists, laundry, cleaning and security pros. Pay with MTN MoMo or Airtel Money.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -26,6 +26,20 @@
   <symbol id="i-store" viewBox="0 0 24 24"><path d="M4 9.5 5.5 4h13L20 9.5M4 9.5h16M4 9.5V20h16V9.5"/><path d="M9.5 20v-5h5v5"/></symbol>
   <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
   <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="4"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></symbol>
+  <symbol id="i-scissors" viewBox="0 0 24 24"><circle cx="6" cy="7" r="3"/><circle cx="6" cy="17" r="3"/><path d="M8.6 8.6 20 18M8.6 15.4 20 6"/></symbol>
+  <symbol id="i-braid" viewBox="0 0 24 24"><path d="M9 2.5c0 3 6 3 6 6s-6 3-6 6 6 3 6 6"/><path d="M15 2.5c0 3-6 3-6 6s6 3 6 6-6 3-6 6"/></symbol>
+  <symbol id="i-comb" viewBox="0 0 24 24"><path d="M3 7.5h18v3.5H3z"/><path d="M5.5 11v6.5M9 11v6.5M12.5 11v6.5M16 11v6.5M19.5 11v4.5"/></symbol>
+  <symbol id="i-stones" viewBox="0 0 24 24"><ellipse cx="12" cy="18" rx="7.5" ry="2.8"/><ellipse cx="12" cy="12" rx="5.2" ry="2.3"/><ellipse cx="12" cy="6.8" rx="3.2" ry="1.9"/></symbol>
+  <symbol id="i-polish" viewBox="0 0 24 24"><rect x="6.5" y="10" width="11" height="11" rx="2.8"/><path d="M9.5 10V6.5h5V10M10.8 6.5V2.8h2.4v3.7"/></symbol>
+  <symbol id="i-ring" viewBox="0 0 24 24"><circle cx="12" cy="15" r="6"/><path d="m9.4 5.8 2.6-3 2.6 3-2.6 3z"/></symbol>
+  <symbol id="i-shirt" viewBox="0 0 24 24"><path d="M8.5 3 3 6.2l2.1 4 1.9-1V21h10V9.2l1.9 1 2.1-4L15.5 3a3.5 3.5 0 0 1-7 0z"/></symbol>
+  <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M11 3c.6 4.6 2.4 6.4 7 7-4.6.6-6.4 2.4-7 7-.6-4.6-2.4-6.4-7-7 4.6-.6 6.4-2.4 7-7z"/><path d="M19 15.5v5M16.5 18h5"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.5c0 4.6 3.2 8.2 7.5 9.5 4.3-1.3 7.5-4.9 7.5-9.5V6z"/><path d="m9 12 2.2 2.2L15.5 10"/></symbol>
+  <symbol id="i-wrench" viewBox="0 0 24 24"><path d="M14.7 6.3a4.5 4.5 0 0 0 5.6 5.6l-8.6 8.6a2.4 2.4 0 0 1-3.4-3.4l8.6-8.6"/><path d="M14.7 6.3 17.5 3.5l3 3-2.8 2.8"/></symbol>
+  <symbol id="i-money" viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="2.5"/><circle cx="12" cy="12" r="2.6"/><path d="M6 9.5v5M18 9.5v5"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5h16v11H10l-6 4.5z"/><path d="M8 9.5h8M8 12.5h5"/></symbol>
+  <symbol id="i-id" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="11" r="2.2"/><path d="M5.8 16.2c.7-1.5 1.8-2.1 3.2-2.1s2.5.6 3.2 2.1M14.5 10h4M14.5 13.5h3"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
   <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2.8 2.8 5.8 6.3.8-4.6 4.4 1.2 6.3L12 17.1l-5.7 3 1.2-6.3-4.6-4.4 6.3-.8z"/></symbol>
 </svg>
 
@@ -57,9 +71,16 @@
 <main id="top">
   <section class="hero">
     <div class="hero-bg" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div class="floaters" aria-hidden="true">
+      <div class="fl fl-1"><span class="fl-thumb cover" style="--c1:#3b1d2a;--c2:#c0587a;--c3:#ffd3c2"><span class="cover-word">silk</span></span><span><b>Silk Press Society</b><small>5.0 ★ · Kololo</small></span></div>
+      <div class="fl fl-2"><span class="fl-icon fl-ok"><svg class="ic"><use href="#i-check"/></svg></span><span><b>Knotless braids</b><small>Sat 10:00 · Confirmed</small></span></div>
+      <div class="fl fl-3"><span class="pay-logo mtn">MTN</span><span><b>Approve UGX 120,000</b><small>Enter your MoMo PIN</small></span></div>
+      <div class="fl fl-4"><span class="avatar" style="background:#bfe3ff">IM</span><span><b>“Socks came back in pairs.”</b><small>Ivan, Bukoto</small></span></div>
+      <div class="fl fl-5"><span class="fl-live"></span><span><b>Aisha is on her way</b><small>Arriving in 6 min</small></span></div>
+    </div>
     <div class="wrap hero-in">
-      <h1>Good hair days, <em>booked.</em></h1>
-      <p class="hero-sub">Braids, fades, massages, clean laundry and the odd security escort. Book Kampala's best-rated pros in seconds, with no WhatsApp back-and-forth.</p>
+      <h1><span class="h1-line">Good <span class="rot-wrap"><em id="rot">hair</em></span> days,</span> <span class="h1-line">booked.</span></h1>
+      <p class="hero-sub">Braids, fades, massages, laundry and the odd security escort, from Kampala's best-rated pros. No WhatsApp back-and-forth required.</p>
       <form class="search" id="search" role="search" autocomplete="off">
         <label class="seg seg-what">
           <svg class="ic"><use href="#i-search"/></svg>
@@ -90,6 +111,8 @@
     </div>
   </section>
 
+  <div class="marquee" aria-hidden="true"><div class="marquee-track" id="marquee"></div></div>
+
   <section class="wrap block" aria-label="Browse by category">
     <div class="chips" id="chips"></div>
   </section>
@@ -111,6 +134,14 @@
       </div>
     </div>
     <div class="rail" id="railRecommended"></div>
+  </section>
+
+  <section class="wrap block" id="occasions">
+    <div class="block-head">
+      <h2>Got something on?</h2>
+      <p class="block-note">Tell us the occasion. We'll find the fix.</p>
+    </div>
+    <div class="bento" id="bento"></div>
   </section>
 
   <section class="wrap block">
@@ -138,16 +169,29 @@
       <div class="score">
         <span class="score-num">4.9<small>/5</small></span>
         <span class="stars" aria-hidden="true"></span>
-        <span class="score-note">From 18,402 reviews. The other 0.1 was a traffic jam on Jinja Road.</span>
+        <span class="score-note">From 18,402 reviews. The missing 0.1 was a traffic jam on Jinja Road.</span>
+      </div>
+      <div class="rail-nav" data-rail="reviewRail">
+        <button type="button" class="icon-btn" data-dir="-1" aria-label="Previous reviews"><svg class="ic"><use href="#i-left"/></svg></button>
+        <button type="button" class="icon-btn" data-dir="1" aria-label="More reviews"><svg class="ic"><use href="#i-right"/></svg></button>
       </div>
     </div>
     <div class="rail rail-reviews" id="reviewRail"></div>
   </section>
 
-  <section class="wrap block stats" aria-label="Reclain in numbers">
-    <div><strong>2,500+</strong><span>verified pros across Kampala, Wakiso and Entebbe</span></div>
-    <div><strong>120k</strong><span>appointments booked, zero “I'm on my way” lies</span></div>
-    <div><strong>UGX 0</strong><span>to sign up, for customers and for businesses</span></div>
+  <section class="wrap block trust" aria-labelledby="trustTitle">
+    <div class="block-head">
+      <h2 id="trustTitle">Safe hands, <em>verified.</em></h2>
+      <p class="block-note">Booking a stranger is weird. We make it less weird.</p>
+    </div>
+    <div class="trust-grid">
+      <div class="tcard t-num t-jac"><strong>2,500+</strong><span>pros across Kampala, Wakiso and Mukono. Every one ID-checked and skills-reviewed.</span></div>
+      <div class="tcard"><span class="t-ic"><svg class="ic"><use href="#i-money"/></svg></span><b>Money held until you're happy</b><span>MoMo and Airtel Money payments are released to the pro after the job, not before.</span></div>
+      <div class="tcard"><span class="t-ic"><svg class="ic"><use href="#i-shield"/></svg></span><b>Licensed escorts only</b><span>Security escorts come from registered companies, with the paperwork to prove it.</span></div>
+      <div class="tcard"><span class="t-ic"><svg class="ic"><use href="#i-chat"/></svg></span><b>Reviews from real bookings</b><span>Only people who actually booked can leave a review. No cousins.</span></div>
+      <div class="tcard"><span class="t-ic"><svg class="ic"><use href="#i-clock"/></svg></span><b>Plans change. We get it.</b><span>Cancel or move a booking for free up to 4 hours before.</span></div>
+      <div class="tcard t-num t-ink"><strong>UGX 0</strong><span>to sign up, for customers and for businesses. We earn a small fee only when a booking is done.</span></div>
+    </div>
   </section>
 
   <section class="wrap block" id="app">
@@ -251,6 +295,7 @@
       <button type="button" class="foot-link" data-cat="laundry">Laundry</button>
     </div>
   </div>
+  <div class="foot-giant" aria-hidden="true">reclain</div>
   <div class="wrap foot-bottom">
     <span>© <span id="year">2026</span> Reclain.com · Kampala, Uganda</span>
     <span>Made for good hair days.</span>
@@ -265,6 +310,7 @@
       <li>Services</li><li>Professional</li><li>Time</li><li>Confirm</li>
     </ol>
     <button class="icon-btn" type="button" id="flowClose" aria-label="Close booking"><svg class="ic"><use href="#i-close"/></svg></button>
+    <span class="flow-progress" aria-hidden="true"><i id="flowProgress"></i></span>
   </header>
   <div class="flow-scroll" id="flowScroll">
     <div class="flow-body">

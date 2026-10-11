@@ -13,16 +13,30 @@ const REGIONS = {
 const ALL_AREAS = Object.values(REGIONS).flat();
 
 const CATS = [
-  { id: "hair", name: "Hair salons" },
-  { id: "braids", name: "Braids & locs" },
-  { id: "barber", name: "Barbers" },
-  { id: "massage", name: "Massage & spa", isNew: true },
-  { id: "nails", name: "Nails & beauty" },
-  { id: "bridal", name: "Bridal & events" },
-  { id: "laundry", name: "Laundry", isNew: true },
-  { id: "cleaning", name: "Home cleaning" },
-  { id: "escort", name: "Security & escort", isNew: true },
-  { id: "repairs", name: "Repairs" },
+  { id: "hair", name: "Hair salons", ic: "scissors" },
+  { id: "braids", name: "Braids & locs", ic: "braid" },
+  { id: "barber", name: "Barbers", ic: "comb" },
+  { id: "massage", name: "Massage & spa", ic: "stones", isNew: true },
+  { id: "nails", name: "Nails & beauty", ic: "polish" },
+  { id: "bridal", name: "Bridal & events", ic: "ring" },
+  { id: "laundry", name: "Laundry", ic: "shirt", isNew: true },
+  { id: "cleaning", name: "Home cleaning", ic: "sparkle" },
+  { id: "escort", name: "Security & escort", ic: "shield", isNew: true },
+  { id: "repairs", name: "Repairs", ic: "wrench" },
+];
+
+const ROTATING = ["hair", "beard", "nail", "massage", "laundry", "kwanjula"];
+
+const MARQUEE = ["Knotless braids", "Skin fades", "Hot stone massage", "Kwanjula looks", "Wash & fold", "Silk press",
+  "Airport escorts", "Gel manicures", "Deep cleans", "Locs retwists", "Socks returned in pairs", "Bridal glam"];
+
+const OCCASIONS = [
+  { title: "Kwanjula this weekend", sub: "Hair and make-up built to outlast the speeches, the dancing and your aunties' hugs.", q: "kwanjula", tone: "jac", ic: "ring", big: true },
+  { title: "Job interview on Monday", sub: "A fade or a silk press that says “hire me”.", q: "fade", tone: "ink", ic: "comb" },
+  { title: "In-laws arrive Friday", sub: "A deep clean. Yes, behind the fridge too.", q: "deep clean", tone: "mint", ic: "sparkle" },
+  { title: "It's payday", sub: "You've earned a hot stone massage.", q: "massage", tone: "peach", ic: "stones" },
+  { title: "Rainy season hair", sub: "Passion twists that ignore the weather.", q: "twists", tone: "sun", ic: "braid" },
+  { title: "Taking cash to the bank", sub: "A licensed escort, calm and quietly intimidating.", q: "escort", tone: "slate", ic: "shield" },
 ];
 
 // m = minutes, p = price in UGX, lab = duration label override
@@ -280,8 +294,9 @@ function venueCard(v) {
 }
 
 function renderChips() {
-  $("#chips").innerHTML = [`<button type="button" class="chip" data-chip="" aria-pressed="${!filters.cat}">All</button>`]
-    .concat(CATS.map(c => `<button type="button" class="chip" data-chip="${c.id}" aria-pressed="${filters.cat === c.id}">${esc(c.name)}${c.isNew ? '<span class="new">NEW</span>' : ""}</button>`))
+  $("#chips").innerHTML = [`<button type="button" class="chip chip-lg chip-all" data-chip="" aria-pressed="${!filters.cat}">All</button>`]
+    .concat(CATS.map(c => `<button type="button" class="chip chip-lg" data-chip="${c.id}" aria-pressed="${filters.cat === c.id}">
+      <span class="chip-ic">${icon(c.ic)}</span>${esc(c.name)}${c.isNew ? '<span class="new">NEW</span>' : ""}</button>`))
     .join("");
 }
 
@@ -307,6 +322,35 @@ function renderTrending() {
       <span><b>${esc(LIB[sid].n)}</b><small>from ${ugx(from)} · ${offering.length} venue${offering.length > 1 ? "s" : ""}</small></span>
     </button>`;
   }).join("");
+}
+
+function renderOccasions() {
+  $("#bento").innerHTML = OCCASIONS.map(o => `<button type="button" class="occ tone-${o.tone}${o.big ? " occ-big" : ""}" data-occasion="${esc(o.q)}">
+      <span class="occ-title">${esc(o.title)}</span>
+      <span class="occ-foot"><span class="occ-sub">${esc(o.sub)}</span><span class="occ-go">Find the fix ${icon("arrow")}</span></span>
+      ${icon(o.ic, "ic occ-art")}
+    </button>`).join("");
+}
+
+function renderMarquee() {
+  const run = MARQUEE.map(t => `<span>${esc(t)}</span>${icon("sparkle")}`).join("");
+  $("#marquee").innerHTML = run + run;
+}
+
+function startRotator() {
+  const el = $("#rot");
+  if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  let i = 0;
+  setInterval(() => {
+    el.classList.remove("swap-in");
+    el.classList.add("swap-out");
+    setTimeout(() => {
+      i = (i + 1) % ROTATING.length;
+      el.textContent = ROTATING[i];
+      el.classList.remove("swap-out");
+      el.classList.add("swap-in");
+    }, 280);
+  }, 2600);
 }
 
 function renderReviews() {
@@ -342,7 +386,7 @@ function renderAreas() {
 function fillAreaSelects() {
   const groups = Object.entries(REGIONS).map(([r, areas]) =>
     `<optgroup label="${r}">${areas.map(a => `<option value="${a}">${a}</option>`).join("")}</optgroup>`).join("");
-  $("#area").innerHTML = `<option value="">Anywhere near Kampala</option>${groups}`;
+  $("#area").innerHTML = `<option value="">All of Kampala</option>${groups}`;
   $("#joinArea").innerHTML = `<option value="">Choose your area</option>${groups}`;
 }
 
@@ -485,7 +529,9 @@ function renderFlow() {
     const cls = flow.done || i < flow.step ? "done" : i === flow.step ? "current" : "";
     return `<li class="${cls}"${i === flow.step && !flow.done ? ' aria-current="step"' : ""}>${STEP_LABELS[s]}</li>`;
   }).join("");
-  $("#flowBack").hidden = !!flow.done;
+  $("#flowBack").classList.toggle("is-hidden", !!flow.done);
+  $("#flowBack").disabled = !!flow.done;
+  $("#flowProgress").style.width = `${flow.done ? 100 : ((flow.step + 1) / (flow.steps.length + 1)) * 100}%`;
   const main = $("#flowMain");
   if (flow.done) main.innerHTML = doneHTML();
   else main.innerHTML = { services: servicesHTML, pro: proHTML, time: timeHTML, confirm: confirmHTML }[currentStep()]();
@@ -752,11 +798,26 @@ function doneHTML() {
   </div>`;
 }
 
+// First open date with free slots, starting at `from` (inclusive).
+function nextAvailableDate(from, days = 21) {
+  const v = flow.v, start = parseYmd(from);
+  for (let i = 0; i < days; i++) {
+    const d = addDays(start, i);
+    if (v.closed.includes(d.getDay())) continue;
+    if (availableSlots(ymd(d)).length) return ymd(d);
+  }
+  return null;
+}
+
 function nextStep() {
   if (!stepValid() || flow.sending) return;
   if (currentStep() === "confirm") { $("#payForm").requestSubmit(); return; }
   flow.step++;
-  if (currentStep() === "time" && flow.time !== null && !availableSlots(flow.date).includes(flow.time)) flow.time = null;
+  if (currentStep() === "time") {
+    if (flow.time !== null && !availableSlots(flow.date).includes(flow.time)) flow.time = null;
+    const fits = blockMins() <= (flow.v.hours[1] - flow.v.hours[0]) * 60;
+    if (fits && !availableSlots(flow.date).length) flow.date = nextAvailableDate(flow.date) || flow.date;
+  }
   renderFlow();
 }
 
@@ -821,12 +882,8 @@ function handleFlowClick(e) {
     return;
   }
   if (t.closest("#nextAvail")) {
-    const v = flow.v, start = parseYmd(flow.date);
-    for (let i = 1; i <= 21; i++) {
-      const d = addDays(start, i);
-      if (v.closed.includes(d.getDay())) continue;
-      if (availableSlots(ymd(d)).length) { flow.date = ymd(d); break; }
-    }
+    const next = nextAvailableDate(ymd(addDays(parseYmd(flow.date), 1)));
+    if (next) flow.date = next;
     $("#flowMain").innerHTML = timeHTML();
     renderSummary();
     return;
@@ -876,6 +933,7 @@ function handleLogin(e) {
   store.save();
   $("#loginDlg").close();
   updateNavUser();
+startRotator();
   toast(`Welcome back. You're logged in as ${prettyMsisdn(form.dataset.msisdn)}.`);
 }
 
@@ -960,6 +1018,13 @@ document.addEventListener("click", e => {
   const treat = t.closest("[data-treatment]");
   if (treat) {
     filters.q = LIB[treat.dataset.treatment].n; filters.cat = ""; filters.area = "";
+    $("#q").value = filters.q; $("#area").value = "";
+    runSearch();
+    return;
+  }
+  const occ = t.closest("[data-occasion]");
+  if (occ) {
+    filters.q = occ.dataset.occasion; filters.cat = ""; filters.area = "";
     $("#q").value = filters.q; $("#area").value = "";
     runSearch();
     return;
@@ -1060,7 +1125,9 @@ $$("dialog.modal").forEach(d => d.addEventListener("click", e => { if (e.target 
 $("#year").textContent = new Date().getFullYear();
 fillAreaSelects();
 renderChips();
+renderMarquee();
 renderRails();
+renderOccasions();
 renderTrending();
 renderReviews();
 renderAreas();
