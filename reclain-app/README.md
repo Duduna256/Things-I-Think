@@ -1,8 +1,8 @@
-# Reclain
+# reClain Services
 
-Book Kampala's best-rated braiders, barbers, massage therapists, laundry, cleaners, security
-and repair pros. Pay with MTN MoMo, Airtel Money, card or cash. Businesses run their bookings,
-menu and team from one dashboard. (Said "reclaim".)
+Everyday services in Kampala, booked in seconds: home cleaning, laundry, repairs, hair and
+barbers, massage, nails, licensed security and more. Pay with MTN MoMo, Airtel Money, card or
+cash. Businesses run their bookings, menu and team from one dashboard. (Said "reclaim".)
 
 ## Start here
 

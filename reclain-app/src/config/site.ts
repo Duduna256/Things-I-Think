@@ -1,12 +1,14 @@
-// Business settings for Reclain. Change a value here and the whole app follows.
+// Business settings for reClain Services. Change a value here and the whole app follows.
 
 export const site = {
-  name: "Reclain",
-  // Said "reclaim". Used in the footer and SMS sign-offs.
+  name: "reClain Services",
+  // The short name: the wordmark in the nav and footer, and SMS sign-offs.
+  shortName: "reClain",
+  // Said "reclaim".
   pronounced: "reclaim",
-  tagline: "Good hair days, booked.",
+  tagline: "Your to-do list, sorted.",
   description:
-    "Book Kampala's best-rated braiders, barbers, massage therapists, laundry, cleaning and security pros. Pay with MTN MoMo, Airtel Money or card.",
+    "Book Kampala's best-rated pros for hair, laundry, cleaning, repairs, massage and licensed security. Pay with MTN MoMo, Airtel Money or card.",
   domain: "reclain.com",
   url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
   email: "hello@reclain.com",

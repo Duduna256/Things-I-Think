@@ -53,7 +53,7 @@ export function NavMenu({ signedIn, name, ownsBusiness, isAdmin }: { signedIn: b
         ) : (
           <Link className="menu-item" href="/login" onClick={close}>Log in or sign up</Link>
         )}
-        <Link className="menu-item" href="/search" onClick={close}>Find a venue</Link>
+        <Link className="menu-item" href="/search" onClick={close}>Find a service</Link>
         <Link className="menu-item" href="/#faq" onClick={close}>Help and support</Link>
         <p className="menu-label">For business</p>
         {ownsBusiness ? (
@@ -61,7 +61,7 @@ export function NavMenu({ signedIn, name, ownsBusiness, isAdmin }: { signedIn: b
         ) : (
           <Link className="menu-item" href="/business/onboarding" onClick={close}>List your business</Link>
         )}
-        <Link className="menu-item" href="/for-business" onClick={close}>How Reclain works for pros</Link>
+        <Link className="menu-item" href="/for-business" onClick={close}>How reClain works for pros</Link>
         {isAdmin && <Link className="menu-item" href="/admin" onClick={close}>Admin</Link>}
         {signedIn && (
           <form action={signOut}>

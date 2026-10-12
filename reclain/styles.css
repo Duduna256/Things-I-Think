@@ -123,7 +123,7 @@ img { max-width: 100%; }
 .hero { padding-block: clamp(56px, 10vw, 150px) clamp(48px, 8vw, 120px); }
 .hero h1 { font-size: clamp(2.6rem, 6.6vw, 5.4rem); font-weight: 800; letter-spacing: -.045em; line-height: 1; }
 .h1-line { display: block; }
-.rot-wrap { display: inline-block; position: relative; }
+.rot-wrap { display: inline-block; position: relative; white-space: nowrap; }
 .hero h1 em {
   display: inline-block; font-family: var(--serif); font-style: italic; font-weight: 400; letter-spacing: -.01em;
   color: var(--jac); padding-inline: .02em .08em; font-size: 1.12em; line-height: .9;
@@ -420,9 +420,9 @@ img { max-width: 100%; }
 .footer a:not(.brand), .foot-link { display: block; background: none; border: 0; padding: 5px 0; text-align: left; color: var(--ink-2); text-decoration: none; cursor: pointer; }
 .footer a:not(.brand):hover, .foot-link:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
 .foot-giant {
-  font-family: var(--display); font-weight: 800; font-size: clamp(5rem, 24vw, 22rem); letter-spacing: -.07em; line-height: .78;
-  text-align: center; color: var(--white); text-shadow: 0 1px 0 var(--line); margin-top: 40px; user-select: none; overflow: hidden; padding-bottom: .04em;
-  -webkit-text-stroke: 1px var(--line);
+  font-family: var(--display); font-weight: 800; font-size: min(17vw, 230px); letter-spacing: -.06em; line-height: .8;
+  padding-top: .06em; max-width: 1280px; margin: 40px auto 0; text-align: center; overflow: hidden; user-select: none;
+  color: transparent; background: linear-gradient(180deg, var(--lilac) 0%, var(--soft) 90%); -webkit-background-clip: text; background-clip: text;
 }
 .foot-bottom { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 0; padding-top: 20px; border-top: 1px solid var(--line); color: var(--muted); font-size: .9rem; }
 

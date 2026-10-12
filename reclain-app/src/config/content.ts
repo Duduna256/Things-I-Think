@@ -2,26 +2,30 @@
 // Icons are names from src/components/Icon.tsx.
 
 export const hero = {
-  // "Good ___ days, booked." The first word shows on load, then they rotate.
-  rotatingWords: ["hair", "beard", "nail", "massage", "laundry", "kwanjula"],
-  sub: "Braids, fades, massages, laundry and the odd security escort, from Kampala's best-rated pros. No WhatsApp back-and-forth required.",
-  searchPlaceholder: "All treatments and venues",
+  // The headline reads: "Your <word>, sorted." The first word shows on load, then they rotate.
+  before: "Your",
+  rotatingWords: ["hair", "laundry", "deep clean", "plumbing", "massage", "security", "Saturday"],
+  after: "sorted.",
+  // What screen readers and search engines get instead of the rotating word.
+  plain: "Your to-do list, sorted.",
+  sub: "Hair, laundry, cleaning, repairs, massage and licensed security from Kampala's best-rated pros. Book in seconds, pay by MoMo, skip the WhatsApp back-and-forth.",
+  searchPlaceholder: "All services and businesses",
 };
 
 // The scrolling band under the hero. Every third item is set in italics.
 export const marquee = [
-  "Knotless braids",
-  "Skin fades",
-  "Hot stone massage",
-  "Kwanjula looks",
-  "Wash & fold",
-  "Silk press",
-  "Airport security pickups",
-  "Gel manicures",
   "Deep cleans",
-  "Locs retwists",
-  "Boda-proof blow-dries",
-  "Bridal glam",
+  "Wash & fold",
+  "Plumbing call-outs",
+  "Skin fades",
+  "Solar system checks",
+  "Knotless braids",
+  "Airport security pickups",
+  "Sofa steam cleans",
+  "Hot stone massage",
+  "TV wall mounting",
+  "Gel manicures",
+  "Kwanjula looks",
 ];
 
 // "Got something on?" tiles. `q` is what gets searched when a tile is tapped.
@@ -50,25 +54,25 @@ export const trust = {
   title: "Safe hands, verified.",
   note: "Booking a stranger is weird. We make it less weird.",
   cards: [
-    { icon: "money", title: "Money held until the job's done", body: "MoMo and Airtel Money payments wait with Reclain and reach the pro only after your service." },
+    { icon: "money", title: "Money held until the job's done", body: "MoMo and Airtel Money payments wait with reClain and reach the pro only after your service." },
     { icon: "shield", title: "Guards from licensed firms only", body: "Security bookings come from registered companies, with the paperwork to prove it." },
     { icon: "chat", title: "Reviews from real bookings", body: "Only people who actually booked can leave a review. No cousins." },
     { icon: "clock", title: "Plans change. We get it.", body: "Cancel or move a booking for free up to 4 hours before." },
   ],
   stats: [
-    { value: "ID-checked", label: "Every pro on Reclain passes an ID check and a skills review before their first booking." },
+    { value: "ID-checked", label: "Every pro on reClain passes an ID check and a skills review before their first booking." },
     { value: "UGX 0", label: "to sign up, for customers and for businesses. We earn a small fee only when a booking is done." },
   ],
 };
 
 export const appBand = {
-  eyebrow: "The Reclain app",
+  eyebrow: "The reClain app",
   title: "Your next appointment lives in your pocket",
   body: "Rebook your braider in two taps, get a reminder the night before, and pay with one MoMo prompt. Like a personal assistant who remembers your usual length.",
 };
 
 export const businessBand = {
-  eyebrow: "Reclain for business",
+  eyebrow: "reClain for business",
   titleStart: "Run your salon,",
   titleEm: "not",
   titleEnd: "your WhatsApp.",
@@ -85,7 +89,7 @@ export const businessBand = {
 export const faq = [
   {
     q: "How does paying with MTN MoMo or Airtel Money work?",
-    a: "Pick MTN MoMo or Airtel Money when you book and you'll get a prompt on your phone. Enter your PIN and the money is held by Reclain until your service is done. If your pro doesn't show, you get it all back.",
+    a: "Pick MTN MoMo or Airtel Money when you book and you'll get a prompt on your phone. Enter your PIN and the money is held by reClain until your service is done. If your pro doesn't show, you get it all back.",
   },
   {
     q: "Can my stylist come to my home?",

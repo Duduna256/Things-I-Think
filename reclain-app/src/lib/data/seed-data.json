@@ -1,58 +1,58 @@
 {
   "categories": [
     {
-      "id": "hair",
-      "name": "Hair salons",
-      "icon": "scissors",
+      "id": "cleaning",
+      "name": "Home cleaning",
+      "icon": "sparkle",
       "isNew": false,
       "sort": 0
-    },
-    {
-      "id": "braids",
-      "name": "Braids & locs",
-      "icon": "braid",
-      "isNew": false,
-      "sort": 1
-    },
-    {
-      "id": "barber",
-      "name": "Barbers",
-      "icon": "comb",
-      "isNew": false,
-      "sort": 2
-    },
-    {
-      "id": "massage",
-      "name": "Massage & spa",
-      "icon": "stones",
-      "isNew": true,
-      "sort": 3
-    },
-    {
-      "id": "nails",
-      "name": "Nails & beauty",
-      "icon": "polish",
-      "isNew": false,
-      "sort": 4
-    },
-    {
-      "id": "bridal",
-      "name": "Bridal & events",
-      "icon": "ring",
-      "isNew": false,
-      "sort": 5
     },
     {
       "id": "laundry",
       "name": "Laundry",
       "icon": "shirt",
       "isNew": true,
+      "sort": 1
+    },
+    {
+      "id": "repairs",
+      "name": "Repairs",
+      "icon": "wrench",
+      "isNew": false,
+      "sort": 2
+    },
+    {
+      "id": "hair",
+      "name": "Hair salons",
+      "icon": "scissors",
+      "isNew": false,
+      "sort": 3
+    },
+    {
+      "id": "barber",
+      "name": "Barbers",
+      "icon": "comb",
+      "isNew": false,
+      "sort": 4
+    },
+    {
+      "id": "braids",
+      "name": "Braids & locs",
+      "icon": "braid",
+      "isNew": false,
+      "sort": 5
+    },
+    {
+      "id": "massage",
+      "name": "Massage & spa",
+      "icon": "stones",
+      "isNew": true,
       "sort": 6
     },
     {
-      "id": "cleaning",
-      "name": "Home cleaning",
-      "icon": "sparkle",
+      "id": "nails",
+      "name": "Nails & beauty",
+      "icon": "polish",
       "isNew": false,
       "sort": 7
     },
@@ -64,9 +64,9 @@
       "sort": 8
     },
     {
-      "id": "repairs",
-      "name": "Repairs",
-      "icon": "wrench",
+      "id": "bridal",
+      "name": "Bridal & events",
+      "icon": "ring",
       "isNew": false,
       "sort": 9
     }

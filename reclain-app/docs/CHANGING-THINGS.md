@@ -1,4 +1,4 @@
-# Changing things in Reclain
+# Changing things in reClain Services
 
 Most changes are one sentence to Claude Code, or one line in a config file. Ask Claude Code
 to "read docs/ARCHITECTURE.md first", then describe the change in plain words. Before

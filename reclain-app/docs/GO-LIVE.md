@@ -1,4 +1,4 @@
-# Going live with Reclain
+# Going live with reClain Services
 
 Do these in order. Each step says where to click. Budget an afternoon; most of it is waiting
 for accounts to be approved.
@@ -44,7 +44,7 @@ editor, then `supabase/seed.sql` for sample venues (or skip it for an empty mark
 ## 2. Payments: Flutterwave (MTN MoMo, Airtel Money, card)
 
 Flutterwave covers Uganda mobile money and cards in one account. Card numbers and PINs never
-touch Reclain: customers approve on Flutterwave's page or their phone.
+touch reClain: customers approve on Flutterwave's page or their phone.
 
 1. Sign up at flutterwave.com and stay in **Test mode** (the toggle at the top). Play money only.
 2. **Settings → API Keys**: copy the test secret key → `FLW_SECRET_KEY`.

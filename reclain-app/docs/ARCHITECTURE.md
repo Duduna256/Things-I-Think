@@ -1,4 +1,4 @@
-# How Reclain is put together
+# How reClain Services is put together
 
 Read `PLAN.md` first for the what and why. This page is the map of the code.
 

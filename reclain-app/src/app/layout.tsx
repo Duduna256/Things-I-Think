@@ -12,7 +12,7 @@ const serif = Instrument_Serif({ subsets: ["latin"], weight: "400", style: ["ita
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
-  title: { default: `${site.name}: book hair, beauty and home services in ${site.city}`, template: `%s · ${site.name}` },
+  title: { default: `${site.name}: trusted services in ${site.city}, booked`, template: `%s · ${site.shortName}` },
   description: site.description,
   openGraph: { title: site.name, description: site.description, siteName: site.name, type: "website" },
 };

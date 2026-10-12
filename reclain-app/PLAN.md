@@ -1,6 +1,6 @@
-# Reclain: the plan
+# reClain Services: the plan
 
-Reclain (said "reclaim") is a booking app for Kampala. Customers find a hair stylist,
+reClain Services (said "reclaim") is a booking app for everyday services in Kampala. Customers find a hair stylist,
 barber, braider, massage therapist, laundry, cleaner, security escort or repair pro, pick
 a time, and pay with MTN MoMo, Airtel Money, card or cash. Businesses (the "service
 providers") manage their menu, team, opening hours and bookings from one dashboard.
@@ -9,7 +9,7 @@ This file is the contract. If something here is wrong, change this file first, t
 
 ## Who it is for
 
-| Person | What they do in Reclain |
+| Person | What they do in reClain |
 |---|---|
 | Customer | Searches, books, pays, gets SMS confirmations and reminders, cancels, reviews |
 | Provider (business owner) | Creates a business, lists services and staff, sets hours, sees and manages every booking |
@@ -73,7 +73,7 @@ Mobile money first. Card is optional. Cash can be switched on per business.
 | Method | How it works |
 |---|---|
 | MTN MoMo / Airtel Money | Flutterwave checkout for Uganda mobile money. The customer approves with their PIN |
-| Card | Same Flutterwave checkout. Card numbers never touch Reclain |
+| Card | Same Flutterwave checkout. Card numbers never touch reClain |
 | Cash | Booking is confirmed straight away; the provider marks it paid in the dashboard |
 
 `PAYMENT_PROVIDER=mock` (the default) needs no account: a "Simulate payment" button marks a

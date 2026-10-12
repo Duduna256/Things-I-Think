@@ -1,4 +1,4 @@
-// Reclain front end. Venues, services and reviews below are sample content:
+// reClain front end. Venues, services and reviews below are sample content:
 // replace them with data from your backend before launch.
 "use strict";
 
@@ -13,22 +13,21 @@ const REGIONS = {
 const ALL_AREAS = Object.values(REGIONS).flat();
 
 const CATS = [
+  { id: "cleaning", name: "Home cleaning", ic: "sparkle" },
+  { id: "laundry", name: "Laundry", ic: "shirt", isNew: true },
+  { id: "repairs", name: "Repairs", ic: "wrench" },
   { id: "hair", name: "Hair salons", ic: "scissors" },
-  { id: "braids", name: "Braids & locs", ic: "braid" },
   { id: "barber", name: "Barbers", ic: "comb" },
+  { id: "braids", name: "Braids & locs", ic: "braid" },
   { id: "massage", name: "Massage & spa", ic: "stones", isNew: true },
   { id: "nails", name: "Nails & beauty", ic: "polish" },
+  { id: "escort", name: "Security", ic: "shield", isNew: true },
   { id: "bridal", name: "Bridal & events", ic: "ring" },
-  { id: "laundry", name: "Laundry", ic: "shirt", isNew: true },
-  { id: "cleaning", name: "Home cleaning", ic: "sparkle" },
-  { id: "escort", name: "Security & escort", ic: "shield", isNew: true },
-  { id: "repairs", name: "Repairs", ic: "wrench" },
 ];
 
-const ROTATING = ["hair", "beard", "nail", "massage", "laundry", "kwanjula"];
+const ROTATING = ["hair", "laundry", "deep clean", "plumbing", "massage", "security", "Saturday"];
 
-const MARQUEE = ["Knotless braids", "Skin fades", "Hot stone massage", "Kwanjula looks", "Wash & fold", "Silk press",
-  "Airport escorts", "Gel manicures", "Deep cleans", "Locs retwists", "Socks returned in pairs", "Bridal glam"];
+const MARQUEE = ["Deep cleans", "Wash & fold", "Plumbing call-outs", "Skin fades", "Solar system checks", "Knotless braids", "Airport security pickups", "Sofa steam cleans", "Hot stone massage", "TV wall mounting", "Gel manicures", "Kwanjula looks"];
 
 const OCCASIONS = [
   { title: "Kwanjula this weekend", sub: "Hair and make-up built to outlast the speeches, the dancing and your aunties' hugs.", q: "kwanjula", tone: "jac", ic: "ring", big: true },
@@ -337,11 +336,12 @@ function renderMarquee() {
   $("#marquee").innerHTML = run + run;
 }
 
+let rotTimer = null;
 function startRotator() {
   const el = $("#rot");
-  if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if (rotTimer || !el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   let i = 0;
-  setInterval(() => {
+  rotTimer = setInterval(() => {
     el.classList.remove("swap-in");
     el.classList.add("swap-out");
     setTimeout(() => {
@@ -411,7 +411,7 @@ function runSearch({ scroll = true } = {}) {
   $("#resultsGrid").innerHTML = list.length
     ? list.map(venueCard).join("")
     : `<div class="empty" style="grid-column:1/-1"><b>Even our search has limits.</b>
-        <p>Try “braids”, “fade”, “massage” or “laundry”, or widen the area. Or tell your favourite stylist to join Reclain.</p>
+        <p>Try “braids”, “fade”, “massage” or “laundry”, or widen the area. Or tell your favourite stylist to join reClain.</p>
         <button type="button" class="btn btn-ghost" id="emptyClear">Show everything</button></div>`;
   section.hidden = false;
   if (scroll) section.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -677,7 +677,7 @@ function confirmHTML() {
         <small class="hint" id="momoHint">Leave blank to use the phone number above.</small>
       </label>
       <div class="policy full"><b>Your money, held safely</b>
-        <span>Mobile money payments are held by Reclain and released to ${esc(v.name)} after your service. Free cancellation until 4 hours before.</span></div>
+        <span>Mobile money payments are held by reClain and released to ${esc(v.name)} after your service. Free cancellation until 4 hours before.</span></div>
       <p class="form-err full" id="payErr" role="alert"></p>
     </form>`;
 }
@@ -933,7 +933,6 @@ function handleLogin(e) {
   store.save();
   $("#loginDlg").close();
   updateNavUser();
-startRotator();
   toast(`Welcome back. You're logged in as ${prettyMsisdn(form.dataset.msisdn)}.`);
 }
 
@@ -1132,3 +1131,4 @@ renderTrending();
 renderReviews();
 renderAreas();
 updateNavUser();
+startRotator();
