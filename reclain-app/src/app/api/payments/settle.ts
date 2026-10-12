@@ -7,6 +7,7 @@
 
 import { z } from "zod";
 import type { Booking, Payment, PaymentStatus } from "../../../lib/types";
+import type { PaymentResultApplied } from "../../../lib/data/source";
 import type { VerifiedPayment } from "../../../lib/payments/types";
 
 // Our payment references look like "RCL-AB12CD-1a2b3c4d" (see newTxRef in lib/payments).
@@ -22,11 +23,10 @@ export interface SettleDeps {
   getBooking(id: string): Promise<Booking | null>;
   // Ask the provider. null means it has no record of the payment (checkout closed before paying).
   verify(payment: Payment): Promise<VerifiedPayment | null>;
-  apply(input: { txRef: string; status: PaymentStatus; providerRef: string | null; amount: number; raw: unknown }): Promise<Booking>;
+  // Records the result. becamePaid is true for exactly one call per booking (the database
+  // decides under a row lock), so a webhook and a redirect arriving together text once.
+  apply(input: { txRef: string; status: PaymentStatus; providerRef: string | null; amount: number; raw: unknown }): Promise<PaymentResultApplied>;
   notifyConfirmed(booking: Booking): Promise<void> | void;
-  // Returns true the first time it sees a key. Stops a webhook and a redirect that arrive
-  // together from sending two "You're booked" texts.
-  claim?(key: string): boolean;
   log?(message: string, detail?: unknown): void;
 }
 
@@ -75,7 +75,7 @@ export async function settle(txRef: string, deps: SettleDeps, opts: { provider?:
     log(`Payment ${txRef}: booking ${before.ref} was already paid by another attempt. Refund one of them.`);
   }
 
-  const after = await deps.apply({
+  const { booking: after, becamePaid: justPaid } = await deps.apply({
     txRef,
     status: verified.status,
     providerRef: verified.providerRef ?? payment.providerRef,
@@ -83,8 +83,7 @@ export async function settle(txRef: string, deps: SettleDeps, opts: { provider?:
     raw: verified.raw,
   });
 
-  const justPaid = verified.status === "paid" && before.paymentStatus !== "paid" && after.paymentStatus === "paid" && after.status === "confirmed";
-  if (justPaid && (deps.claim?.(`paid:${txRef}`) ?? true)) {
+  if (justPaid) {
     try {
       await deps.notifyConfirmed(after);
     } catch (e) {
@@ -110,17 +109,4 @@ export function bookingPathFor(outcome: SettleOutcome): string {
     case "pending":
       return `${base}?pending=1`;
   }
-}
-
-// Remembers keys for a while, so claim() works across a webhook and a redirect landing on the
-// same server. It can't see other servers, so it narrows the window rather than closing it.
-export function createClaims(ttlMs = 15 * 60_000, now: () => number = Date.now) {
-  const seen = new Map<string, number>();
-  return (key: string): boolean => {
-    const t = now();
-    for (const [k, at] of seen) if (t - at > ttlMs) seen.delete(k);
-    if (seen.has(key)) return false;
-    seen.set(key, t);
-    return true;
-  };
 }

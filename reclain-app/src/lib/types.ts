@@ -120,6 +120,9 @@ export interface BookingBusiness {
   phone: string | null;
 }
 
+// Who called a booking off. "expired" means an unpaid hold ran out.
+export type CancelledBy = "customer" | "venue" | "admin" | "expired";
+
 export interface Booking {
   id: string;
   ref: string;
@@ -143,6 +146,7 @@ export interface Booking {
   paymentStatus: PaymentStatus;
   expiresAt: string | null;
   reminderSentAt: string | null;
+  cancelledBy: CancelledBy | null; // set when status is cancelled
   createdAt: string;
   items: BookingItem[];
   business: BookingBusiness;

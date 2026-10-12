@@ -47,8 +47,7 @@ async function loadBooking(id: string): Promise<Booking | null> {
   }
 }
 
-function BannerBox({ banner, booking: b }: { banner: Banner; booking: Booking }) {
-  const reload = `/bookings/${b.id}`;
+function BannerBox({ banner, booking: b, checkHref }: { banner: Banner; booking: Booking; checkHref: string }) {
   const method = METHOD_LABEL[b.paymentMethod];
   switch (banner) {
     case "booked":
@@ -94,8 +93,8 @@ function BannerBox({ banner, booking: b }: { banner: Banner; booking: Booking })
               {b.expiresAt && ` We're holding your slot until ${formatTime(b.expiresAt)}.`}
             </p>
             <div className="bkd-banner-actions">
-              {/* A plain link on purpose: it reloads the page to fetch the latest payment status. */}
-              <a className="btn btn-ghost btn-sm" href={reload}>
+              {/* A plain link on purpose: it asks the payment provider, then comes back here. */}
+              <a className="btn btn-ghost btn-sm" href={checkHref}>
                 Check again
               </a>
               <PayNowButton bookingId={b.id} />
@@ -191,6 +190,13 @@ export default async function BookingPage({ params, searchParams }: Props) {
   const bookAgain = `/book/${b.business.slug}${
     b.items.some(i => i.serviceId) ? `?services=${encodeURIComponent(b.items.flatMap(i => (i.serviceId ? [i.serviceId] : [])).join(","))}` : ""
   }`;
+  // "Check again" asks the provider about the latest open payment (the webhook may be slow or,
+  // in local development, not set up at all), then comes back here.
+  const openPayment =
+    banner === "pending_momo" || banner === "pending_card"
+      ? (await data.server.listPaymentsForBooking(b.id)).find(p => p.status === "pending")
+      : undefined;
+  const checkHref = openPayment ? `/api/payments/return?tx_ref=${encodeURIComponent(openPayment.txRef)}` : `/bookings/${b.id}`;
   const showPay = canPayAgain(b, now) && banner !== "pending_momo" && banner !== "pending_card" && banner !== "failed";
   const cancellable = canCancel(b, now);
   const hours = site.freeCancellationHours;
@@ -202,7 +208,7 @@ export default async function BookingPage({ params, searchParams }: Props) {
         My bookings
       </Link>
 
-      <BannerBox banner={banner} booking={b} />
+      <BannerBox banner={banner} booking={b} checkHref={checkHref} />
 
       <header className="bkd-head">
         <Cover palette={b.business.palette} word={b.business.coverWord} className="bkd-cover" />

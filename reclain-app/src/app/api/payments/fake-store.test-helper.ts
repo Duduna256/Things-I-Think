@@ -1,5 +1,6 @@
 // A tiny in-memory payments store for the settle() and webhook tests. apply() follows
-// apply_payment_result() in supabase/migrations: paid is final, a paid amount must match, and a
+// record_payment_result() in supabase/migrations: paid is final, a paid amount must match, a
+// failed attempt never undoes a paid one, paying never revives a booking someone cancelled, and a
 // late payment for a slot someone else took leaves the booking cancelled.
 // (Named *.test-helper.ts so the test runner's *.test.ts glob doesn't run it on its own.)
 
@@ -31,6 +32,7 @@ export function makeBooking(over: Partial<Booking> = {}): Booking {
     paymentStatus: "pending",
     expiresAt: "2030-01-01T00:30:00.000Z",
     reminderSentAt: null,
+    cancelledBy: null,
     createdAt: "2030-01-01T00:00:00.000Z",
     items: [{ id: "i1", serviceId: "s1", name: "Knotless braids", price: 120000, durationMin: 330 }],
     business: {
@@ -83,7 +85,7 @@ export const answerWith =
   (status: PaymentStatus, over: Partial<VerifiedPayment> = {}) =>
   (p: Payment): VerifiedPayment => ({ txRef: p.txRef, status, amount: p.amount, providerRef: "4975632", raw: {}, ...over });
 
-export function fakeStore(opts: { booking?: Partial<Booking>; payments?: Partial<Payment>[]; claim?: (key: string) => boolean } = {}): FakeStore {
+export function fakeStore(opts: { booking?: Partial<Booking>; payments?: Partial<Payment>[] } = {}): FakeStore {
   const booking = makeBooking(opts.booking);
   const list = (opts.payments ?? [{}]).map(makePayment);
   const store: FakeStore = {
@@ -119,20 +121,22 @@ export function fakeStore(opts: { booking?: Partial<Booking>; payments?: Partial
       if (!p) throw new Error("Unknown payment reference.");
       if (input.status === "paid" && input.amount !== p.amount) throw new Error("Paid amount does not match the booking.");
       const b = store.bookings.get(p.bookingId)!;
-      if (p.status === "paid") return { ...b };
+      if (p.status === "paid") return { booking: { ...b }, becamePaid: false };
+      const wasPaid = b.paymentStatus === "paid";
       p.status = input.status;
       p.providerRef = input.providerRef ?? p.providerRef;
-      b.paymentStatus = input.status;
-      if (input.status === "paid" && (b.status === "pending_payment" || b.status === "cancelled") && !store.slotTaken) {
+      if (!wasPaid) b.paymentStatus = input.status;
+      const revivable = b.status === "pending_payment" || (b.status === "cancelled" && b.cancelledBy === "expired");
+      if (input.status === "paid" && revivable && !store.slotTaken) {
         b.status = "confirmed";
         b.expiresAt = null;
+        if (b.cancelledBy === "expired") b.cancelledBy = null;
       }
-      return { ...b };
+      return { booking: { ...b }, becamePaid: input.status === "paid" && !wasPaid && b.status === "confirmed" };
     },
     async notifyConfirmed(b) {
       store.calls.notified.push(b.id);
     },
-    claim: opts.claim,
     log: () => undefined,
   };
   return store;

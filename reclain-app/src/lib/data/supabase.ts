@@ -3,6 +3,7 @@ import { createClient } from "../supabase/server";
 import { createAdminClient } from "../supabase/admin";
 import { getSessionUser } from "../auth";
 import { slugify } from "../format";
+import { features } from "../../config/features";
 import { DataError, fromPostgrest } from "./errors";
 import { applyFilter } from "./search";
 import type { DataSource } from "./source";
@@ -131,6 +132,7 @@ function mapBooking(r: Row): Booking {
     paymentStatus: r.payment_status,
     expiresAt: r.expires_at,
     reminderSentAt: r.reminder_sent_at,
+    cancelledBy: r.cancelled_by ?? null,
     createdAt: r.created_at,
     items: ((r.booking_items ?? []) as Row[]).map(i => ({ id: i.id, serviceId: i.service_id, name: i.name, price: i.price, durationMin: i.duration_min })),
     business: {
@@ -242,6 +244,14 @@ export const supabaseSource: DataSource = {
     if (opts.limit) q = q.limit(opts.limit);
     const rows = await must(q);
     return rows.map((r: Row): ReviewWithBusiness => ({ ...mapReview(r), business: r.businesses }));
+  },
+
+  async listServiceIndex() {
+    const sb = await createClient();
+    const rows = await must(
+      sb.from("services").select("business_id, name, price, businesses!inner(status)").eq("active", true).eq("businesses.status", "published"),
+    );
+    return (rows as Row[]).map(r => ({ businessId: r.business_id, name: r.name, price: r.price }));
   },
 
   async getBusySlots(businessId, fromIso, toIso) {
@@ -389,7 +399,10 @@ export const supabaseSource: DataSource = {
   async submitBusinessForReview(id) {
     await uid();
     const sb = await createClient();
-    const row = await must(sb.from("businesses").update({ status: "pending" }).eq("id", id).in("status", ["draft"]).select().single(), "Only a draft can be sent for review.");
+    // With approval switched off, owners publish straight away (the database allows it when
+    // app_settings.require_business_approval is false too).
+    const status = features.businessApproval ? "pending" : "published";
+    const row = await must(sb.from("businesses").update({ status }).eq("id", id).in("status", ["draft"]).select().single(), "Only a draft can be sent for review.");
     return mapBusiness(row);
   },
 
@@ -523,18 +536,20 @@ export const supabaseSource: DataSource = {
     },
 
     async applyPaymentResult(input) {
-      const row = await must(
+      const row = (await must(
         createAdminClient()
-          .rpc("apply_payment_result", {
+          .rpc("record_payment_result", {
             p_tx_ref: input.txRef,
             p_status: input.status,
-            p_provider_ref: input.providerRef ?? "",
+            p_provider_ref: input.providerRef ?? null,
             p_amount: input.amount,
             p_raw: (input.raw ?? {}) as object,
           })
           .single(),
-      );
-      return (await this.getBooking((row as Row).id))!;
+      )) as Row;
+      const booking = await this.getBooking(row.booking_id);
+      if (!booking) throw new DataError("not_found", "Booking not found.");
+      return { booking, becamePaid: row.became_paid === true };
     },
 
     async listRemindersDue(fromIso, toIso) {
@@ -548,6 +563,15 @@ export const supabaseSource: DataSource = {
           .lt("starts_at", toIso),
       );
       return rows.map(mapBooking);
+    },
+
+    async countBookingsSince(fromIso) {
+      const { count, error } = await createAdminClient()
+        .from("bookings")
+        .select("id", { count: "exact", head: true })
+        .gte("created_at", fromIso);
+      if (error) throw fromPostgrest(error);
+      return count ?? 0;
     },
 
     async markReminderSent(bookingId) {

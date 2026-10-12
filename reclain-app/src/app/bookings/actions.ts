@@ -7,7 +7,7 @@ import { features } from "@/config/features";
 import { getSessionUser } from "@/lib/auth";
 import { data, isDataError } from "@/lib/data";
 import { notifyBookingCancelled } from "@/lib/notify";
-import { startPayment } from "@/lib/payments";
+import { payAgain } from "@/app/api/payments/server";
 import { NETWORKS, networkOf } from "@/lib/phone";
 import type { Booking, SessionUser } from "@/lib/types";
 import { canCancel, canPayAgain, canReview } from "@/components/booking/labels";
@@ -73,7 +73,8 @@ export async function payAgainAction(_prev: BookingPageResult, formData: FormDat
         };
       }
     }
-    url = await startPayment(booking, { method, msisdn, email: user.email });
+    // Goes back to an open payment, or to the booking if one already went through.
+    url = await payAgain(booking, { method, msisdn, email: user.email });
   } catch (e) {
     if (isDataError(e)) return { error: e.message };
     console.error("payAgain failed", e);

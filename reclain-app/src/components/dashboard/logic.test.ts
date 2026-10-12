@@ -53,6 +53,7 @@ function booking(over: Partial<Booking> = {}): Booking {
     paymentStatus: "unpaid",
     expiresAt: null,
     reminderSentAt: null,
+    cancelledBy: null,
     createdAt: "2026-10-10T07:00:00.000Z",
     items: [],
     business: { id: "biz-1", slug: "x", name: "X", areaId: "a", categoryId: "c", coverWord: "x", palette: ["#000", "#111", "#222"], address: "", phone: null },

@@ -4,14 +4,15 @@ import "server-only";
 // Data resets when the server restarts. Nothing here is used once Supabase keys are set.
 
 import seed from "./seed-data.json";
-import { getSessionUser, DEMO_USERS } from "../auth";
+import { getSessionUser, DEMO_USERS, setDemoProfile } from "../auth";
 import { slugify } from "../format";
 import { site } from "../../config/site";
+import { features } from "../../config/features";
 import { latestStart, priceBooking, effectiveLocation } from "../booking/rules";
-import { localParts, parseHHMM } from "../time";
+import { addDays, localParts, parseHHMM, toInstant, todayLocal } from "../time";
 import { DataError } from "./errors";
 import { applyFilter } from "./search";
-import type { DataSource } from "./source";
+import type { DataSource, ServiceIndexEntry } from "./source";
 import type {
   Area,
   Booking,
@@ -30,6 +31,9 @@ import type {
 interface StoredBooking extends Omit<Booking, "business" | "staffName" | "hasReview"> {
   cancelledAt: string | null;
 }
+
+// A slow checkout can run a little past the lead time; create_booking() allows the same grace.
+const GRACE_MIN = 15;
 
 interface Store {
   categories: Category[];
@@ -145,7 +149,76 @@ function buildStore(): Store {
     ratingCount: 0,
     sort: 99,
   });
+  addSampleBookings(s);
   return s;
+}
+
+// A few days of bookings at The Braid Republic, so the owner's dashboard has something in it
+// and Grace has a past booking to review. Times are around today in Kampala.
+function addSampleBookings(s: Store, now: Date = new Date()) {
+  const bizId = "biz-braid-republic";
+  const biz = s.businesses.find(b => b.id === bizId);
+  if (!biz) return;
+  const svc = (key: string) => s.services.find(x => x.id === `svc-braid-republic-${key}`);
+  const staff = (i: number) => `staff-braid-republic-${i}`;
+  const today = todayLocal(now);
+  type Plan = [day: number, start: string, pro: number, services: string[], who: string, phone: string, pay: Booking["paymentMethod"], extra?: Partial<StoredBooking>];
+  const plans: Plan[] = [
+    [-3, "09:00", 0, ["knotless"], "grace", "", "mtn"],
+    [-3, "10:00", 2, ["locs-retwist"], "Brian Ssekandi", "783445566", "cash"],
+    [-2, "08:30", 1, ["twists"], "Patience Akello", "704556677", "airtel"],
+    [-2, "14:00", 2, ["cornrows"], "Daniel Mugisha", "772334455", "cash", { status: "no_show" }],
+    [-1, "11:00", 0, ["boho"], "Sandra Namuli", "756112233", "card"],
+    [-1, "15:00", 1, ["wash-blow"], "Esther Atim", "701223344", "mtn", { status: "cancelled", cancelledBy: "customer" }],
+    [0, "08:00", 1, ["cornrows"], "Ruth Nabirye", "778990011", "cash"],
+    [0, "10:00", 0, ["knotless"], "Faith Kyomuhendo", "759334411", "mtn", { location: "home", address: "Plot 14, Kigoowa Road, Ntinda" }],
+    [0, "13:30", 2, ["starter-locs"], "Ivan Okello", "740778899", "cash", { notes: "First time with locs, a bit nervous." }],
+    [0, "16:00", 1, ["wash-blow", "cornrows"], "Martha Nalwoga", "752667788", "airtel"],
+    [1, "09:30", 2, ["locs-retwist"], "Joel Byaruhanga", "781556644", "card"],
+    [1, "12:00", 0, ["twists"], "Diana Kisakye", "703887766", "cash"],
+    [2, "10:00", 0, ["boho"], "grace", "", "cash", { notes: "Mid-back length, colour 1B please." }],
+    [3, "14:00", 1, ["knotless"], "Annet Nakimuli", "774112299", "mtn"],
+  ];
+  plans.forEach(([day, start, pro, keys, who, phone, pay, extra], i) => {
+    const services = keys.map(svc).filter((x): x is Service => !!x);
+    if (!services.length) return;
+    const date = addDays(today, day);
+    const location = extra?.location ?? "venue";
+    const price = priceBooking(biz, services, location);
+    const startAt = toInstant(date, parseHHMM(start));
+    const endAt = new Date(startAt.getTime() + price.blockMin * 60_000);
+    const isGrace = who === "grace";
+    const past = endAt.getTime() < now.getTime();
+    const status: BookingStatus = extra?.status ?? (past ? "completed" : "confirmed");
+    const paid = status === "completed" || (pay !== "cash" && status === "confirmed");
+    s.bookings.push({
+      id: `bk-sample-${i + 1}`,
+      ref: `RCL-S${String(i + 1).padStart(2, "0")}${["K", "M", "T", "Q"][i % 4]}X`,
+      businessId: bizId,
+      customerId: isGrace ? DEMO_USERS.customer.id : `demo-guest-${i + 1}`,
+      staffId: staff(pro),
+      startsAt: startAt.toISOString(),
+      endsAt: endAt.toISOString(),
+      location,
+      address: extra?.address ?? "",
+      notes: extra?.notes ?? "",
+      customerName: isGrace ? DEMO_USERS.customer.fullName! : who,
+      customerPhone: isGrace ? DEMO_USERS.customer.phone! : phone,
+      subtotal: price.subtotal,
+      homeFee: price.homeFee,
+      total: price.total,
+      currency: site.currency,
+      status,
+      paymentMethod: pay,
+      paymentStatus: status === "cancelled" ? (pay === "cash" ? "unpaid" : "refunded") : paid || (status === "no_show" && pay !== "cash") ? "paid" : "unpaid",
+      expiresAt: null,
+      reminderSentAt: null,
+      cancelledAt: status === "cancelled" ? new Date(startAt.getTime() - 86_400_000).toISOString() : null,
+      cancelledBy: status === "cancelled" ? (extra?.cancelledBy ?? "customer") : null,
+      createdAt: new Date(startAt.getTime() - 3 * 86_400_000).toISOString(),
+      items: services.map(x => ({ id: `item-sample-${i + 1}-${x.id}`, serviceId: x.id, name: x.name, price: x.price, durationMin: x.durationMin })),
+    });
+  });
 }
 
 // Keep one store across hot reloads in development.
@@ -203,6 +276,7 @@ function releaseExpired(businessId: string) {
     if (b.businessId === businessId && b.status === "pending_payment" && b.expiresAt && b.expiresAt < now()) {
       b.status = "cancelled";
       b.cancelledAt = now();
+      b.cancelledBy = "expired";
     }
   }
 }
@@ -244,6 +318,12 @@ export const demoSource: DataSource = {
       return { ...r, business: { slug: b.slug, name: b.name, palette: b.palette } };
     });
   },
+  async listServiceIndex() {
+    const published = new Set(db().businesses.filter(b => b.status === "published").map(b => b.id));
+    return db()
+      .services.filter(sv => sv.active && published.has(sv.businessId))
+      .map((sv): ServiceIndexEntry => ({ businessId: sv.businessId, name: sv.name, price: sv.price }));
+  },
   async getBusySlots(businessId, fromIso, toIso) {
     return db()
       .bookings.filter(b => b.businessId === businessId && holding(b) && b.startsAt < toIso && b.endsAt > fromIso)
@@ -260,6 +340,7 @@ export const demoSource: DataSource = {
   async updateMyProfile(patch) {
     const user = await me();
     db().profiles[user.id] = { fullName: patch.fullName.trim(), phone: patch.phone };
+    setDemoProfile(user.id, { fullName: patch.fullName.trim(), phone: patch.phone });
     return { ...user, fullName: patch.fullName.trim(), phone: patch.phone };
   },
 
@@ -285,6 +366,15 @@ export const demoSource: DataSource = {
     if (biz.closedDays.includes(ls.weekday)) throw new DataError("invalid", "The venue is closed that day.");
     if (ls.minutes < parseHHMM(biz.opensAt) || le.date !== ls.date || le.minutes > parseHHMM(biz.closesAt)) {
       throw new DataError("invalid", "That time is outside opening hours.");
+    }
+    if (start.getTime() < Date.now() + Math.max(site.minLeadMinutes - GRACE_MIN, 0) * 60_000) {
+      throw new DataError("invalid", "That time is too soon. Pick a later slot.");
+    }
+    if (ls.date >= addDays(todayLocal(), site.bookingWindowDays)) {
+      throw new DataError("invalid", `Pick a day in the next ${site.bookingWindowDays} days.`);
+    }
+    if (start.getUTCSeconds() !== 0 || start.getUTCMilliseconds() !== 0 || (ls.minutes - parseHHMM(biz.opensAt)) % site.slotStepMinutes !== 0) {
+      throw new DataError("invalid", "Pick one of the times shown.");
     }
     const cutoff = latestStart(services);
     if (cutoff !== null && ls.minutes > cutoff) throw new DataError("invalid", "One of those services has to start earlier in the day.");
@@ -328,6 +418,7 @@ export const demoSource: DataSource = {
       expiresAt: cash ? null : new Date(Date.now() + site.pendingPaymentMinutes * 60_000).toISOString(),
       reminderSentAt: null,
       cancelledAt: null,
+      cancelledBy: null,
       createdAt: now(),
       items: services.map(s => ({ id: newId("item"), serviceId: s.id, name: s.name, price: s.price, durationMin: s.durationMin })),
     };
@@ -351,10 +442,16 @@ export const demoSource: DataSource = {
   async cancelBooking(id) {
     const user = await me();
     const b = findBooking(id);
-    if (b.customerId !== user.id && !owns(user, b.businessId)) throw new DataError("not_found", "Booking not found.");
+    const isOwner = db().businesses.some(x => x.id === b.businessId && x.ownerId === user.id);
+    const by = isOwner ? "venue" : user.isAdmin ? "admin" : b.customerId === user.id ? "customer" : null;
+    if (!by) throw new DataError("not_found", "Booking not found.");
     if (b.status !== "pending_payment" && b.status !== "confirmed") throw new DataError("invalid", "This booking can no longer be cancelled.");
+    if (by === "customer" && b.startsAt <= now()) {
+      throw new DataError("invalid", "This booking has already started. Call the venue if something is wrong.");
+    }
     b.status = "cancelled";
     b.cancelledAt = now();
+    b.cancelledBy = by;
     return hydrate(b);
   },
   async createReview(input) {
@@ -444,7 +541,8 @@ export const demoSource: DataSource = {
     const user = await me();
     const b = db().businesses.find(x => x.id === id && x.ownerId === user.id);
     if (!b || b.status !== "draft") throw new DataError("invalid", "Only a draft can be sent for review.");
-    b.status = "pending";
+    // With approval switched off, owners publish straight away.
+    b.status = features.businessApproval ? "pending" : "published";
     return b;
   },
   async upsertService(businessId, input) {
@@ -526,7 +624,10 @@ export const demoSource: DataSource = {
     if (closed.includes(b.status) && status !== b.status) throw new DataError("invalid", "This booking is already closed.");
     if (status === "confirmed" && b.status !== "pending_payment") throw new DataError("invalid", "Only an unpaid booking can be confirmed.");
     b.status = status;
-    if (status === "cancelled") b.cancelledAt = now();
+    if (status === "cancelled") {
+      b.cancelledAt = now();
+      b.cancelledBy = db().businesses.some(x => x.id === b.businessId && x.ownerId === user.id) ? "venue" : "admin";
+    }
     if (status === "confirmed") b.expiresAt = null;
     return hydrate(b);
   },
@@ -576,30 +677,43 @@ export const demoSource: DataSource = {
     async listPaymentsForBooking(bookingId) {
       return db().payments.filter(p => p.bookingId === bookingId).reverse();
     },
+    // Same rules as record_payment_result() in the database.
     async applyPaymentResult(input) {
       const p = db().payments.find(x => x.txRef === input.txRef);
       if (!p) throw new DataError("not_found", "Unknown payment reference.");
       if (input.status === "paid" && input.amount !== p.amount) throw new DataError("invalid", "Paid amount does not match the booking.");
       const b = findBooking(p.bookingId);
-      if (p.status === "paid") return hydrate(b);
+      // Settled already (webhooks repeat): nothing changes.
+      if (p.status === "paid") return { booking: hydrate(b), becamePaid: false };
+      const wasPaid = b.paymentStatus === "paid";
       p.status = input.status;
-      p.providerRef = input.providerRef ?? p.providerRef;
-      b.paymentStatus = input.status;
-      if (input.status === "paid" && (b.status === "pending_payment" || b.status === "cancelled")) {
+      p.providerRef = input.providerRef || p.providerRef;
+      // Once paid, a late "failed" from another attempt doesn't undo it.
+      if (!wasPaid) b.paymentStatus = input.status;
+      // Paying revives a hold that ran out, but never a booking someone cancelled.
+      const revivable = b.status === "pending_payment" || (b.status === "cancelled" && b.cancelledBy === "expired");
+      if (input.status === "paid" && revivable) {
         // Paid too late and the slot went to someone else: keep it cancelled, money recorded for a refund.
         const clash = b.staffId ? overlaps(b.staffId, b.startsAt, b.endsAt, b.id) : false;
         if (!clash) {
           b.status = "confirmed";
           b.expiresAt = null;
-          b.cancelledAt = null;
+          if (b.cancelledBy === "expired") {
+            b.cancelledAt = null;
+            b.cancelledBy = null;
+          }
         }
       }
-      return hydrate(b);
+      if (input.status === "paid") b.expiresAt = null;
+      return { booking: hydrate(b), becamePaid: input.status === "paid" && !wasPaid && b.status === "confirmed" };
     },
     async listRemindersDue(fromIso, toIso) {
       return db()
         .bookings.filter(b => b.status === "confirmed" && !b.reminderSentAt && b.startsAt >= fromIso && b.startsAt < toIso)
         .map(hydrate);
+    },
+    async countBookingsSince(fromIso) {
+      return db().bookings.filter(b => b.createdAt >= fromIso).length;
     },
     async markReminderSent(bookingId) {
       findBooking(bookingId).reminderSentAt = now();

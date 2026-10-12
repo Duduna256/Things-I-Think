@@ -1,15 +1,12 @@
 import "server-only";
 import { revalidatePath } from "next/cache";
-import { data } from "@/lib/data";
+import { data, DataError } from "@/lib/data";
 import { notifyBookingConfirmed } from "@/lib/notify";
-import { getProviderByName } from "@/lib/payments";
+import { getProviderByName, startPayment } from "@/lib/payments";
+import { normalizeMsisdn } from "@/lib/phone";
 import { isTransactionNotFound } from "@/lib/payments/providers/flutterwave";
 import type { Booking, Payment } from "@/lib/types";
-import { createClaims, settle, type SettleDeps, type SettleOutcome } from "./settle";
-
-// One claim list per server process, kept across hot reloads in development.
-const g = globalThis as unknown as { __reclainPaymentClaims?: (key: string) => boolean };
-const claim = (g.__reclainPaymentClaims ??= createClaims());
+import { bookingPathFor, settle, type SettleDeps, type SettleOutcome } from "./settle";
 
 // The real data layer behind settle(). verify() asks the provider that took the payment.
 export function settleDeps(overrides: Partial<SettleDeps> = {}): SettleDeps {
@@ -29,7 +26,6 @@ export function settleDeps(overrides: Partial<SettleDeps> = {}): SettleDeps {
     apply: input => data.server.applyPaymentResult(input),
     // notify.ts sends after the response, so this returns straight away.
     notifyConfirmed: booking => notifyBookingConfirmed(booking),
-    claim,
     log: (message, detail) => console.warn(`[payments] ${message}`, detail ?? ""),
     ...overrides,
   };
@@ -49,4 +45,38 @@ export function refreshBookingPages(booking: Pick<Booking, "id"> | null | undefi
   } catch (e) {
     console.warn("[payments] revalidatePath failed", e);
   }
+}
+
+// "Pay now" on a booking that's still waiting for its money. Before starting a fresh payment,
+// ask the provider about the open ones: one may already have gone through (its webhook is just
+// late), or still be in progress. Either way the customer goes there instead of paying twice.
+// Returns where to send the customer.
+export async function payAgain(
+  booking: Booking,
+  opts: { method: Exclude<Payment["method"], "cash">; msisdn: string | null; email: string | null },
+): Promise<string> {
+  const open = (await data.server.listPaymentsForBooking(booking.id)).filter(p => p.status === "pending").slice(0, 3);
+  for (const p of open) {
+    let outcome: SettleOutcome;
+    try {
+      outcome = await settleWithProvider(p.txRef);
+    } catch (e) {
+      console.error(`[payments] payAgain: couldn't check ${p.txRef}`, e);
+      throw new DataError("unavailable", "We couldn't check on your last payment just now. Try again in a minute.");
+    }
+    if (outcome.kind === "paid" || outcome.kind === "paid_late") {
+      refreshBookingPages(outcome.booking);
+      return bookingPathFor(outcome);
+    }
+  }
+
+  // Still open with the provider (the prompt is out, or the checkout page is still valid):
+  // send the customer back to it rather than starting a second payment.
+  const msisdn = opts.method === "card" ? null : (normalizeMsisdn(opts.msisdn) ?? normalizeMsisdn(booking.customerPhone));
+  const reusable = (await data.server.listPaymentsForBooking(booking.id)).find(
+    p => p.status === "pending" && p.method === opts.method && (p.msisdn ?? null) === msisdn && p.checkoutUrl,
+  );
+  if (reusable?.checkoutUrl) return reusable.checkoutUrl;
+
+  return startPayment(booking, opts);
 }

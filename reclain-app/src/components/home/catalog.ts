@@ -1,7 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { data } from "@/lib/data";
-import type { Area, BusinessDetail, Category } from "@/lib/types";
+import type { Area, Category } from "@/lib/types";
 import { categoryCounts, groupAreas, treatmentIndex, venueIndex, type VenueOffer } from "./stats";
 import type { SuggestIndex } from "./suggest";
 
@@ -12,20 +12,17 @@ export const loadCatalog = cache(async () => {
   return { categories, areas, businesses };
 });
 
-// listBusinesses() carries service names but not prices, so the from-prices behind
-// "Trending" and the search suggestions read each business's menu. Capped so a big
-// catalogue can't turn one page view into hundreds of queries; see the report's
-// shared change request for a single-query replacement.
-const MENU_LIMIT = 48;
-
+// Every business's menu names and prices, in one query, for the "from" prices behind
+// "Trending" and the search suggestions.
 export const loadOffers = cache(async (): Promise<VenueOffer[]> => {
-  const { businesses } = await loadCatalog();
-  const details = await Promise.all(
-    businesses.slice(0, MENU_LIMIT).map(b => data.getBusinessBySlug(b.slug).catch((): BusinessDetail | null => null)),
-  );
-  return details
-    .filter((d): d is BusinessDetail => !!d)
-    .map(d => ({ business: { id: d.id, slug: d.slug, palette: d.palette }, services: d.services.map(s => ({ name: s.name, price: s.price })) }));
+  const [{ businesses }, index] = await Promise.all([loadCatalog(), data.listServiceIndex()]);
+  const menus = new Map<string, { name: string; price: number }[]>();
+  for (const s of index) {
+    const list = menus.get(s.businessId) ?? [];
+    list.push({ name: s.name, price: s.price });
+    menus.set(s.businessId, list);
+  }
+  return businesses.map(b => ({ business: { id: b.id, slug: b.slug, palette: b.palette }, services: menus.get(b.id) ?? [] }));
 });
 
 export async function loadSuggestIndex(): Promise<SuggestIndex> {

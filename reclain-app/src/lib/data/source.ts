@@ -26,6 +26,19 @@ import type {
   StaffInput,
 } from "../types";
 
+export interface ServiceIndexEntry {
+  businessId: string;
+  name: string;
+  price: number;
+}
+
+// What recording a payment result did. becamePaid is true for exactly one call per booking:
+// the one that moved it to paid and confirmed. That call sends the "You're booked" text.
+export interface PaymentResultApplied {
+  booking: Booking;
+  becamePaid: boolean;
+}
+
 export interface SmsLogEntry {
   bookingId: string | null;
   toPhone: string;
@@ -47,6 +60,8 @@ export interface DataSource {
   getBusinessBySlug(slug: string): Promise<BusinessDetail | null>; // active services and staff only
   listReviews(opts?: { businessId?: string; limit?: number }): Promise<ReviewWithBusiness[]>;
   getBusySlots(businessId: string, fromIso: string, toIso: string): Promise<BusySlot[]>;
+  // Every active service at a published business, for search suggestions and "from" prices.
+  listServiceIndex(): Promise<ServiceIndexEntry[]>;
 
   // ---- Logged-in customer ----
   getMyProfile(): Promise<Profile | null>;
@@ -90,8 +105,10 @@ export interface DataSource {
     }): Promise<Payment>;
     getPaymentByTxRef(txRef: string): Promise<Payment | null>;
     listPaymentsForBooking(bookingId: string): Promise<Payment[]>;
-    applyPaymentResult(input: { txRef: string; status: PaymentStatus; providerRef: string | null; amount: number; raw: unknown }): Promise<Booking>;
+    applyPaymentResult(input: { txRef: string; status: PaymentStatus; providerRef: string | null; amount: number; raw: unknown }): Promise<PaymentResultApplied>;
     listRemindersDue(fromIso: string, toIso: string): Promise<Booking[]>;
+    // How many bookings were made since this moment (the homepage's "booked today" line).
+    countBookingsSince(fromIso: string): Promise<number>;
     markReminderSent(bookingId: string): Promise<void>;
     logSms(entry: SmsLogEntry): Promise<void>;
   };

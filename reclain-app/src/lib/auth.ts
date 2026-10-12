@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { site } from "../config/site";
 import { isDemo } from "./env";
 import { createClient } from "./supabase/server";
 import type { SessionUser } from "./types";
@@ -11,14 +12,24 @@ export const DEMO_COOKIE = "reclain_demo_user";
 export const DEMO_USERS: Record<string, SessionUser> = {
   customer: { id: "demo-customer", email: "grace@demo.reclain.com", fullName: "Grace Nakato", phone: "772123456", isAdmin: false },
   provider: { id: "demo-provider", email: "aisha@demo.reclain.com", fullName: "Aisha Namuli", phone: "752987654", isAdmin: false },
-  admin: { id: "demo-admin", email: "admin@demo.reclain.com", fullName: "Reclain Admin", phone: "700111222", isAdmin: true },
+  admin: { id: "demo-admin", email: "admin@demo.reclain.com", fullName: `${site.shortName} admin`, phone: "700111222", isAdmin: true },
 };
+
+// Demo mode only: name and phone changes saved on /account, so the nav shows them too.
+type DemoProfile = Pick<SessionUser, "fullName" | "phone">;
+const demoStore = globalThis as unknown as { __reclainDemoProfiles?: Record<string, DemoProfile> };
+const demoProfiles = () => (demoStore.__reclainDemoProfiles ??= {});
+
+export function setDemoProfile(id: string, profile: DemoProfile) {
+  demoProfiles()[id] = profile;
+}
 
 // The person making this request, or null. Cached for the length of one request.
 export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
   if (isDemo) {
     const key = (await cookies()).get(DEMO_COOKIE)?.value;
-    return (key && DEMO_USERS[key]) || null;
+    const user = key ? DEMO_USERS[key] : undefined;
+    return user ? { ...user, ...demoProfiles()[user.id] } : null;
   }
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();

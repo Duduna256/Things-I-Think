@@ -1,7 +1,7 @@
 // Run: node --import tsx --test src/app/api/webhooks/flutterwave/handle.test.ts
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { createClaims, settle, type SettleOutcome } from "../../payments/settle";
+import { settle, type SettleOutcome } from "../../payments/settle";
 import { answerWith, fakeStore } from "../../payments/fake-store.test-helper";
 import { handleFlutterwaveWebhook, hashMatches, txRefFromPayload } from "./handle";
 
@@ -86,7 +86,7 @@ test("txRefFromPayload reads v3 and older payloads, and only well-formed referen
 });
 
 test("a good webhook settles the payment and texts the customer once, however often it repeats", async () => {
-  const s = fakeStore({ claim: createClaims() });
+  const s = fakeStore();
   const deps = { settle: (txRef: string) => settle(txRef, s.deps, { provider: "flutterwave" }), log: () => undefined };
 
   const first = await handleFlutterwaveWebhook(input().value, deps);
@@ -105,7 +105,7 @@ test("a good webhook settles the payment and texts the customer once, however of
 });
 
 test("simultaneous first deliveries still text once", async () => {
-  const s = fakeStore({ claim: createClaims() });
+  const s = fakeStore();
   const deps = { settle: (txRef: string) => settle(txRef, s.deps, { provider: "flutterwave" }), log: () => undefined };
   const results = await Promise.all([1, 2, 3].map(() => handleFlutterwaveWebhook(input().value, deps)));
   assert.ok(results.every(r => r.status === 200 && r.body.result === "paid"));

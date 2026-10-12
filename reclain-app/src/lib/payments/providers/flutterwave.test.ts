@@ -38,6 +38,7 @@ const booking: Booking = {
   paymentStatus: "unpaid",
   expiresAt: null,
   reminderSentAt: null,
+  cancelledBy: null,
   createdAt: "2030-01-01T00:00:00.000Z",
   items: [
     { id: "i1", serviceId: "s1", name: "Knotless braids", price: 100000, durationMin: 330 },

@@ -54,6 +54,7 @@ function booking(over: Partial<Booking> = {}, venue = VENUES[0]): Booking {
     paymentStatus: "paid",
     expiresAt: null,
     reminderSentAt: null,
+    cancelledBy: null,
     createdAt: "2030-01-01T00:00:00.000Z",
     items: [
       { id: "i1", serviceId: "s1", name: "Knotless braids (waist length)", price: 1000000, durationMin: 330 },

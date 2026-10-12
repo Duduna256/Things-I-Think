@@ -34,8 +34,9 @@ const STATUS: Record<BookingStatus, PillInfo> = {
   no_show: { label: "Missed", tone: "err" },
 };
 
-export function statusPill(b: Pick<Booking, "status" | "expiresAt">, now: Date): PillInfo {
-  if (holdExpired(b, now)) return { label: "Hold expired", tone: "mute" };
+export function statusPill(b: Pick<Booking, "status" | "expiresAt"> & Partial<Pick<Booking, "cancelledBy">>, now: Date): PillInfo {
+  if (holdExpired(b, now) || (b.status === "cancelled" && b.cancelledBy === "expired")) return { label: "Hold expired", tone: "mute" };
+  if (b.status === "cancelled" && b.cancelledBy === "venue") return { ...STATUS.cancelled, label: "Cancelled by the venue" };
   return STATUS[b.status];
 }
 

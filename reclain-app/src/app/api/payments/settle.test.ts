@@ -1,7 +1,7 @@
 // Run: node --import tsx --test src/app/api/payments/settle.test.ts
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { bookingPathFor, createClaims, describe, parseTxRef, settle } from "./settle";
+import { bookingPathFor, describe, parseTxRef, settle } from "./settle";
 import { answerWith, fakeStore, makeBooking } from "./fake-store.test-helper";
 
 const TX = "RCL-AB12CD-1a2b3c4d";
@@ -30,8 +30,8 @@ test("repeats are harmless: no second provider call, no second text", async () =
   assert.deepEqual(s.calls.notified, ["bk-1"]);
 });
 
-test("a webhook and a redirect landing together text once when they share claims", async () => {
-  const s = fakeStore({ claim: createClaims() });
+test("a webhook and a redirect landing together text once", async () => {
+  const s = fakeStore();
   const [a, b] = await Promise.all([settle(TX, s.deps), settle(TX, s.deps)]);
   assert.equal(a.kind, "paid");
   assert.equal(b.kind, "paid");
@@ -104,7 +104,7 @@ test("a failed attempt never undoes a booking another attempt already paid", asy
 });
 
 test("paid after the slot went to someone else: recorded for a refund, no 'you're booked' text", async () => {
-  const s = fakeStore({ booking: { status: "cancelled" } });
+  const s = fakeStore({ booking: { status: "cancelled", cancelledBy: "expired" } });
   s.slotTaken = true;
   const outcome = await settle(TX, s.deps);
   assert.equal(outcome.kind, "paid_late");
@@ -114,9 +114,27 @@ test("paid after the slot went to someone else: recorded for a refund, no 'you'r
 });
 
 test("paid after the hold ran out but with the slot still free: booked after all", async () => {
-  const s = fakeStore({ booking: { status: "cancelled" } });
+  const s = fakeStore({ booking: { status: "cancelled", cancelledBy: "expired" } });
   const outcome = await settle(TX, s.deps);
   assert.ok(outcome.kind === "paid" && outcome.justPaid);
+  assert.equal(s.bookings.get("bk-1")!.cancelledBy, null);
+  assert.deepEqual(s.calls.notified, ["bk-1"]);
+});
+
+test("paid after the customer cancelled: it stays cancelled and is flagged for a refund", async () => {
+  const s = fakeStore({ booking: { status: "cancelled", cancelledBy: "customer" } });
+  const outcome = await settle(TX, s.deps);
+  assert.equal(outcome.kind, "paid_late");
+  assert.equal(s.bookings.get("bk-1")!.status, "cancelled");
+  assert.deepEqual(s.calls.notified, []);
+});
+
+test("a second attempt that also pays doesn't text twice", async () => {
+  const s = fakeStore({ payments: [{ txRef: "A-1" }, { txRef: "B-1" }] });
+  await settle("A-1", s.deps);
+  const second = await settle("B-1", s.deps);
+  assert.ok(second.kind === "paid" && !second.justPaid);
+  assert.equal(s.payments.get("B-1")!.status, "paid", "recorded, so it can be refunded");
   assert.deepEqual(s.calls.notified, ["bk-1"]);
 });
 
@@ -156,16 +174,6 @@ test("describe reads the booking's payment state", () => {
 
 test("bookingPathFor encodes the id", () => {
   assert.equal(bookingPathFor({ kind: "pending", booking: makeBooking({ id: "a/b" }) }), "/bookings/a%2Fb?pending=1");
-});
-
-test("claims forget after a while", () => {
-  let t = 0;
-  const claim = createClaims(1000, () => t);
-  assert.equal(claim("a"), true);
-  assert.equal(claim("a"), false);
-  assert.equal(claim("b"), true);
-  t = 1500;
-  assert.equal(claim("a"), true);
 });
 
 test("parseTxRef accepts our references and nothing else", () => {
