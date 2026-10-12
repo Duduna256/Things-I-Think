@@ -1,0 +1,119 @@
+/* A business's page (/v/[slug]) and the review card the homepage shares.
+   Imported by app/v/[slug]/page.tsx and app/page.tsx. Every rule is scoped (.vpage, .rv-card)
+   because Next keeps stylesheets loaded after navigation. */
+
+/* ---------- Review card ---------- */
+.rv-card { background: var(--soft); border-radius: 18px; padding: 24px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.rv-card .rv-stars { display: inline-flex; }
+.rv-card .rv-title { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.01em; line-height: 1.25; }
+.rv-card .rv-body { color: var(--ink-2); }
+.rv-card .rv-foot { display: flex; align-items: center; gap: 12px; margin-top: 4px; min-width: 0; }
+.rv-card .rv-foot > span:last-child { min-width: 0; }
+.rv-card .rv-foot b { display: block; font-weight: 700; font-size: 0.95rem; }
+.rv-card .rv-foot small { color: var(--muted); }
+.rv-card .rv-foot a { color: var(--ink-2); font-weight: 600; text-underline-offset: 3px; }
+
+/* ---------- Venue page ---------- */
+.vpage { padding-bottom: clamp(32px, 5vw, 64px); }
+.vpage-top { padding-top: clamp(16px, 3vw, 28px); }
+.vpage-crumbs ol { list-style: none; margin: 0 0 16px; padding: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 0.9rem; color: var(--muted); }
+.vpage-crumbs li { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+.vpage-crumbs li + li::before { content: "›"; color: var(--muted); }
+.vpage-crumbs a { display: inline-flex; align-items: center; min-height: 44px; color: var(--ink-2); font-weight: 600; text-underline-offset: 3px; }
+.vpage-crumbs [aria-current="page"] { color: var(--ink); font-weight: 600; overflow-wrap: anywhere; }
+
+.vpage-head { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: clamp(24px, 4vw, 56px); align-items: center; }
+.vpage-cover { border-radius: var(--r-lg); }
+.vpage-cover .cover-badge { top: 16px; left: 16px; font-size: 0.82rem; padding: 6px 12px; }
+.vpage-intro { display: grid; gap: 14px; align-content: start; min-width: 0; }
+.vpage-name { font-size: clamp(2rem, 4.4vw, 3.4rem); font-weight: 800; letter-spacing: -0.045em; line-height: 1.02; overflow-wrap: anywhere; }
+.vpage-meta { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; color: var(--ink-2); }
+.vpage-meta li { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
+.vpage-meta .ic { width: 18px; height: 18px; color: var(--muted); }
+.vpage-open { color: #0b5b41; font-weight: 700; }
+.vpage-closed { color: var(--err); font-weight: 700; }
+.vpage-blurb { color: var(--ink-2); font-size: 1.05rem; max-width: 60ch; }
+.vpage-visit { display: flex; gap: 10px; align-items: flex-start; background: var(--jac-soft); color: var(--jac-ink); border-radius: 14px; padding: 12px 14px; font-weight: 600; font-size: 0.95rem; }
+.vpage-visit .ic { margin-top: 1px; }
+.vpage-cta { display: flex; align-items: center; gap: 12px 16px; flex-wrap: wrap; margin-top: 4px; }
+
+.vpage-body { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: clamp(24px, 4vw, 56px); align-items: start; margin-top: clamp(32px, 5vw, 56px); }
+.vpage-main { display: grid; gap: clamp(36px, 5vw, 56px); min-width: 0; }
+.vpage-section { display: grid; gap: 18px; min-width: 0; }
+.vpage-section > h2 { font-size: clamp(1.55rem, 2.6vw, 2.1rem); font-weight: 750; letter-spacing: -0.03em; line-height: 1.1; }
+.vpage-note { color: var(--muted); margin-top: -6px; max-width: 60ch; }
+
+/* Menu section links stay in reach while scrolling a long menu. */
+.vpage-jump { position: sticky; top: var(--nav-h); z-index: 5; background: var(--white); box-shadow: 0 1px 0 var(--line); padding-block: 8px; }
+.vpage-jump .chips { list-style: none; margin: 0; padding-inline: 0; }
+.vpage-jump li { flex: none; display: flex; }
+/* html already pads scrolling for the nav; this clears the sticky section links too. */
+.vpage-group { display: grid; gap: 12px; scroll-margin-top: 64px; }
+/* Keyboard focus never hides under the sticky section links or the phone booking bar. */
+.vpage a, .vpage button { scroll-margin-block: 72px 96px; }
+.vpage-group h3 { font-size: 1.2rem; font-weight: 700; letter-spacing: -0.02em; }
+.vpage-svcs { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.vpage-svc {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: center;
+  padding: 18px 20px; border: 1px solid var(--line); border-radius: 14px; background: var(--white);
+}
+.vpage-svc-main { display: grid; gap: 4px; min-width: 0; }
+.vpage-svc h4 { font-size: 1rem; font-weight: 700; overflow-wrap: anywhere; }
+.vpage-svc-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; color: var(--muted); font-size: 0.9rem; }
+.vpage-svc-meta:empty { display: none; }
+.vpage-cutoff { color: var(--warn); font-weight: 600; }
+.vpage-svc-desc { color: var(--ink-2); font-size: 0.92rem; }
+.vpage-svc-side { display: grid; justify-items: end; gap: 8px; }
+.vpage-price { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.vpage-book { height: 44px; padding: 0 20px; }
+
+.vpage-team { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; }
+.vpage-pro { display: grid; justify-items: center; align-content: start; gap: 4px; padding: 22px 12px; border: 1px solid var(--line); border-radius: 16px; text-align: center; min-width: 0; }
+.vpage-pro .avatar { width: 64px; height: 64px; font-size: 1.1rem; margin-bottom: 8px; }
+.vpage-pro b { font-weight: 700; overflow-wrap: anywhere; }
+.vpage-pro small { color: var(--muted); font-size: 0.88rem; }
+.vpage-pro .rating { font-size: 0.88rem; margin-top: 4px; gap: 4px; }
+.vpage-star { width: 14px; height: 14px; }
+
+.vpage-reviews { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+
+.vpage-aside { position: sticky; top: calc(var(--nav-h) + 24px); min-width: 0; }
+.vpage-card { display: grid; gap: 14px; }
+.vpage-card-title { font-size: 1.15rem; font-weight: 700; letter-spacing: -0.01em; }
+.vpage-hours { margin: 0; display: grid; gap: 2px; }
+.vpage-hours > div { display: flex; justify-content: space-between; gap: 12px; padding: 7px 10px; border-radius: 10px; }
+.vpage-hours dt { font-weight: 500; }
+.vpage-hours dd { margin: 0; font-variant-numeric: tabular-nums; color: var(--ink-2); }
+.vpage-hours .is-today { background: var(--soft); }
+.vpage-hours .is-today dt, .vpage-hours .is-today dd { font-weight: 700; color: var(--ink); }
+.vpage-address { display: flex; gap: 8px; align-items: flex-start; color: var(--ink-2); }
+.vpage-address .ic { margin-top: 2px; color: var(--muted); }
+
+/* The phone booking bar: sticks to the bottom while you read, then rests above the footer. */
+.vpage-bar { display: none; }
+
+@media (max-width: 1000px) {
+  .vpage-body { grid-template-columns: minmax(0, 1fr); }
+  .vpage-aside { position: static; }
+  /* One column: the section links scroll edge to edge. */
+  .vpage-jump { margin-inline: calc(-1 * var(--gutter)); }
+  .vpage-jump .chips { padding-inline: var(--gutter); scroll-padding-inline: var(--gutter); }
+}
+@media (max-width: 900px) {
+  .vpage-head { grid-template-columns: minmax(0, 1fr); }
+  .vpage-cta { display: none; }
+  .vpage-bar {
+    position: sticky; bottom: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    margin-top: 24px; padding: 12px var(--gutter) calc(12px + env(safe-area-inset-bottom, 0px));
+    background: var(--white); border-top: 1px solid var(--line); box-shadow: 0 -8px 24px rgba(17, 16, 19, 0.06);
+  }
+  .vpage-bar-text { display: grid; line-height: 1.25; min-width: 0; }
+  .vpage-bar-text b { font-weight: 800; font-variant-numeric: tabular-nums; }
+  .vpage-bar-text small { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+}
+@media (max-width: 600px) {
+  .vpage-svc { grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 16px; }
+  .vpage-svc-side { grid-auto-flow: column; justify-content: space-between; align-items: center; justify-items: start; }
+  .vpage-team { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .vpage-reviews { grid-template-columns: minmax(0, 1fr); }
+}

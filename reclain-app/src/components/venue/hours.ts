@@ -6,10 +6,13 @@ import type { Business, Service } from "../../lib/types";
 
 type Hours = Pick<Business, "opensAt" | "closesAt" | "closedDays">;
 
+export function closedToday(b: Pick<Business, "closedDays">, now: Date = new Date()): boolean {
+  return b.closedDays.includes(localParts(now).weekday);
+}
+
 // "Open today 08:00–20:00" or "Closed today", in Kampala time.
 export function todayText(b: Hours, now: Date = new Date()): string {
-  const day = localParts(now).weekday;
-  return b.closedDays.includes(day) ? "Closed today" : `Open today ${b.opensAt}–${b.closesAt}`;
+  return closedToday(b, now) ? "Closed today" : `Open today ${b.opensAt}–${b.closesAt}`;
 }
 
 export interface WeekRow {
