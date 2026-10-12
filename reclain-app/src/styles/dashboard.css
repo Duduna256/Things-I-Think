@@ -1,0 +1,419 @@
+/* The provider dashboard (/business/**) and the admin screen (/admin). Every class is
+   prefixed dash- or adm-, so nothing here reaches other pages; shared pieces (.btn, .chip,
+   .chips, .field, .form-grid, .pill, .card, .empty, .notice, .avatar, .cover, .toast) come
+   from globals.css. Calm and scannable: white cards on a white canvas, thin lines, one purple
+   accent, black pill buttons. Wide lists become stacked cards on phones. */
+
+/* ================= Shell ================= */
+.dash { display: grid; gap: 18px; align-content: start; }
+.dash > * { min-width: 0; }
+.dash-body { display: grid; gap: 28px; align-content: start; min-width: 0; margin-top: 6px; }
+.dash-body > * { min-width: 0; }
+
+/* Tap targets: the shared small buttons are 38px tall; here everything is at least 44px. */
+.dash .btn-sm { height: 44px; }
+.dash .link-btn { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; }
+.dash a.icon-btn { text-decoration: none; }
+/* Headings, questions and messages that take focus from code aren't controls: no ring. */
+.dash [tabindex="-1"]:focus { outline: none; }
+.dash-toast:focus-visible { outline: 2px solid var(--lilac); outline-offset: 2px; }
+
+.dash-title { font-size: clamp(1.8rem, 3.2vw, 2.5rem); overflow-wrap: anywhere; }
+.dash-lede { max-width: 62ch; color: var(--ink-2); }
+.dash-lede.muted { color: var(--muted); }
+.dash-body > .dash-title + .dash-lede { margin-top: -16px; }
+.dash-error, .dash-onboard { gap: 16px; }
+.dash-error { justify-items: start; }
+.dash-error code { font-size: 0.9em; background: var(--soft); border-radius: 6px; padding: 1px 6px; overflow-wrap: anywhere; }
+
+/* Live regions stay in the page so new messages are read out, but take no room while empty. */
+.dash-live:empty { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.dash-msg { overflow-wrap: anywhere; }
+
+/* ---------- Header: which business, and the switcher ---------- */
+.dash-head { display: flex; align-items: center; justify-content: space-between; gap: 14px 20px; flex-wrap: wrap; }
+.dash-id { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.cover.dash-mini { width: 56px; flex: none; aspect-ratio: 1; border-radius: 12px; }
+.dash-mini .cover-word { font-size: 42cqi; left: 8%; }
+.dash-id-text { display: grid; min-width: 0; line-height: 1.25; }
+.dash-id .eyebrow { font-size: 0.72rem; }
+.dash-id-name { font-family: var(--display); font-weight: 750; font-size: 1.2rem; letter-spacing: -0.02em; overflow-wrap: anywhere; }
+.dash-id-meta { font-size: 0.92rem; }
+.dash-switch { display: flex; align-items: flex-end; gap: 8px; }
+.dash-switch .field { min-width: 220px; }
+
+/* ---------- Status banner ---------- */
+.dash-banner { align-items: center; }
+.dash-banner > .ic { align-self: flex-start; flex: none; }
+.dash-banner-text { flex: 1; display: grid; gap: 2px; min-width: 0; }
+.dash-banner-sub { font-weight: 500; }
+.dash-banner a { font-weight: 700; text-underline-offset: 3px; }
+.dash-banner-form { display: grid; gap: 6px; justify-items: end; flex: none; max-width: 320px; }
+.dash-banner-form .dash-msg { text-align: right; }
+.dash-live-bar {
+  display: flex; align-items: center; gap: 6px 14px; flex-wrap: wrap;
+  border: 1px solid var(--line); border-radius: 14px; padding: 6px 8px 6px 14px;
+}
+.dash-live-bar .muted { font-weight: 500; }
+.dash-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 0 rgba(18, 147, 106, 0.5); animation: dashPulse 2.4s ease-out infinite; }
+@keyframes dashPulse { 0% { box-shadow: 0 0 0 0 rgba(18, 147, 106, 0.45); } 70%, 100% { box-shadow: 0 0 0 7px rgba(18, 147, 106, 0); } }
+.dash-view { margin-left: auto; padding-inline: 8px; text-decoration: none; }
+.dash-view:hover { text-decoration: underline; }
+.dash-view .ic { width: 18px; height: 18px; }
+
+/* ---------- Section tabs ---------- */
+.dash-nav { border-bottom: 1px solid var(--line); padding-bottom: 14px; }
+.dash-tabs { list-style: none; margin-block: 0; }
+.dash-tabs > li { flex: none; display: flex; }
+.dash-count {
+  min-width: 24px; padding: 1px 7px; border-radius: 999px; background: var(--soft); color: var(--ink-2);
+  font-size: 0.76rem; font-weight: 800; text-align: center; font-variant-numeric: tabular-nums;
+}
+.chip[aria-current="page"] .dash-count { background: rgba(255, 255, 255, 0.2); color: var(--white); }
+
+/* ---------- Sections ---------- */
+.dash-section { display: grid; gap: 14px; align-content: start; min-width: 0; }
+.dash-section h2 { font-size: 1.3rem; font-weight: 750; letter-spacing: -0.02em; line-height: 1.2; }
+.dash-section-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 6px 16px; flex-wrap: wrap; }
+.dash-section-head > div { display: grid; gap: 2px; min-width: 0; }
+.dash-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.dash-more { font-size: 0.92rem; }
+.dash-more a { font-weight: 700; color: var(--ink); text-underline-offset: 3px; }
+
+/* ================= Overview ================= */
+.dash-welcome { align-items: center; }
+.dash-ready { gap: 10px; }
+.dash-checklist { list-style: none; margin: 4px 0 0; padding: 0; display: grid; }
+.dash-checklist li {
+  display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 8px 12px; align-items: center;
+  padding: 10px 0; border-top: 1px solid var(--line);
+}
+.dash-check { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--line); display: grid; place-items: center; }
+.dash-check .ic { width: 14px; height: 14px; stroke-width: 3; }
+.dash-checklist li.is-done .dash-check { background: var(--ok); border-color: var(--ok); color: var(--white); }
+.dash-checklist li.is-done .dash-check-text { color: var(--muted); }
+.dash-check-text { font-weight: 600; }
+.dash-check-text .muted { font-weight: 500; }
+
+.dash-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.dash-stat {
+  display: grid; gap: 2px; align-content: start; min-width: 0;
+  border: 1px solid var(--line); border-radius: 18px; padding: 18px 20px;
+}
+.dash-stat-label { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); }
+.dash-stat b { font-size: clamp(2rem, 3.6vw, 2.7rem); font-weight: 800; letter-spacing: -0.04em; line-height: 1.05; }
+.dash-stat .muted { font-size: 0.9rem; }
+.dash-stat-money { background: var(--ink); border-color: var(--ink); color: var(--white); }
+.dash-stat-money .dash-stat-label { color: var(--lilac); }
+.dash-stat-money .muted { color: #c9c5d4; }
+/* "UGX 1,250,000" has to fit a third of the row. */
+.dash-stat-money b { font-size: clamp(1.5rem, 2.5vw, 2.1rem); padding-block: 0.12em; overflow-wrap: anywhere; }
+
+/* Today: a strip from opening to closing time (decorative), then the list */
+.dash-strip { display: grid; gap: 6px; padding-inline: 10px; }
+.dash-strip-bar {
+  position: relative; height: 36px; border-radius: 10px; overflow: hidden;
+  background: var(--soft); box-shadow: inset 0 0 0 1px var(--line);
+}
+.dash-strip-block { position: absolute; top: 5px; bottom: 5px; min-width: 6px; border-radius: 7px; background: var(--lilac); box-shadow: inset 0 0 0 1px #b9a6f5; }
+.dash-strip-block.is-past { background: #e6e3ec; box-shadow: inset 0 0 0 1px var(--line); }
+.dash-strip-now { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--coral); }
+.dash-strip-ticks { position: relative; height: 16px; font-size: 0.72rem; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+.dash-strip-ticks span { position: absolute; top: 0; transform: translateX(-50%); }
+
+.dash-tl { list-style: none; margin: 0; padding: 0 0 0 26px; display: grid; gap: 12px; position: relative; }
+.dash-tl::before { content: ""; position: absolute; left: 7px; top: 12px; bottom: 12px; width: 2px; border-radius: 2px; background: var(--line); }
+.dash-tl > li { position: relative; min-width: 0; }
+.dash-tl > li:not(.dash-now)::before {
+  content: ""; position: absolute; left: -26px; top: 20px; width: 16px; height: 16px; border-radius: 50%;
+  background: var(--white); border: 3px solid var(--jac);
+}
+.dash-tl > li:has(.is-closed)::before { border-color: var(--line); }
+/* Text in a darker coral than the line, so it stays readable on white. */
+.dash-now { display: flex; align-items: center; gap: 10px; color: #b23a1f; font-weight: 700; font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+.dash-now::before { content: ""; position: absolute; left: -24px; top: 50%; width: 12px; height: 12px; margin-top: -6px; border-radius: 50%; background: var(--coral); }
+.dash-now::after { content: ""; flex: 1; height: 2px; border-radius: 2px; background: var(--coral); }
+.dash-now span { white-space: nowrap; }
+
+/* ================= A booking ================= */
+.dash-bk {
+  display: grid; gap: 6px 20px; align-items: start;
+  grid-template-columns: 76px minmax(0, 1.15fr) minmax(0, 1fr) minmax(150px, auto);
+  grid-template-areas: "when who what money" "acts acts acts acts";
+  padding: 16px 18px; border: 1px solid var(--line); border-radius: 18px; background: var(--white);
+}
+.dash-bk.is-closed { background: var(--soft); border-color: transparent; }
+.dash-bk.is-closed .dash-bk-who h3, .dash-bk.is-closed .dash-bk-when b { color: var(--ink-2); }
+
+.dash-bk-when { grid-area: when; display: grid; align-content: start; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.dash-bk-when b { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.03em; }
+.dash-bk-when small { font-size: 0.8rem; margin-top: 2px; }
+.dash-bk-date { font-size: 0.74rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--jac-ink); margin-bottom: 2px; }
+
+.dash-bk-who { grid-area: who; display: grid; gap: 2px; align-content: start; justify-items: start; min-width: 0; }
+.dash-bk-who h3 { font-size: 1.08rem; font-weight: 700; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.dash-tel {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 44px;
+  color: var(--jac-ink); font-weight: 700; text-decoration: none; font-variant-numeric: tabular-nums;
+}
+.dash-tel .ic { width: 16px; height: 16px; }
+.dash-tel:hover { text-decoration: underline; text-underline-offset: 3px; }
+.dash-bk-line { display: flex; gap: 6px; align-items: flex-start; color: var(--ink-2); font-size: 0.92rem; overflow-wrap: anywhere; min-width: 0; }
+.dash-bk-line .ic { width: 16px; height: 16px; margin-top: 3px; color: var(--muted); }
+
+.dash-bk-what { grid-area: what; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.dash-bk-items { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.dash-bk-items li { background: var(--soft); border-radius: 8px; padding: 4px 10px; font-weight: 600; font-size: 0.88rem; overflow-wrap: anywhere; max-width: 100%; }
+.dash-bk.is-closed .dash-bk-items li { background: var(--white); }
+.dash-bk-notes {
+  border-left: 3px solid var(--sun); padding: 2px 0 2px 10px; font-size: 0.92rem; color: var(--ink-2);
+  white-space: pre-line; overflow-wrap: anywhere;
+}
+
+.dash-bk-money { grid-area: money; display: grid; gap: 4px; justify-items: end; align-content: start; text-align: right; }
+.dash-bk-money > b { font-size: 1.08rem; font-weight: 800; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.dash-bk-money small { font-size: 0.8rem; }
+.dash-pills { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+.dash-bk-ref { font-variant-numeric: tabular-nums; }
+
+.dash-bk > .dash-actions { grid-area: acts; border-top: 1px solid var(--line); padding-top: 12px; margin-top: 8px; }
+.dash-bk.is-closed > .dash-actions { border-top-color: var(--line); }
+
+/* ---------- Action buttons and in-place confirms (bookings, menu, team, admin) ---------- */
+.dash-actions { display: grid; gap: 8px; min-width: 0; }
+.dash-actions-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.dash-confirm {
+  display: grid; gap: 10px; min-width: 0;
+  background: var(--err-soft); border: 1px solid #f2c4bf; border-radius: 14px; padding: 12px 14px;
+}
+.dash-confirm p { color: var(--ink-2); overflow-wrap: anywhere; }
+.dash-confirm b { color: var(--ink); }
+.dash-confirm-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* ================= Bookings: the day view ================= */
+.dash-day { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.dash-day-nav { display: flex; align-items: center; gap: 12px; }
+.dash-day-label {
+  display: grid; justify-items: center; min-width: 10ch; text-align: center;
+  font-size: clamp(1.3rem, 2.4vw, 1.7rem); font-weight: 750; letter-spacing: -0.02em; line-height: 1.15;
+}
+.dash-day-rel { font-family: var(--font); font-size: 0.74rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--jac); }
+.dash-day-form { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; }
+.dash-day-form .field { min-width: 180px; }
+.dash-day-form .btn-sm { height: 48px; }
+.dash-filter { margin-top: -4px; }
+.dash-summary { font-weight: 600; margin-top: -8px; }
+
+/* ================= Menu and team ================= */
+.dash-menu { display: grid; gap: 24px; min-width: 0; }
+.dash-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.dash-group { display: grid; gap: 10px; min-width: 0; }
+.dash-group > h2 { font-size: 1.2rem; font-weight: 750; letter-spacing: -0.02em; overflow-wrap: anywhere; }
+.dash-rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.dash-rows > li { min-width: 0; }
+
+.dash-row {
+  display: grid; gap: 8px 20px; align-items: center;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  grid-template-areas: "main len price btns";
+  padding: 14px 18px; border: 1px solid var(--line); border-radius: 16px; background: var(--white);
+}
+.dash-row.is-hidden { background: var(--soft); border-style: dashed; }
+.dash-row-main { grid-area: main; display: grid; gap: 2px; min-width: 0; }
+.dash-row-main h3 { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 1.02rem; font-weight: 700; overflow-wrap: anywhere; }
+.dash-row-main p { font-size: 0.92rem; overflow-wrap: anywhere; }
+.dash-row-note { color: var(--warn); font-weight: 600; font-size: 0.85rem !important; }
+.dash-row-len { grid-area: len; display: inline-flex; align-items: center; gap: 6px; color: var(--ink-2); font-weight: 600; font-size: 0.92rem; white-space: nowrap; }
+.dash-row-len .ic { width: 16px; height: 16px; color: var(--muted); }
+.dash-row-price { grid-area: price; min-width: 9ch; text-align: right; font-weight: 800; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.dash-row-btns { grid-area: btns; display: flex; gap: 8px; }
+.dash-row-btns .ic { width: 18px; height: 18px; }
+/* The confirm takes its own row (or the buttons' row, which it replaces). */
+.dash-row > .dash-confirm { grid-column: 1 / -1; }
+
+.dash-person { grid-template-columns: 44px minmax(0, 1fr) auto auto; grid-template-areas: "av main len btns"; }
+.dash-person .avatar { grid-area: av; width: 44px; height: 44px; }
+.dash-person .dash-row-len { flex-wrap: wrap; gap: 6px 10px; white-space: normal; }
+
+/* The add and edit forms */
+.dash-form { display: grid; gap: 16px; min-width: 0; }
+.dash-form > :is(h2, h3) { font-family: var(--display); font-size: 1.25rem; font-weight: 750; letter-spacing: -0.02em; overflow-wrap: anywhere; }
+.dash-form-btns { display: flex; flex-wrap: wrap; gap: 10px; }
+.dash-form .check .ic { color: var(--ok); }
+
+/* ================= Business form (settings and onboarding) ================= */
+.dash-bform { display: grid; gap: 18px; min-width: 0; }
+.dash-fieldset { display: grid; gap: 14px; padding: 22px; min-width: 0; }
+/* A floated legend sits inside the card instead of on its border. */
+.dash-fieldset > legend {
+  float: left; width: 100%; margin: 0; padding: 0;
+  font-family: var(--display); font-size: 1.2rem; font-weight: 750; letter-spacing: -0.02em;
+}
+.dash-fieldset-note { margin-top: -4px; }
+.dash-subfieldset { display: grid; gap: 8px; min-width: 0; }
+.dash-subfieldset > legend { float: left; width: 100%; margin: 0; padding: 0; font-size: 0.92rem; font-weight: 600; }
+
+.dash-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; }
+.dash-option {
+  display: flex; gap: 12px; align-items: flex-start; min-height: 44px; cursor: pointer;
+  border: 1px solid var(--line); border-radius: 14px; padding: 14px; transition: border-color 0.15s, background-color 0.15s;
+}
+.dash-option:hover { border-color: var(--ink-2); }
+.dash-option input { width: 20px; height: 20px; margin: 2px 0 0; flex: none; accent-color: var(--jac); }
+.dash-option > span { display: grid; gap: 2px; min-width: 0; }
+.dash-option b { font-weight: 700; }
+.dash-option .muted { font-size: 0.88rem; font-weight: 500; }
+.dash-option:has(input:checked) { border-color: var(--jac); background: var(--jac-soft); box-shadow: inset 0 0 0 1px var(--jac); }
+.dash-fee { max-width: 340px; }
+
+/* Closed days: pills over real checkboxes */
+.dash-daychips { display: flex; flex-wrap: wrap; gap: 8px; }
+.dash-daychip { position: relative; display: inline-grid; }
+.dash-daychip input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.dash-daychip > span[aria-hidden="true"] {
+  display: grid; place-items: center; min-width: 58px; height: 44px; padding: 0 14px;
+  border: 1px solid var(--line); border-radius: 999px; font-weight: 600; background: var(--white);
+  transition: background-color 0.15s, border-color 0.15s;
+}
+.dash-daychip:hover > span[aria-hidden="true"] { border-color: var(--ink-2); }
+.dash-daychip input:checked + span { background: var(--ink); border-color: var(--ink); color: var(--white); }
+.dash-daychip input:focus-visible + span { outline: 2px solid var(--jac); outline-offset: 2px; }
+
+.dash-check-row { align-items: flex-start; padding-block: 6px; }
+.dash-check-row input { margin-top: 2px; flex: none; }
+.dash-check-row > span { display: grid; gap: 2px; min-width: 0; }
+.dash-check-row b { font-weight: 700; }
+.dash-check-row .muted { font-size: 0.9rem; }
+
+/* Cover: word, colours and a live preview of the search card */
+.dash-cover-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 300px); gap: 24px; align-items: start; }
+.dash-cover-fields { display: grid; gap: 18px; min-width: 0; }
+.dash-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 12px; }
+.dash-swatch { position: relative; display: grid; gap: 6px; cursor: pointer; min-width: 0; }
+.dash-swatch input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; z-index: 1; }
+.dash-swatch-art {
+  aspect-ratio: 16 / 10; border-radius: 10px; box-shadow: 0 0 0 1px var(--line);
+  background:
+    radial-gradient(120% 95% at 88% 8%, var(--c3) 0, transparent 55%),
+    radial-gradient(90% 85% at 8% 105%, var(--c2) 0, transparent 62%),
+    var(--c1);
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+.dash-swatch:hover .dash-swatch-art { transform: translateY(-2px); }
+.dash-swatch input:checked ~ .dash-swatch-art { box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--ink); }
+.dash-swatch input:focus-visible ~ .dash-swatch-art { outline: 2px solid var(--jac); outline-offset: 5px; }
+.dash-swatch-name { font-size: 0.82rem; font-weight: 600; text-align: center; color: var(--ink-2); overflow-wrap: anywhere; }
+.dash-swatch input:checked ~ .dash-swatch-name { color: var(--ink); font-weight: 800; }
+.dash-preview { margin: 0; display: grid; gap: 8px; position: sticky; top: calc(var(--nav-h) + 16px); min-width: 0; }
+.dash-preview .vcard-name { overflow-wrap: anywhere; }
+
+/* Save bar: stays in reach at the bottom of a long form */
+.dash-submit {
+  position: sticky; bottom: 0; z-index: 5;
+  display: flex; align-items: center; justify-content: flex-end; gap: 10px 16px; flex-wrap: wrap;
+  padding: 14px 0 calc(14px + env(safe-area-inset-bottom, 0px));
+  background: rgba(255, 255, 255, 0.94); backdrop-filter: blur(10px); border-top: 1px solid var(--line);
+}
+.dash-submit > .dash-live { flex: 1 1 240px; min-width: 0; }
+
+/* ================= Admin ================= */
+.adm-table { width: 100%; border-collapse: separate; border-spacing: 0; border: 1px solid var(--line); border-radius: 18px; overflow: hidden; }
+.adm-table th, .adm-table td { padding: 14px 16px; text-align: left; vertical-align: top; border-top: 1px solid var(--line); }
+.adm-table thead th { border-top: 0; background: var(--soft); color: var(--muted); font-size: 0.76rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+.adm-table tbody th { font-weight: 500; }
+.adm-table td { color: var(--ink-2); }
+.adm-name { display: flex; align-items: flex-start; gap: 12px; min-width: 0; }
+.adm-name-text { display: grid; gap: 4px; justify-items: start; min-width: 0; }
+.adm-name-text > :first-child { font-weight: 700; font-size: 1.02rem; color: var(--ink); overflow-wrap: anywhere; text-underline-offset: 3px; }
+.adm-blurb { max-width: 52ch; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; }
+.adm-actions { min-width: 240px; }
+.adm-actions .dash-actions-btns { justify-content: flex-end; }
+
+/* ================= Narrower screens ================= */
+@media (max-width: 1100px) {
+  .dash-bk {
+    grid-template-columns: 72px minmax(0, 1fr) auto;
+    grid-template-areas: "when who money" "when what money" "acts acts acts";
+  }
+  .dash-bk-what { margin-top: 4px; }
+}
+
+@media (max-width: 900px) {
+  .dash-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dash-stat-money { grid-column: 1 / -1; }
+
+  /* Admin: each row becomes a card */
+  .adm-table, .adm-table tbody, .adm-table tr, .adm-table th, .adm-table td { display: block; }
+  .adm-table { border: 0; border-radius: 0; overflow: visible; }
+  .adm-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .adm-table tbody { display: grid; gap: 12px; }
+  .adm-table tr { display: grid; gap: 6px; padding: 16px; border: 1px solid var(--line); border-radius: 18px; }
+  .adm-table th, .adm-table td { padding: 0; border: 0; }
+  .adm-table td[data-label] { display: flex; gap: 10px; font-size: 0.92rem; }
+  .adm-table td[data-label]::before { content: attr(data-label); flex: none; min-width: 76px; color: var(--muted); font-weight: 600; }
+  .adm-table td.adm-actions { min-width: 0; margin-top: 8px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .adm-actions .dash-actions-btns { justify-content: flex-start; }
+}
+
+@media (max-width: 760px) {
+  .dash-bk {
+    grid-template-columns: 60px minmax(0, 1fr);
+    grid-template-areas: "when who" "what what" "money money" "acts acts";
+    padding: 14px;
+  }
+  .dash-bk-when b { font-size: 1.2rem; }
+  .dash-bk-money { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-start; gap: 6px 10px; text-align: left; }
+  .dash-pills { justify-content: flex-start; }
+
+  .dash-row { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "main main" "len price" "btns btns"; padding: 14px; }
+  .dash-person { grid-template-columns: 44px minmax(0, 1fr); grid-template-areas: "av main" "len len" "btns btns"; }
+  .dash-row-btns .btn { flex: 1 1 0; }
+
+  .dash-cover-grid { grid-template-columns: minmax(0, 1fr); }
+  .dash-preview { position: static; order: -1; max-width: 320px; }
+}
+
+@media (max-width: 600px) {
+  .dash { gap: 16px; }
+  .dash-body { gap: 24px; }
+  .dash-switch { width: 100%; }
+  .dash-switch .field { flex: 1; min-width: 0; }
+  .dash-banner { flex-wrap: wrap; }
+  .dash-banner-form { flex-basis: 100%; max-width: none; justify-items: stretch; }
+  .dash-banner-form .dash-msg { text-align: left; }
+  .dash-view { margin-left: 0; }
+
+  .dash-stat { padding: 14px 16px; }
+  .dash-checklist li { grid-template-columns: 26px minmax(0, 1fr); }
+  .dash-checklist li > .btn { grid-column: 2; justify-self: start; }
+
+  .dash-day { display: grid; }
+  .dash-day-nav { justify-content: space-between; }
+  .dash-day-form .field { flex: 1 1 160px; min-width: 0; }
+
+  .dash-tl { padding-left: 22px; }
+  .dash-tl::before { left: 5px; }
+  .dash-tl > li:not(.dash-now)::before { left: -22px; width: 14px; height: 14px; }
+  .dash-now::before { left: -21px; }
+
+  .dash-fieldset { padding: 18px 16px; }
+  .dash-form-btns .btn, .dash-submit .btn { flex: 1 1 auto; }
+  .dash-confirm-btns .btn { flex: 1 1 auto; }
+}
+
+@media (max-width: 380px) {
+  .dash-stats { grid-template-columns: minmax(0, 1fr); }
+  .dash-day-label { min-width: 0; }
+}
+
+/* ================= Loading ================= */
+.dash-loading { display: grid; gap: 16px; }
+.dash-skel {
+  display: block; border-radius: 14px;
+  background: linear-gradient(90deg, var(--soft) 0%, #ebe9f0 50%, var(--soft) 100%) 0 0 / 200% 100%;
+  animation: dashShimmer 1.4s ease-in-out infinite;
+}
+.dash-skel-title { height: 44px; width: min(60%, 360px); }
+.dash-skel-line { height: 18px; width: min(90%, 520px); }
+.dash-skel-card { height: 112px; border-radius: 18px; }
+@keyframes dashShimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }

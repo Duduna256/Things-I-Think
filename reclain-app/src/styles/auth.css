@@ -1,0 +1,233 @@
+/* Logging in and the account page: /login, /auth/error (auth-*, persona-*) and /account (acct-*).
+   Every class is prefixed, so nothing here reaches other pages; shared pieces (.btn, .field,
+   .form, .hint, .form-err, .form-ok, .notice, .pill, .card, .avatar, .em, .link-btn,
+   .page-title) come from globals.css. The card is the prototype's log-in dialog (.modal),
+   brought out onto its own page. */
+
+/* ================= The log-in page ================= */
+
+/* A soft canvas with the hero's drifting colour, and one card in the middle. */
+.auth {
+  position: relative; isolation: isolate; overflow: hidden;
+  display: grid; justify-items: center; align-content: start; gap: 20px;
+  min-height: calc(100dvh - var(--nav-h));
+  padding: clamp(28px, 6vw, 72px) var(--gutter) clamp(40px, 7vw, 88px);
+  background: var(--soft);
+}
+.auth-bg { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.auth-bg i { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.7; animation: auth-drift 24s ease-in-out infinite alternate; }
+.auth-bg i:nth-child(1) { width: 52vw; height: 52vw; max-width: 560px; max-height: 560px; background: var(--lilac); left: -14%; top: -18%; }
+.auth-bg i:nth-child(2) { width: 40vw; height: 40vw; max-width: 460px; max-height: 460px; background: var(--peach); right: -10%; top: 18%; animation-delay: -8s; }
+.auth-bg i:nth-child(3) { width: 36vw; height: 36vw; max-width: 420px; max-height: 420px; background: var(--mint); left: 30%; bottom: -24%; animation-delay: -15s; }
+@keyframes auth-drift {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(4%, 5%) scale(1.06); }
+  100% { transform: translate(-4%, 2%) scale(0.97); }
+}
+
+.auth-card {
+  width: 100%; max-width: 460px; min-width: 0;
+  display: grid; gap: 16px; align-content: start;
+  background: var(--white); border-radius: var(--r-lg); box-shadow: var(--shadow-lg);
+  padding: clamp(24px, 5vw, 36px);
+}
+.auth-card-wide { max-width: 720px; }
+
+/* The wordmark, set like the nav's, in jacaranda. */
+.auth-brand {
+  justify-self: start; font-family: var(--display); font-weight: 800; font-size: 1.35rem;
+  letter-spacing: -0.06em; line-height: 1; color: var(--jac);
+}
+.auth-title {
+  font-family: var(--display); font-feature-settings: "lnum" 1, "tnum" 1;
+  font-size: clamp(1.75rem, 5.5vw, 2.3rem); font-weight: 800; letter-spacing: -0.04em; line-height: 1.05;
+}
+.auth-title .em { font-size: 1.08em; }
+.auth-sub { color: var(--ink-2); margin-top: -6px; }
+.auth-small { color: var(--muted); font-size: 0.9rem; }
+.auth-small a, .auth-foot a, .auth-alt a { font-weight: 600; text-underline-offset: 3px; }
+
+.auth-methods, .auth-body { display: grid; gap: 16px; min-width: 0; }
+.auth-form { gap: 14px; }
+.auth-google .btn { gap: 10px; }
+.auth-google .auth-g { width: 20px; height: 20px; }
+.auth-google .form-err { margin-top: 10px; }
+
+/* "or use your email", with a hairline either side. */
+.auth-or {
+  display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 0.85rem; font-weight: 600;
+}
+.auth-or::before, .auth-or::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+/* Log in / Create account: a two-way switch. */
+.auth-tabs {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px;
+  background: var(--soft); border-radius: 999px;
+}
+.auth-tabs button {
+  min-height: 44px; border: 0; border-radius: 999px; background: transparent; color: var(--ink-2);
+  font-weight: 700; cursor: pointer; padding: 0 12px; transition: background-color 0.15s, color 0.15s, box-shadow 0.15s;
+}
+.auth-tabs button:hover { color: var(--ink); }
+.auth-tabs button[aria-pressed="true"] { background: var(--white); color: var(--ink); box-shadow: 0 1px 3px rgba(17, 16, 19, 0.12); }
+
+/* Password with a show/hide button inside the box. */
+.auth-pw { position: relative; display: block; }
+.auth-pw input { padding-right: 56px; }
+.auth-pw-toggle {
+  position: absolute; top: 50%; right: 2px; transform: translateY(-50%);
+  width: 44px; height: 44px; display: grid; place-items: center;
+  border: 0; border-radius: 10px; background: none; color: var(--muted); cursor: pointer;
+}
+.auth-pw-toggle:hover { color: var(--ink); }
+.auth-pw-toggle[aria-pressed="true"] { color: var(--jac); }
+
+.auth-err { display: flex; gap: 8px; align-items: flex-start; }
+.auth-err .ic { width: 18px; height: 18px; margin-top: 2px; }
+
+.auth-alt { color: var(--ink-2); font-size: 0.92rem; text-align: center; }
+.auth-form > .auth-small { text-align: center; }
+.auth .link-btn { min-height: 44px; color: var(--ink); }
+.auth .link-btn:hover { color: var(--jac-ink); }
+
+/* "Check your email" */
+.auth-sent { display: grid; gap: 12px; justify-items: center; text-align: center; padding-block: 4px; }
+.auth-sent h2 {
+  font-family: var(--display); font-size: 1.6rem; font-weight: 800; letter-spacing: -0.035em;
+}
+.auth-sent h2:focus { outline: none; }
+.auth-sent p { color: var(--ink-2); max-width: 40ch; }
+.auth-sent .hint { color: var(--muted); }
+/* The status line stays in the page (so screen readers hear it fill) without adding a gap. */
+.auth-sent .form-ok:empty { margin-top: -12px; }
+.auth-sent-ic {
+  width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--jac-soft); color: var(--jac);
+  animation: auth-pop 0.4s cubic-bezier(0.2, 0.7, 0.2, 1.3) both;
+}
+.auth-sent-ic .ic { width: 28px; height: 28px; }
+@keyframes auth-pop { from { transform: scale(0.6); opacity: 0; } }
+.auth-email { overflow-wrap: anywhere; color: var(--ink); }
+.auth-resend { width: 100%; }
+
+/* Below the card */
+.auth-foot { color: var(--muted); font-size: 0.9rem; text-align: center; max-width: 460px; }
+
+/* ---------- Demo mode: pick a person ---------- */
+.auth-current { font-weight: 600; }
+.auth-current p { min-width: 0; }
+.auth-current a { color: inherit; font-weight: 800; }
+
+.persona-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.persona-list form { margin: 0; }
+.persona {
+  width: 100%; min-height: 88px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 16px;
+  padding: 16px 18px; text-align: left; cursor: pointer;
+  background: var(--white); border: 1px solid var(--line); border-radius: 18px;
+  transition: border-color 0.15s, box-shadow 0.2s, transform 0.15s;
+}
+.persona:hover { border-color: var(--ink-2); box-shadow: var(--shadow); }
+.persona:active { transform: scale(0.99); }
+.persona-av { width: 52px; height: 52px; font-size: 1.05rem; }
+.persona-lilac .persona-av { background: var(--lilac); }
+.persona-peach .persona-av { background: var(--peach); }
+.persona-mint .persona-av { background: var(--mint); }
+.persona-text { display: grid; gap: 2px; min-width: 0; }
+.persona-name { font-weight: 800; font-size: 1.05rem; letter-spacing: -0.01em; }
+.persona-tag { justify-self: start; font-size: 0.78rem; font-weight: 700; color: var(--jac-ink); background: var(--jac-soft); border-radius: 999px; padding: 2px 10px; }
+.persona-does { color: var(--muted); font-size: 0.92rem; margin-top: 4px; }
+.persona-go {
+  width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--ink); color: var(--white); transition: transform 0.2s;
+}
+.persona:hover .persona-go { transform: translateX(3px); }
+.persona-now { align-self: start; }
+
+.auth-demo-note { display: grid; gap: 8px; background: var(--soft); border-radius: 16px; padding: 18px 20px; }
+.auth-demo-note h2 { font-size: 1.05rem; font-weight: 800; letter-spacing: -0.01em; }
+.auth-demo-note p { color: var(--ink-2); }
+.auth-demo-note .hint { color: var(--muted); }
+
+/* ---------- /auth/error ---------- */
+.auth-oops { justify-items: start; }
+.auth-oops-ic { background: var(--warn-soft); color: var(--warn); }
+.auth-actions { width: 100%; display: grid; gap: 10px; margin-top: 4px; }
+
+/* ================= /account ================= */
+
+.acct { display: grid; gap: 24px; }
+.acct-head { display: flex; align-items: center; gap: 18px; min-width: 0; }
+.acct-av { width: 64px; height: 64px; font-size: 1.25rem; background: var(--lilac); }
+.acct-head-text { display: grid; gap: 4px; min-width: 0; }
+.acct-head-text p { overflow-wrap: anywhere; }
+.acct-demo p { min-width: 0; }
+.acct-demo a { color: inherit; font-weight: 800; }
+
+.acct-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.acct-side { display: grid; gap: 20px; min-width: 0; }
+.acct-card { display: grid; gap: 14px; align-content: start; min-width: 0; padding: clamp(18px, 3vw, 24px); }
+.acct-card h2 { font-size: 1.2rem; font-weight: 800; letter-spacing: -0.02em; }
+
+.acct-facts { margin: 0; display: grid; gap: 4px; }
+.acct-facts div { display: grid; gap: 2px; min-width: 0; }
+.acct-facts dt { font-size: 0.76rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.acct-facts dd { margin: 0; font-weight: 700; overflow-wrap: anywhere; }
+.acct-email-hint { margin-top: -8px; }
+
+.acct-save { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; }
+.acct-save .form-ok { min-width: 0; }
+
+.acct-biz { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.acct-biz li { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-width: 0; }
+.acct-biz-name { font-weight: 700; min-width: 0; overflow-wrap: anywhere; }
+.acct-link {
+  justify-self: center; display: inline-flex; align-items: center; gap: 6px; min-height: 44px;
+  font-weight: 600; text-decoration: none;
+}
+.acct-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.acct-link .ic { width: 18px; height: 18px; }
+
+/* My bookings, admin and log out: one list of rows. */
+.acct-links { gap: 0; padding-block: 8px; }
+.acct-links form { margin: 0; }
+.acct-row {
+  width: 100%; min-height: 52px; display: flex; align-items: center; gap: 12px;
+  padding: 0 6px; border: 0; border-radius: 12px; background: none;
+  font-weight: 600; text-align: left; text-decoration: none; cursor: pointer;
+}
+.acct-row + .acct-row, .acct-links form { border-top: 1px solid var(--line); border-radius: 0; }
+.acct-row:hover span { text-decoration: underline; text-underline-offset: 3px; }
+.acct-row span { flex: 1; min-width: 0; }
+.acct-chev { color: var(--muted); }
+.acct-logout { color: var(--err); }
+
+.acct-delete { display: grid; gap: 6px; padding-top: 20px; border-top: 1px solid var(--line); }
+.acct-delete h2 { font-size: 1rem; font-weight: 800; }
+.acct-delete p { color: var(--ink-2); font-size: 0.95rem; max-width: 64ch; }
+.acct-delete a { font-weight: 700; text-underline-offset: 3px; }
+.acct-email { overflow-wrap: anywhere; }
+
+/* ================= Smaller screens ================= */
+@media (max-width: 760px) {
+  .acct-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 600px) {
+  .auth { padding-top: 20px; }
+  .auth-bg i { filter: blur(60px); }
+  .persona { grid-template-columns: auto minmax(0, 1fr); gap: 12px; padding: 14px; }
+  .persona-av { width: 44px; height: 44px; font-size: 0.95rem; }
+  .persona-go { display: none; }
+  .persona-now { grid-column: 2; justify-self: start; }
+  .acct-head { gap: 14px; }
+  .acct-av { width: 52px; height: 52px; font-size: 1.05rem; }
+}
+@media (max-width: 360px) {
+  .auth-card { padding: 20px 16px; border-radius: 20px; }
+  .auth-tabs button { padding: 0 6px; font-size: 0.92rem; }
+}
+
+/* The global reduced-motion rule stops the drift and the pop; this also keeps the
+   blobs still where animation is off. */
+@media (prefers-reduced-motion: reduce) {
+  .auth-bg i, .auth-sent-ic { animation: none; }
+}

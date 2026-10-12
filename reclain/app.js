@@ -1132,3 +1132,1183 @@ renderReviews();
 renderAreas();
 updateNavUser();
 startRotator();
+
+// ===== Business dashboard preview =====
+// A click-through copy of the real app's business dashboard (reclain-app/src/app/business), for
+// The Braid Republic and its owner, Aisha Namuli. It opens at #dashboard (tabs at
+// #dashboard/bookings and so on), so the back button works. Everything lives in memory: reload,
+// or press "Start over", and it's back to the sample data. Bookings made at The Braid Republic in
+// the customer flow are copied in. Every name in here starts pv or sits inside this function, so
+// it can't collide with the customer side.
+(() => {
+  const root = document.getElementById("pvDash");
+  if (!root) return;
+  const view = $("#pvBody");
+
+  // ---------- Kampala time: UTC+3 all year, whatever the viewer's own clock says ----------
+  const OFFSET = 3 * 3600000, MIN = 60000, DAY = 86400000;
+  const WD = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const WD_LONG = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const pad = n => String(n).padStart(2, "0");
+  const DATE_RE = /^\d{4}-\d{2}-\d{2}$/, TIME_RE = /^([01]\d|2[0-3]):([0-5]\d)$/;
+  function kParts(at) {
+    const d = new Date(at + OFFSET);
+    return { date: `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`, minutes: d.getUTCHours() * 60 + d.getUTCMinutes() };
+  }
+  const kToday = now => kParts(now).date;
+  const ymdParts = date => date.split("-").map(Number);
+  function kAt(date, minutes) { const [y, m, d] = ymdParts(date); return Date.UTC(y, m - 1, d, 0, minutes) - OFFSET; }
+  function kAdd(date, n) { const [y, m, d] = ymdParts(date); return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10); }
+  function kWeekday(date) { const [y, m, d] = ymdParts(date); return new Date(Date.UTC(y, m - 1, d)).getUTCDay(); }
+  const kDate = date => `${WD[kWeekday(date)]} ${Number(date.slice(8, 10))} ${MON[Number(date.slice(5, 7)) - 1]}`;
+  const kTime = at => hhmm(kParts(at).minutes);
+  const toMins = s => { const [h, m] = String(s).split(":").map(Number); return h * 60 + (m || 0); };
+  const realDate = s => {
+    if (!DATE_RE.test(s)) return false;
+    const [y, m, d] = ymdParts(s), t = new Date(Date.UTC(y, m - 1, d));
+    return t.getUTCMonth() === m - 1 && t.getUTCDate() === d && y >= 2020 && y <= 2100;
+  };
+  const HALF_HOURS = Array.from({ length: 48 }, (_, i) => hhmm(i * 30));
+  const plural = (n, one, many = one + "s") => `${n} ${n === 1 ? one : many}`;
+  const firstName = name => String(name || "").trim().split(/\s+/)[0] || "";
+  // "UGX 10,000", "10 000" or "10000" -> 10000; null when it isn't a whole number of shillings.
+  const parseUgx = raw => { const c = String(raw).replace(/ugx/i, "").replace(/[\s,]/g, ""); return /^\d{1,9}$/.test(c) ? Number(c) : null; };
+  const palStyle = p => `--c1:${p[0]};--c2:${p[1]};--c3:${p[2]}`;
+
+  // ---------- Fixed choices (copied from reclain-app's dashboard options) ----------
+  const VENUE = "braid-republic";
+  const OWNER = "Aisha Namuli";
+  const PALETTES = [
+    { id: "jacaranda", name: "Jacaranda", colors: ["#2b1a4a", "#7b4fd6", "#f6b9a3"] },
+    { id: "night-gold", name: "Night gold", colors: ["#141416", "#3c3b48", "#e0b252"] },
+    { id: "rosewood", name: "Rosewood", colors: ["#3b1d2a", "#c0587a", "#ffd3c2"] },
+    { id: "coffee", name: "Coffee", colors: ["#2a1d14", "#8a5a3b", "#f0c27a"] },
+    { id: "forest", name: "Forest", colors: ["#0f3b33", "#2f8f78", "#cde9c9"] },
+    { id: "lake", name: "Lake blue", colors: ["#0d2c4d", "#2f7fd1", "#bfe3ff"] },
+    { id: "hibiscus", name: "Hibiscus", colors: ["#4a1030", "#e0457b", "#ffd0dc"] },
+    { id: "mango", name: "Mango", colors: ["#3a2408", "#c8741c", "#ffd88a"] },
+    { id: "slate", name: "Slate", colors: ["#151a22", "#34465c", "#9fb4cc"] },
+    { id: "dusk", name: "Dusk", colors: ["#1f1a3a", "#4a3fa0", "#ff9e7a"] },
+  ];
+  const DURATIONS = [0, 15, 20, 30, 45, 60, 75, 90, 105, 120, 150, 180, 210, 240, 270, 300, 330, 360, 390, 420, 480, 540, 600, 720];
+  const VISIT_MODES = [
+    { value: "salon", title: "Customers come to you", body: "They book a time and turn up at your salon, shop or studio." },
+    { value: "both", title: "Both", body: "Customers choose: they come to you, or you go to them and charge a home-visit fee." },
+    { value: "mobile", title: "You go to them", body: "Every booking happens at the customer's place. Good for cleaning, laundry pickups, repairs and security." },
+  ];
+  const WEEK = [[1, "Mon", "Monday"], [2, "Tue", "Tuesday"], [3, "Wed", "Wednesday"], [4, "Thu", "Thursday"], [5, "Fri", "Friday"], [6, "Sat", "Saturday"], [0, "Sun", "Sunday"]];
+  const METHOD = { mtn: "MTN MoMo", airtel: "Airtel Money", card: "Card", cash: "Cash" };
+  const STATUS = {
+    pending_payment: { label: "Awaiting payment", tone: "warn" },
+    confirmed: { label: "Confirmed", tone: "ok" },
+    completed: { label: "Completed", tone: "info" },
+    cancelled: { label: "Cancelled", tone: "mute" },
+    no_show: { label: "No-show", tone: "err" },
+  };
+  const FILTERS = [
+    { key: "all", label: "All", statuses: [] },
+    { key: "confirmed", label: "Confirmed", statuses: ["confirmed"] },
+    { key: "pending", label: "Awaiting payment", statuses: ["pending_payment"] },
+    { key: "completed", label: "Completed", statuses: ["completed"] },
+    { key: "no_show", label: "No-shows", statuses: ["no_show"] },
+    { key: "cancelled", label: "Cancelled", statuses: ["cancelled"] },
+  ];
+  const TABS = [
+    { id: "overview", label: "Overview", ic: "chart", hash: "#dashboard" },
+    { id: "bookings", label: "Bookings", ic: "cal", hash: "#dashboard/bookings" },
+    { id: "services", label: "Services", ic: "list", hash: "#dashboard/services" },
+    { id: "team", label: "Team", ic: "users", hash: "#dashboard/team" },
+    { id: "settings", label: "Settings", ic: "settings", hash: "#dashboard/settings" },
+  ];
+  const LAST_ONE = "Bookings need someone to assign them to, so keep at least one person taking bookings. Add someone else first.";
+
+  // ---------- Sample data: The Braid Republic from reclain-app's seed-data.json ----------
+  const SEED_SERVICES = [
+    ["Braids", "Knotless braids (mid-back)", "Medium parts. Braiding hair included in the colour of your choice.", 330, 120000],
+    ["Braids", "Boho knotless braids", "Knotless with curly human-hair pieces left out. Clear your afternoon.", 390, 160000],
+    ["Braids", "Passion twists", "Light, bouncy and unbothered by rainy season.", 240, 100000],
+    ["Braids", "Cornrows", "Straight-back or freestyle. Edges laid, not fried.", 90, 40000],
+    ["Locs", "Locs retwist & style", "Palm roll, retwist and a style of your choice.", 150, 60000],
+    ["Locs", "Starter locs", "Comb coils or two-strand twists to start the journey.", 240, 150000],
+    ["Care", "Wash, treat & blow-dry", "Deep-conditioning treatment and a bouncy finish.", 75, 45000],
+  ];
+  const SEED_STAFF = [["Aisha Nakato", "Senior braider"], ["Nana Achan", "Braider"], ["Joy Kemigisha", "Locs specialist"]];
+  // d: days from today (Kampala). svc: indexes into SEED_SERVICES. staff: index into SEED_STAFF.
+  const SEED_BOOKINGS = [
+    { d: -4, at: "10:00", svc: [0], who: "Sarah Kansiime", tel: "772418903", pay: "mtn", staff: 0, status: "completed", paid: "paid" },
+    { d: -2, at: "14:00", svc: [3], who: "Peace Atuhaire", tel: "701556218", pay: "cash", staff: 1, status: "completed", paid: "paid" },
+    { d: -1, at: "09:00", svc: [4], who: "Ivan Mugisha", tel: "783220145", pay: "cash", staff: 2, paid: "unpaid",
+      notes: "Haven't retwisted since March. Please be patient with my roots." },
+    { d: -1, at: "15:00", svc: [6], who: "Juliet Nakimuli", tel: "756901337", pay: "cash", staff: 1, status: "no_show", paid: "unpaid" },
+    { d: 0, at: "08:30", svc: [0], who: "Doreen Akello", tel: "774300982", pay: "mtn", staff: 0, paid: "paid", doneIfOver: true,
+      notes: "Colour 1B please. I'm bringing my own snacks this time." },
+    { d: 0, at: "10:00", svc: [3, 6], who: "Shamim Nakiwala", tel: "700812456", pay: "cash", staff: 1, paid: "unpaid",
+      where: "home", address: "Kiwatule, Plot 14 Kiwatule Road, green gate after the petrol station" },
+    { d: 0, at: "13:00", svc: [4], who: "Moses Ssekitoleko", tel: "752114770", pay: "airtel", staff: 2, paid: "paid",
+      notes: "Might be 10 minutes late. My boda is stuck at the Ntinda lights." },
+    { d: 0, at: "16:00", svc: [3], who: "Hadijah Namutebi", tel: "789445120", pay: "mtn", staff: 1, status: "cancelled", paid: "refunded" },
+    { d: 0, at: "17:30", svc: [6], who: "Christine Achieng", tel: "771093388", pay: "card", staff: 0, paid: "paid" },
+    { d: 1, at: "09:00", svc: [1], who: "Winnie Kyomuhendo", tel: "778650021", pay: "mtn", staff: 0, paid: "paid",
+      notes: "Kwanjula on Saturday! Curls left a little longer at the front, please." },
+    { d: 1, at: "11:00", svc: [2], who: "Rebecca Auma", tel: "702338914", pay: "airtel", staff: 1, status: "pending_payment", paid: "pending" },
+    { d: 2, at: "10:00", svc: [5], who: "Agnes Tumusiime", tel: "785009163", pay: "cash", staff: 2, paid: "unpaid" },
+    { d: 3, at: "08:00", svc: [0], who: "Martha Nabukenya", tel: "753772640", pay: "airtel", staff: 0, paid: "paid",
+      where: "home", address: "Naguru, Kigoowa Road, flat 3B above the pharmacy" },
+    { d: 5, at: "14:00", svc: [6, 3], who: "Faith Ainembabazi", tel: "776512309", pay: "cash", staff: 1, paid: "unpaid" },
+  ];
+  const REFS = ["RCL-8KQ2TA", "RCL-3MXW7P", "RCL-Q9D4LE", "RCL-T2H8VN", "RCL-6ZB1RC", "RCL-J5N7KD", "RCL-W4P9GS",
+    "RCL-C8F3YM", "RCL-L1R6XU", "RCL-H7T2QB", "RCL-N3V8JA", "RCL-E9K5WD", "RCL-U6G4ZP", "RCL-B2S7MH"];
+
+  // The customer side's own copy of the venue, kept so "Start over" can put it back exactly.
+  const PUBLIC_KEYS = ["name", "blurb", "word", "pal", "area", "cat", "visit", "hours", "closed", "skipPro"];
+  const ORIGINAL = (() => { const v = venueById(VENUE); return v ? JSON.parse(JSON.stringify(PUBLIC_KEYS.reduce((o, k) => ({ ...o, [k]: v[k] }), {}))) : null; })();
+
+  let state, seq = 0;
+  const newId = p => `${p}${++seq}`;
+  const ui = { open: false, tab: "overview", date: null, filter: "all", confirm: null, editing: null, homeY: 0, opener: null, title: document.title };
+
+  function fresh() {
+    seq = 0;
+    const now = Date.now(), today = kToday(now);
+    const services = SEED_SERVICES.map(([groupName, name, description, durationMin, price], i) =>
+      ({ id: newId("svc"), groupName, name, description, durationMin, durationLabel: "", price, latestStart: "", active: true, sort: i }));
+    const staff = SEED_STAFF.map(([name, role], i) => ({ id: newId("st"), name, role, active: true, sort: i }));
+    const bookings = SEED_BOOKINGS.map((s, i) => {
+      const items = s.svc.map(k => ({ name: services[k].name, durationMin: services[k].durationMin, price: services[k].price }));
+      const startsAt = kAt(kAdd(today, s.d), toMins(s.at));
+      const endsAt = startsAt + items.reduce((t, x) => t + x.durationMin, 0) * MIN;
+      const homeFee = s.where === "home" ? HOME_FEE : 0;
+      const member = staff[s.staff];
+      return {
+        id: newId("bk"), ref: REFS[i], customerName: s.who, customerPhone: s.tel, items, startsAt, endsAt,
+        location: s.where || "venue", address: s.address || "", staffId: member.id, staffName: member.name, notes: s.notes || "",
+        homeFee, total: items.reduce((t, x) => t + x.price, 0) + homeFee, paymentMethod: s.pay, paymentStatus: s.paid,
+        status: s.doneIfOver && endsAt <= now ? "completed" : s.status || "confirmed",
+        expiresAt: s.status === "pending_payment" ? now + 14 * MIN : null,
+      };
+    });
+    state = {
+      biz: {
+        name: "The Braid Republic", categoryId: "braids", area: "Ntinda",
+        // Same words as the customer page, so the two agree until someone saves a change.
+        blurb: ORIGINAL ? ORIGINAL.blurb : "Neat parts, gentle hands and a playlist good enough for a six-hour boho. Snacks encouraged.",
+        address: "Plot 22, Ntinda Road, next to the taxi stage", phone: "752987654", visitMode: "both", homeVisitFee: HOME_FEE,
+        opensAt: "08:00", closesAt: "20:00", closedDays: [], acceptsCash: true, skipProfessional: false,
+        coverWord: "braids", palette: PALETTES[0].colors.slice(),
+      },
+      services, staff, bookings, imported: new Set(),
+    };
+  }
+
+  // Bookings made at The Braid Republic on the customer side (kept in this browser by the
+  // booking flow) are copied in once each. Returns the ones that are new.
+  function syncCustomer() {
+    const added = [];
+    const list = Array.isArray(store.data.bookings) ? store.data.bookings : [];
+    for (const c of list) {
+      if (!c || c.venue !== VENUE || typeof c.ref !== "string" || state.imported.has(c.ref)) continue;
+      state.imported.add(c.ref);
+      if (!realDate(c.date) || !TIME_RE.test(c.time)) continue;
+      const names = Array.isArray(c.items) ? c.items.map(String) : [];
+      const items = names.map(n => {
+        const s = state.services.find(x => x.name === n) || Object.values(LIB).find(x => x.n === n);
+        return { name: n, durationMin: s ? (s.durationMin ?? s.m) : 0, price: s ? (s.price ?? s.p) : 0 };
+      });
+      const mins = Number(c.mins) || items.reduce((t, x) => t + x.durationMin, 0);
+      const startsAt = kAt(c.date, toMins(c.time));
+      const created = Date.parse(c.createdAt) || Date.now();
+      const pay = METHOD[c.pay] ? c.pay : "cash";
+      const member = state.staff.find(s => s.name === c.pro) || state.staff.find(s => s.active);
+      const prepaid = pay !== "cash";
+      const b = {
+        id: newId("bk"), ref: c.ref, customerName: String(c.name || "").slice(0, 80), customerPhone: String(c.phone || ""),
+        items, startsAt, endsAt: startsAt + Math.max(mins, 30) * MIN, location: c.where === "home" ? "home" : "venue",
+        address: String(c.address || ""), staffId: member ? member.id : null, staffName: member ? member.name : "", notes: String(c.notes || ""),
+        homeFee: c.where === "home" ? HOME_FEE : 0, total: Number(c.total) || 0, paymentMethod: pay,
+        // The flow sends a payment prompt; nobody approves it in a preview, so it waits like a real one.
+        paymentStatus: prepaid ? "pending" : "unpaid", status: prepaid ? "pending_payment" : "confirmed",
+        expiresAt: prepaid ? created + 15 * MIN : null,
+      };
+      state.bookings.push(b);
+      added.push(b);
+    }
+    return added;
+  }
+
+  // Saved settings show up on the customer side too: card, venue page and booking flow.
+  // With `restore`, the venue goes back to exactly how the customer side had it.
+  function syncPublic(restore = false) {
+    const v = venueById(VENUE), b = state.biz;
+    if (!v) return;
+    if (restore) { if (ORIGINAL) { const copy = JSON.parse(JSON.stringify(ORIGINAL)); for (const k of PUBLIC_KEYS) v[k] = copy[k]; } }
+    else {
+      Object.assign(v, {
+        name: b.name, blurb: b.blurb, word: b.coverWord, pal: b.palette.slice(), area: b.area, cat: b.categoryId, visit: b.visitMode,
+        hours: [toMins(b.opensAt) / 60, toMins(b.closesAt) / 60], closed: b.closedDays.slice(), skipPro: b.skipProfessional || undefined,
+      });
+    }
+    try {
+      renderRails(); renderAreas(); renderReviews();
+      if (!$("#results").hidden) runSearch({ scroll: false });
+    } catch (err) { console.error(err); }
+  }
+
+  // ---------- Booking rules (from reclain-app's dashboard logic) ----------
+  const holdExpired = (b, now) => b.status === "pending_payment" && !!b.expiresAt && b.expiresAt <= now;
+  const isLive = (b, now) => b.status === "confirmed" || (b.status === "pending_payment" && !holdExpired(b, now));
+  const isTaking = b => b.status !== "cancelled" && b.paymentStatus !== "refunded" && (b.status === "completed" || b.paymentStatus === "paid");
+  const takings = list => list.reduce((sum, b) => (isTaking(b) ? sum + b.total : sum), 0);
+  const byStart = (a, b) => a.startsAt - b.startsAt;
+  const onDay = date => state.bookings.filter(b => b.startsAt >= kAt(date, 0) && b.startsAt < kAt(kAdd(date, 1), 0)).sort(byStart);
+  const staffOf = b => state.staff.find(s => s.id === b.staffId)?.name || b.staffName || "";
+
+  function refusal(op, b, now) {
+    const started = b.startsAt <= now, ended = b.endsAt <= now;
+    if (op === "complete" || op === "no_show") {
+      if (b.status !== "confirmed") return b.status === "pending_payment" ? "This booking is still waiting for its payment, so it can't be closed yet." : "This booking is already closed.";
+      if (!started) return op === "complete" ? "You can mark it completed once it has started." : "You can mark a no-show once the start time has passed.";
+      return null;
+    }
+    if (op === "cancel") {
+      if (!isLive(b, now)) return "This booking can no longer be cancelled.";
+      if (ended) return "This booking has already finished. Mark it completed or a no-show instead.";
+      return null;
+    }
+    if (op === "cash_paid") {
+      if (b.paymentMethod !== "cash") return "Only cash bookings are marked paid by hand.";
+      if (b.paymentStatus === "paid") return "This booking is already marked as paid.";
+      if (b.status !== "confirmed" && b.status !== "completed") return "Only a confirmed or completed booking can be marked paid.";
+      return null;
+    }
+    return "Something about that request looked off.";
+  }
+  const allowed = (b, now) => ({ complete: !refusal("complete", b, now), noShow: !refusal("no_show", b, now), cancel: !refusal("cancel", b, now), cashPaid: !refusal("cash_paid", b, now) });
+  const statusPill = (b, now) => (holdExpired(b, now) ? { label: "Hold expired", tone: "mute" } : STATUS[b.status]);
+  function paymentPill(b) {
+    const method = METHOD[b.paymentMethod];
+    if (b.paymentStatus === "refunded") return { label: "Refunded", tone: "info" };
+    if (b.paymentStatus === "paid") {
+      if (b.status === "cancelled") return { label: "Paid · refund due", tone: "err" };
+      return { label: b.paymentMethod === "cash" ? "Paid in cash" : `Paid · ${method}`, tone: "ok" };
+    }
+    if (b.status === "cancelled" || b.status === "no_show") return { label: "Not charged", tone: "mute" };
+    if (b.paymentMethod === "cash") return { label: "Cash on the day", tone: "mute" };
+    if (b.paymentStatus === "failed") return { label: `${method} failed`, tone: "err" };
+    if (b.paymentStatus === "pending") return { label: `Waiting for ${method}`, tone: "warn" };
+    return { label: `Not paid yet · ${method}`, tone: "warn" };
+  }
+  const pill = p => `<span class="pv-pill pv-pill-${p.tone}">${esc(p.label)}</span>`;
+  // True when the change would leave nobody on the team taking bookings.
+  function leavesNobodyActive(change) {
+    const staff = state.staff;
+    if (!staff.some(s => s.active)) return false;
+    return !staff.filter(s => !(change.remove && s.id === change.id))
+      .map(s => (s.id === change.id && change.active !== undefined ? { ...s, active: change.active } : s))
+      .some(s => s.active);
+  }
+  function greeting(now) {
+    const h = Math.floor(kParts(now).minutes / 60);
+    return h < 12 ? "Morning" : h < 17 ? "Afternoon" : "Evening";
+  }
+
+  // ---------- Small pieces of markup ----------
+  function phoneHTML(msisdn) {
+    if (!/^\d{9}$/.test(msisdn)) return msisdn ? `<span class="dash-bk-line">${esc(msisdn)}</span>` : "";
+    return `<a class="dash-tel" href="tel:+256${msisdn}">${icon("phone")}<span><span class="sr-only">Call </span>${prettyMsisdn(msisdn)}</span></a>`;
+  }
+  function titleHTML(tab, now) {
+    if (tab === "overview") return `<h1 class="pv-title dash-title" tabindex="-1">${greeting(now)}, <span class="pv-em">${esc(firstName(OWNER))}</span>.</h1>`;
+    const [a, em, z] = { bookings: ["Bookings, ", "sorted", "."], services: ["Your ", "menu", ""], team: ["Your ", "team", ""], settings: ["Your ", "shopfront", ""] }[tab];
+    return `<h1 class="pv-title dash-title" tabindex="-1">${a}<span class="pv-em">${em}</span>${z}</h1>`;
+  }
+  const empty = (title, body) => `<div class="empty"><b>${title}</b><p>${body}</p></div>`;
+  const methodWord = m => (m === "card" ? "card" : METHOD[m]);
+
+  // The buttons on a booking, or the question that replaces them while confirming.
+  function actionsHTML(b, now, who, when, extra = "") {
+    const c = ui.confirm;
+    if (c && c.kind === "bk" && c.id === b.id) {
+      const paid = b.paymentStatus === "paid";
+      const q = c.op === "cancel"
+        ? `<b>Cancel ${esc(who)}'s booking at ${esc(when)}?</b> We'll text ${esc(who)} to let them know${paid ? ` and refund the ${esc(methodWord(b.paymentMethod))} payment` : ""}.`
+        : `<b>Mark ${esc(who)} as a no-show?</b> This closes the booking for good.`;
+      return `<div class="dash-actions"><div class="dash-confirm" role="group" aria-labelledby="pv-q-${b.id}">
+        <p id="pv-q-${b.id}" tabindex="-1">${q}</p>
+        <div class="dash-confirm-btns">
+          <button type="button" class="btn pv-btn-danger pv-btn-sm" data-pv-yes="${c.op}" data-pv-bk="${b.id}">${c.op === "cancel" ? "Yes, cancel it" : "Yes, mark no-show"}</button>
+          <button type="button" class="btn btn-ghost pv-btn-sm" data-pv-keep>Keep it</button>
+        </div></div></div>`;
+    }
+    const a = allowed(b, now);
+    if (!a.complete && !a.cashPaid && !a.noShow && !a.cancel && !extra) return "";
+    const whose = `<span class="sr-only">: ${esc(who)}, ${esc(when)}</span>`;
+    const btn = (cls, attr, label) => `<button type="button" class="btn ${cls} pv-btn-sm" ${attr} data-pv-bk="${b.id}">${label}${whose}</button>`;
+    return `<div class="dash-actions"><div class="dash-actions-btns">
+      ${a.complete ? btn("btn-black", 'data-pv-op="complete"', "Mark completed") : ""}
+      ${a.cashPaid ? btn("btn-ghost", 'data-pv-op="cash_paid"', "Mark cash paid") : ""}
+      ${a.noShow ? btn("btn-ghost", 'data-pv-ask="no_show"', "Mark no-show") : ""}
+      ${a.cancel ? btn("pv-btn-danger", 'data-pv-ask="cancel"', "Cancel booking") : ""}
+      ${extra}
+    </div></div>`;
+  }
+
+  // One booking as the venue sees it: when, who (tap to call), what, where, the money, the buttons.
+  function bookingCard(b, now, showDate = false) {
+    const start = kTime(b.startsAt), end = kTime(b.endsAt), date = kDate(kParts(b.startsAt).date);
+    const mins = b.items.reduce((s, i) => s + i.durationMin, 0);
+    const closed = b.status === "cancelled" || b.status === "no_show" || holdExpired(b, now);
+    const name = b.customerName.trim(), staff = staffOf(b);
+    return `<article class="dash-bk${closed ? " is-closed" : ""}" id="pv-bk-${b.id}" aria-labelledby="pv-bkh-${b.id}">
+      <div class="dash-bk-when" aria-hidden="true">
+        ${showDate ? `<span class="dash-bk-date">${date}</span>` : ""}
+        <b class="display">${start}</b><span class="pv-muted">${end}</span>${mins ? `<small class="pv-muted">${dur(mins)}</small>` : ""}
+      </div>
+      <div class="dash-bk-who">
+        <h3 id="pv-bkh-${b.id}" tabindex="-1"><span class="sr-only">${showDate ? `${date}, ` : ""}${start} to ${end}${mins ? ` (${dur(mins)})` : ""}: </span>${esc(name || "Customer")}</h3>
+        ${phoneHTML(b.customerPhone)}
+        <p class="dash-bk-line">${icon(b.location === "home" ? "home" : "store")}<span>${b.location === "home" ? `Home visit: ${esc(b.address || "address not given")}` : "At the venue"}</span></p>
+        ${staff ? `<p class="dash-bk-line">${icon("user")}<span>With ${esc(staff)}</span></p>` : ""}
+      </div>
+      <div class="dash-bk-what">
+        <ul class="dash-bk-items">${b.items.map(i => `<li>${esc(i.name)}</li>`).join("")}</ul>
+        ${b.notes.trim() ? `<p class="dash-bk-notes"><span class="sr-only">Notes from the customer: </span>${esc(b.notes.trim())}</p>` : ""}
+      </div>
+      <div class="dash-bk-money">
+        <b>${ugx(b.total)}</b>
+        ${b.homeFee ? `<small class="pv-muted">Includes ${ugx(b.homeFee)} home-visit fee</small>` : ""}
+        <span class="dash-pills">${pill(statusPill(b, now))}${pill(paymentPill(b))}</span>
+        <small class="pv-muted dash-bk-ref">Ref ${esc(b.ref)}</small>
+      </div>
+      ${actionsHTML(b, now, firstName(name) || "the customer", showDate ? `${date}, ${start}` : start)}
+    </article>`;
+  }
+
+  // A picture of the day from opening to closing time. Decorative: the list says it in words.
+  function stripHTML(list, date, now) {
+    const open = toMins(state.biz.opensAt), close = toMins(state.biz.closesAt), span = close - open;
+    if (span <= 0) return "";
+    const r1 = n => Math.round(n * 10) / 10, clamp = n => Math.min(span, Math.max(0, n)), day0 = kAt(date, 0);
+    const blocks = list.filter(b => b.status !== "cancelled" && !holdExpired(b, now)).map(b => {
+      const s = clamp((b.startsAt - day0) / MIN - open), e = clamp((b.endsAt - day0) / MIN - open);
+      return { left: r1((s / span) * 100), width: r1(Math.max(((e - s) / span) * 100, 1.5)), past: b.endsAt <= now };
+    }).filter(b => b.left < 100);
+    const step = span > 600 ? 120 : 60, ticks = [];
+    for (let t = Math.ceil(open / 60) * 60; t <= close; t += step) ticks.push(`<span style="left:${r1(((t - open) / span) * 100)}%">${pad(t / 60)}</span>`);
+    const p = kParts(now);
+    const marker = p.date === date && p.minutes >= open && p.minutes <= close ? r1(((p.minutes - open) / span) * 100) : null;
+    return `<div class="dash-strip" aria-hidden="true"><div class="dash-strip-bar">
+      ${blocks.map(b => `<span class="dash-strip-block${b.past ? " is-past" : ""}" style="left:${b.left}%;width:${b.width}%"></span>`).join("")}
+      ${marker !== null ? `<span class="dash-strip-now" style="left:${marker}%"></span>` : ""}
+    </div><div class="dash-strip-ticks">${ticks.join("")}</div></div>`;
+  }
+
+  // ---------- Overview ----------
+  function viewOverview(now) {
+    const b = state.biz, today = kToday(now), tomorrow = kAdd(today, 1);
+    const todays = onDay(today);
+    const timeline = todays.filter(x => x.status !== "cancelled" && !holdExpired(x, now));
+    const dropped = todays.length - timeline.length;
+    const weekStart = kAdd(today, -((kWeekday(today) + 6) % 7)), weekEnd = kAdd(weekStart, 6);
+    const thisWeek = state.bookings.filter(x => x.startsAt >= kAt(weekStart, 0) && x.startsAt < kAt(kAdd(weekStart, 7), 0));
+    const next7 = state.bookings.filter(x => isLive(x, now) && x.startsAt >= now && x.startsAt < now + 7 * DAY).length;
+    const comingUp = state.bookings.filter(x => x.startsAt >= kAt(tomorrow, 0) && x.startsAt < kAt(kAdd(today, 61), 0) && isLive(x, now)).sort(byStart).slice(0, 5);
+    const earlier = state.bookings.filter(x => x.status === "confirmed" && x.startsAt >= kAt(kAdd(today, -14), 0) && x.startsAt < kAt(today, 0)).sort(byStart);
+    const stillOpen = earlier.slice(0, 5);
+    const nowAt = timeline.findIndex(x => x.startsAt > now);
+    const wd = kWeekday(today), closedToday = b.closedDays.includes(wd);
+    const nowLine = `<li class="dash-now" aria-hidden="true"><span>Now · ${kTime(now)}</span></li>`;
+
+    const tl = timeline.length
+      ? `<ol class="dash-tl">${timeline.map((x, i) => `${i === nowAt ? nowLine : ""}<li>${bookingCard(x, now)}</li>`).join("")}${nowAt === -1 ? nowLine : ""}</ol>`
+      : empty(closedToday ? "A day off. Enjoy it." : "Nothing booked today.", "A quiet day is a good day to polish your menu or add a new service.");
+
+    return `${titleHTML("overview", now)}
+      <section class="dash-stats" aria-label="This week in numbers">
+        <div class="dash-stat"><span class="dash-stat-label">Today</span><b class="display">${timeline.length}</b><span class="pv-muted">${timeline.length === 1 ? "booking" : "bookings"}</span></div>
+        <div class="dash-stat"><span class="dash-stat-label">Next 7 days</span><b class="display">${next7}</b><span class="pv-muted">still to come</span></div>
+        <div class="dash-stat dash-stat-money"><span class="dash-stat-label">Takings this week</span><b class="display">${ugx(takings(thisWeek))}</b>
+          <span class="pv-muted">Completed or paid, ${kDate(weekStart)} to ${kDate(weekEnd)}</span></div>
+      </section>
+
+      <section class="dash-section" aria-labelledby="pv-today-h">
+        <div class="dash-section-head">
+          <div><h2 id="pv-today-h">Today, ${kDate(today)}</h2>
+            <p class="pv-muted">${closedToday ? `You're closed on ${WD_LONG[wd]}s.` : `Open ${esc(b.opensAt)} to ${esc(b.closesAt)}, Kampala time.`}${dropped ? ` ${plural(dropped, "booking")} cancelled or unpaid.` : ""}</p></div>
+          <a class="btn btn-ghost pv-btn-sm" href="#dashboard/bookings" data-pv-goto="${today}">Open the day view</a>
+        </div>
+        ${closedToday ? "" : stripHTML(timeline, today, now)}
+        ${tl}
+      </section>
+
+      ${stillOpen.length ? `<section class="dash-section" aria-labelledby="pv-open-h">
+        <div class="dash-section-head"><div><h2 id="pv-open-h">Still open from earlier</h2>
+          <p class="pv-muted">Mark these completed or no-shows so your takings add up.</p></div></div>
+        <ul class="dash-list">${stillOpen.map(x => `<li>${bookingCard(x, now, true)}</li>`).join("")}</ul>
+        ${earlier.length > stillOpen.length ? `<p class="pv-muted dash-more">And ${plural(earlier.length - stillOpen.length, "more")}. Find them by date in Bookings.</p>` : ""}
+      </section>` : ""}
+
+      <section class="dash-section" aria-labelledby="pv-next-h">
+        <div class="dash-section-head"><h2 id="pv-next-h">Coming up</h2>
+          <a class="link-btn" href="#dashboard/bookings" data-pv-goto="${tomorrow}">See tomorrow</a></div>
+        ${comingUp.length ? upcomingTable(comingUp, now) : empty("Nothing booked after today yet.", "New bookings land here the moment they're made.")}
+      </section>`;
+  }
+
+  // The next few bookings as a table with quick actions. It turns into cards on smaller screens.
+  function upcomingTable(list, now) {
+    const rows = list.map(b => {
+      const date = kParts(b.startsAt).date, start = kTime(b.startsAt);
+      const name = b.customerName.trim(), who = firstName(name) || "the customer", staff = staffOf(b);
+      const when = `${kDate(date)}, ${start}`;
+      return `<tr id="pv-bk-${b.id}">
+        <td data-label="When" class="pv-table-when"><div><a class="pv-day-link" href="#dashboard/bookings" data-pv-goto="${date}"><span class="sr-only">Open the day view for </span>${kDate(date)}</a><span>${start} to ${kTime(b.endsAt)}</span></div></td>
+        <th scope="row" data-label="Customer"><span class="pv-table-name" id="pv-bkh-${b.id}" tabindex="-1">${esc(name || "Customer")}</span>${phoneHTML(b.customerPhone)}${b.location === "home" ? `<span class="pv-table-sub">${icon("home")}Home visit</span>` : ""}</th>
+        <td data-label="Services"><div>${b.items.map(i => esc(i.name)).join(", ")}${staff ? `<span class="pv-table-sub">With ${esc(staff)}</span>` : ""}</div></td>
+        <td data-label="Total" class="pv-table-num"><div>${ugx(b.total)}</div></td>
+        <td data-label="Status"><div class="dash-pills">${pill(statusPill(b, now))}${pill(paymentPill(b))}</div></td>
+        <td class="pv-table-acts">${actionsHTML(b, now, who, when)}</td>
+      </tr>`;
+    }).join("");
+    return `<div class="pv-table-wrap"><table class="pv-table">
+      <caption class="sr-only">The next ${plural(list.length, "booking")} after today</caption>
+      <thead><tr><th scope="col">When</th><th scope="col">Customer</th><th scope="col">Services</th><th scope="col">Total</th><th scope="col">Status</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+      <tbody>${rows}</tbody></table></div>`;
+  }
+
+  // ---------- Bookings: the day view ----------
+  function viewBookings(now) {
+    const today = kToday(now), date = ui.date || today;
+    const all = onDay(date);
+    const f = FILTERS.find(x => x.key === ui.filter) || FILTERS[0];
+    const pick = x => (x.statuses.length ? all.filter(b => x.statuses.includes(b.status)) : all);
+    const list = pick(f);
+    const wd = kWeekday(date), closed = state.biz.closedDays.includes(wd);
+    const rel = date === today ? "Today" : date === kAdd(today, 1) ? "Tomorrow" : date === kAdd(today, -1) ? "Yesterday" : "";
+    const earned = takings(list);
+    let emptyBody = "Bookings appear here the moment a customer makes one.";
+    if (f.key !== "all") emptyBody = `<button type="button" class="link-btn" data-pv-filter="all">Show every booking that day</button>`;
+    else if (closed) emptyBody = "You're closed that day, so customers can't book it.";
+    else if (date < today) emptyBody = "Nothing to tidy up here.";
+
+    return `${titleHTML("bookings")}
+      <div class="dash-day">
+        <div class="dash-day-nav">
+          <button type="button" class="icon-btn" data-pv-day="-1" aria-label="Previous day, ${kDate(kAdd(date, -1))}">${icon("left")}</button>
+          <h2 class="dash-day-label" id="pvDayLabel" tabindex="-1">${rel ? `<span class="dash-day-rel">${rel}</span>` : ""}${kDate(date)}</h2>
+          <button type="button" class="icon-btn" data-pv-day="1" aria-label="Next day, ${kDate(kAdd(date, 1))}">${icon("right")}</button>
+        </div>
+        <form class="dash-day-form" data-pv-form="day" novalidate>
+          <div class="field"><label for="pvDate">Go to a date</label><input type="date" id="pvDate" name="date" value="${date}" required></div>
+          <button type="submit" class="btn btn-black pv-btn-sm">Show day</button>
+          ${date !== today ? `<button type="button" class="link-btn" data-pv-today>Back to today</button>` : ""}
+        </form>
+      </div>
+      <div role="group" aria-label="Filter by status">
+        <ul class="chips dash-tabs dash-filter">${FILTERS.map(x => {
+          const n = pick(x).length;
+          return `<li><button type="button" class="chip" data-pv-filter="${x.key}" aria-pressed="${x.key === f.key}">${x.label}<span class="dash-count">${n}<span class="sr-only"> ${n === 1 ? "booking" : "bookings"}</span></span></button></li>`;
+        }).join("")}</ul>
+      </div>
+      <p class="pv-muted dash-summary">${plural(list.length, "booking")}${f.key !== "all" ? ` (${f.label.toLowerCase()})` : ""}${earned ? ` · ${ugx(earned)} completed or paid` : ""}${closed ? ` · You're closed on ${WD_LONG[wd]}s` : ""}</p>
+      ${list.length
+        ? `<ul class="dash-list">${list.map(b => `<li>${bookingCard(b, now)}</li>`).join("")}</ul>`
+        : `<div class="empty"><b>${f.key === "all" ? `Nothing booked for ${kDate(date)}.` : `No ${f.label.toLowerCase()} bookings on ${kDate(date)}.`}</b><p>${emptyBody}</p></div>`}`;
+  }
+
+  // ---------- Services ----------
+  function serviceGroups() {
+    const groups = [];
+    for (const s of [...state.services].sort((a, b) => a.sort - b.sort || a.name.localeCompare(b.name))) {
+      const name = s.groupName.trim() || "Services";
+      let g = groups.find(x => x.name === name);
+      if (!g) groups.push((g = { name, services: [] }));
+      g.services.push(s);
+    }
+    return groups;
+  }
+  // A labelled control with an optional hint and a slot for its error message.
+  function field(id, name, label, control, { hint = "", optional = false, full = false, cls = "" } = {}) {
+    return `<div class="field${full ? " full" : ""}${cls ? ` ${cls}` : ""}">
+      <label for="${id}">${label}${optional ? ' <span class="hint">(optional)</span>' : ""}</label>
+      ${control}
+      ${hint ? `<small class="hint" id="${id}-hint">${hint}</small>` : ""}
+      <small class="hint is-error" id="${id}-err" data-pv-err="${name}" hidden></small>
+    </div>`;
+  }
+  const desc = (id, hint) => (hint ? ` aria-describedby="${id}-hint"` : "");
+  const sel = (on) => (on ? " selected" : "");
+
+  function viewServices() {
+    const groups = serviceGroups(), n = state.services.length, on = state.services.filter(s => s.active).length;
+    const ed = ui.editing && ui.editing.kind === "svc" ? ui.editing.id : null;
+    return `${titleHTML("services")}
+      <p class="dash-lede">What customers can book, grouped the way they see it on your page. Prices are what they pay; the time decides how long the slot is held.</p>
+      <div class="dash-menu">
+        <div class="dash-toolbar">
+          <p class="pv-muted">${n ? `${plural(n, "service")}, ${on} on show.` : "Nothing on the menu yet."}</p>
+          ${ed !== "new" ? `<button type="button" class="btn btn-black" data-pv-add="svc">${icon("plus")}Add a service</button>` : ""}
+        </div>
+        ${ed === "new" ? serviceForm(null, groups) : ""}
+        ${!groups.length && ed !== "new" ? empty("Your menu is empty.", "Add your first service so customers have something to book. Start with the one people ask for most.") : ""}
+        ${groups.map((g, gi) => `<section class="dash-group" aria-labelledby="pv-grp-${gi}"><h2 id="pv-grp-${gi}">${esc(g.name)}</h2>
+          <ul class="dash-rows">${g.services.map(s => `<li>${ed === s.id ? serviceForm(s, groups) : serviceRow(s)}</li>`).join("")}</ul></section>`).join("")}
+      </div>`;
+  }
+
+  function serviceRow(s) {
+    const asking = ui.confirm && ui.confirm.kind === "svc" && ui.confirm.id === s.id;
+    const what = `<span class="sr-only"> ${esc(s.name)}</span>`;
+    return `<article class="dash-row${s.active ? "" : " is-hidden"}" aria-labelledby="pv-svc-${s.id}">
+      <div class="dash-row-main">
+        <h3 id="pv-svc-${s.id}">${esc(s.name)}${s.active ? "" : ' <span class="pv-pill pv-pill-mute">Hidden</span>'}</h3>
+        ${s.description ? `<p class="pv-muted">${esc(s.description)}</p>` : ""}
+        ${s.latestStart ? `<p class="dash-row-note">Last start ${esc(s.latestStart)}</p>` : ""}
+      </div>
+      <p class="dash-row-len">${icon("clock")}${esc(s.durationLabel || dur(s.durationMin) || "No set time")}</p>
+      <p class="dash-row-price">${s.price === 0 ? "Free" : ugx(s.price)}</p>
+      ${asking
+        ? `<div class="dash-confirm" role="group" aria-labelledby="pv-q-${s.id}">
+            <p id="pv-q-${s.id}" tabindex="-1"><b>Delete ${esc(s.name)}?</b> Past bookings keep their details. To take it off the menu for a while, edit it and untick “Show on your menu” instead.</p>
+            <div class="dash-confirm-btns">
+              <button type="button" class="btn pv-btn-danger pv-btn-sm" data-pv-yes="delete" data-pv-svc-id="${s.id}">Yes, delete it</button>
+              <button type="button" class="btn btn-ghost pv-btn-sm" data-pv-keep>Keep it</button>
+            </div></div>`
+        : `<div class="dash-row-btns">
+            <button type="button" class="btn btn-ghost pv-btn-sm" id="pv-edit-${s.id}" data-pv-edit="svc" data-pv-id="${s.id}">${icon("edit")}Edit${what}</button>
+            <button type="button" class="btn pv-btn-danger pv-btn-sm" data-pv-del="svc" data-pv-id="${s.id}">${icon("trash")}Delete${what}</button>
+          </div>`}
+    </article>`;
+  }
+
+  function serviceForm(s, groups) {
+    const f = s ? `pvs-${s.id}` : "pvs-new", H = s ? "h3" : "h2", { opensAt, closesAt } = state.biz;
+    const current = s ? s.durationMin : 60;
+    const durs = DURATIONS.includes(current) ? DURATIONS : [...DURATIONS, current].sort((a, b) => a - b);
+    const times = HALF_HOURS.filter(t => (s && t === s.latestStart) || (t >= opensAt && t < closesAt));
+    const v = k => esc(s ? s[k] : "");
+    return `<form class="pv-card dash-form" data-pv-form="svc" data-pv-id="${s ? s.id : "new"}" novalidate aria-labelledby="${f}-title">
+      <${H} id="${f}-title" tabindex="-1">${s ? `Edit ${esc(s.name)}` : "Add a service"}</${H}>
+      <div class="form-grid">
+        ${field(`${f}-name`, "name", "Name", `<input id="${f}-name" name="name" value="${v("name")}" maxlength="80" required autocomplete="off" placeholder="Knotless braids, mid-back">`)}
+        ${field(`${f}-group`, "groupName", "Group", `<input id="${f}-group" name="groupName" list="${f}-groups" value="${v("groupName")}" maxlength="40" autocomplete="off" placeholder="Braids">
+          <datalist id="${f}-groups">${groups.map(g => `<option value="${esc(g.name)}"></option>`).join("")}</datalist>`, { optional: true })}
+        ${field(`${f}-desc`, "description", "Description", `<textarea id="${f}-desc" name="description" maxlength="300" rows="2" placeholder="What's included, how long it lasts, what to bring.">${v("description")}</textarea>`, { optional: true, full: true })}
+        ${field(`${f}-dur`, "durationMin", "How long it takes", `<select id="${f}-dur" name="durationMin">${durs.map(d => `<option value="${d}"${sel(d === current)}>${d === 0 ? "No set time (pickup or drop-off)" : dur(d)}</option>`).join("")}</select>`)}
+        ${field(`${f}-lab`, "durationLabel", "Length note", `<input id="${f}-lab" name="durationLabel" value="${v("durationLabel")}" maxlength="40" autocomplete="off" placeholder="Back next working day"${desc(`${f}-lab`, true)}>`,
+          { optional: true, hint: "Shown instead of the time, for things like laundry." })}
+        ${field(`${f}-price`, "price", "Price (UGX)", `<input id="${f}-price" name="price" inputmode="numeric" value="${s ? s.price : ""}" required autocomplete="off" placeholder="45000">`)}
+        ${field(`${f}-latest`, "latestStart", "Latest start time", `<select id="${f}-latest" name="latestStart"${desc(`${f}-latest`, true)}><option value="">Any time we're open</option>${times.map(t => `<option value="${t}"${sel(s && t === s.latestStart)}>${t}</option>`).join("")}</select>`,
+          { optional: true, hint: "For things that must start early, like a full set of knotless." })}
+        <label class="pv-check full"><input type="checkbox" name="active"${!s || s.active ? " checked" : ""}>Show on your menu</label>
+      </div>
+      <div class="dash-live" role="status" aria-live="polite" data-pv-msg></div>
+      <div class="dash-form-btns">
+        <button type="submit" class="btn btn-black">${s ? "Save changes" : "Add to menu"}</button>
+        <button type="button" class="btn btn-ghost" data-pv-close>Close without saving</button>
+      </div>
+    </form>`;
+  }
+
+  // ---------- Team ----------
+  function upcomingFor(id, now) { return state.bookings.filter(b => b.staffId === id && b.startsAt >= now && isLive(b, now)).length; }
+  function viewTeam(now) {
+    const team = [...state.staff].sort((a, b) => a.sort - b.sort || a.name.localeCompare(b.name));
+    const active = team.filter(s => s.active).length;
+    const ed = ui.editing && ui.editing.kind === "staff" ? ui.editing.id : null;
+    return `${titleHTML("team")}
+      <p class="dash-lede">${state.biz.skipProfessional ? "Customers don't pick a professional at your place, so new bookings go to whoever is free." : "Customers can pick who they'd like, or let us choose whoever is free."} Only people taking bookings are offered.</p>
+      <div class="dash-menu">
+        <div class="dash-toolbar">
+          <p class="pv-muted">${team.length ? `${plural(team.length, "person", "people")}, ${active} taking bookings.` : "Nobody on the team yet."}</p>
+          ${ed !== "new" ? `<button type="button" class="btn btn-black" data-pv-add="staff">${icon("plus")}Add someone</button>` : ""}
+        </div>
+        ${ed === "new" ? staffForm(null, false) : ""}
+        <section aria-labelledby="pv-team-h"><h2 id="pv-team-h" class="sr-only">People on the team</h2>
+          <ul class="dash-rows">${team.map(s => {
+            const last = leavesNobodyActive({ id: s.id, remove: true });
+            return `<li>${ed === s.id ? staffForm(s, last) : staffRow(s, last, upcomingFor(s.id, now))}</li>`;
+          }).join("")}</ul>
+        </section>
+      </div>`;
+  }
+
+  function staffRow(s, last, upcoming) {
+    const asking = ui.confirm && ui.confirm.kind === "staff" && ui.confirm.id === s.id;
+    const first = firstName(s.name), who = `<span class="sr-only"> ${esc(s.name)}</span>`;
+    let confirm = "";
+    if (asking && last) {
+      confirm = `<div class="dash-confirm" role="group" aria-labelledby="pv-q-${s.id}">
+        <p id="pv-q-${s.id}" tabindex="-1"><b>${esc(first)} is the only person taking bookings.</b> Bookings need someone to go to, so add someone else first.</p>
+        <div class="dash-confirm-btns"><button type="button" class="btn btn-ghost pv-btn-sm" data-pv-keep>Got it</button></div></div>`;
+    } else if (asking) {
+      confirm = `<div class="dash-confirm" role="group" aria-labelledby="pv-q-${s.id}">
+        <p id="pv-q-${s.id}" tabindex="-1"><b>Remove ${esc(s.name)} from the team?</b> ${upcoming
+          ? `${esc(first)} has ${plural(upcoming, "upcoming booking")}. They stay booked, just without a name on them.`
+          : "Past bookings keep their details."} To pause ${esc(first)} instead, edit them and untick “Taking bookings”.</p>
+        <div class="dash-confirm-btns">
+          <button type="button" class="btn pv-btn-danger pv-btn-sm" data-pv-yes="remove" data-pv-staff-id="${s.id}">Yes, remove</button>
+          <button type="button" class="btn btn-ghost pv-btn-sm" data-pv-keep>Keep ${esc(first)}</button>
+        </div></div>`;
+    }
+    return `<article class="dash-row dash-person${s.active ? "" : " is-hidden"}" aria-labelledby="pv-st-${s.id}">
+      <span class="avatar" aria-hidden="true">${esc(initials(s.name))}</span>
+      <div class="dash-row-main"><h3 id="pv-st-${s.id}">${esc(s.name)}</h3><p class="pv-muted">${esc(s.role || "No role set")}</p></div>
+      <p class="dash-row-len">${s.active ? pill({ label: "Taking bookings", tone: "ok" }) : pill({ label: "Not taking bookings", tone: "mute" })}${upcoming ? `<span class="pv-muted">${upcoming} upcoming</span>` : ""}</p>
+      ${confirm || `<div class="dash-row-btns">
+        <button type="button" class="btn btn-ghost pv-btn-sm" id="pv-edit-${s.id}" data-pv-edit="staff" data-pv-id="${s.id}">${icon("edit")}Edit${who}</button>
+        <button type="button" class="btn pv-btn-danger pv-btn-sm" data-pv-del="staff" data-pv-id="${s.id}">${icon("trash")}Remove${who}</button>
+      </div>`}
+    </article>`;
+  }
+
+  function staffForm(s, last) {
+    const f = s ? `pvt-${s.id}` : "pvt-new", H = s ? "h3" : "h2";
+    return `<form class="pv-card dash-form" data-pv-form="staff" data-pv-id="${s ? s.id : "new"}" novalidate aria-labelledby="${f}-title">
+      <${H} id="${f}-title" tabindex="-1">${s ? `Edit ${esc(s.name)}` : "Add someone to the team"}</${H}>
+      <div class="form-grid">
+        ${field(`${f}-name`, "name", "Name", `<input id="${f}-name" name="name" value="${esc(s ? s.name : "")}" maxlength="60" required autocomplete="off" placeholder="Joy Kemigisha">`)}
+        ${field(`${f}-role`, "role", "Role", `<input id="${f}-role" name="role" value="${esc(s ? s.role : "")}" maxlength="40" autocomplete="off" placeholder="Senior braider">`, { optional: true })}
+        <div class="full">
+          ${last
+            ? `<input type="hidden" name="active" value="on"><p class="pv-check">${icon("check")}<span>Taking bookings. ${esc(firstName(s.name))} is the only one, so this stays on until you add someone else.</span></p>`
+            : `<label class="pv-check"><input type="checkbox" name="active"${!s || s.active ? " checked" : ""}>Taking bookings</label>`}
+          <small class="hint is-error" id="${f}-active-err" data-pv-err="active" hidden></small>
+        </div>
+      </div>
+      <div class="dash-live" role="status" aria-live="polite" data-pv-msg></div>
+      <div class="dash-form-btns">
+        <button type="submit" class="btn btn-black">${s ? "Save changes" : "Add to the team"}</button>
+        <button type="button" class="btn btn-ghost" data-pv-close>Close without saving</button>
+      </div>
+    </form>`;
+  }
+
+  // ---------- Settings ----------
+  function previewCard(v) {
+    let badge = "";
+    if (v.visitMode === "both") badge = `<span class="cover-badge">${icon("home")}Home visits</span>`;
+    else if (v.visitMode === "mobile") badge = `<span class="cover-badge">${icon("home")}Comes to you</span>`;
+    const venue = venueById(VENUE);
+    return `<div class="cover" style="${palStyle(v.palette)}">${badge}<span class="cover-word">${esc(v.coverWord.trim() || "hello")}</span></div>
+      <div class="vcard-body">
+        <span class="vcard-name">${esc(v.name.trim() || "Your business")}</span>
+        ${venue ? ratingHTML(venue) : ""}
+        <span class="vcard-area">${esc(v.area ? placeOf(v.area) : "Your area")}</span>
+        <span class="tag">${esc(catName(v.categoryId))}</span>
+      </div>`;
+  }
+
+  function viewSettings() {
+    const b = state.biz, f = "pvf";
+    const paletteId = (PALETTES.find(p => p.colors.join() === b.palette.join()) || PALETTES[0]).id;
+    const areas = Object.entries(REGIONS).map(([r, list]) => `<optgroup label="${esc(r)}">${list.map(a => `<option value="${esc(a)}"${sel(a === b.area)}>${esc(a)}</option>`).join("")}</optgroup>`).join("");
+    const hours = cur => HALF_HOURS.map(t => `<option value="${t}"${sel(t === cur)}>${t}</option>`).join("");
+    return `${titleHTML("settings")}
+      <p class="dash-lede">What customers see on your page and in search, and when they can book you.</p>
+      <form class="dash-bform" data-pv-form="settings" novalidate>
+        <fieldset class="pv-card dash-fieldset"><legend>The basics</legend>
+          <div class="form-grid">
+            ${field(`${f}-name`, "name", "Business name", `<input id="${f}-name" name="name" value="${esc(b.name)}" maxlength="80" required autocomplete="organization" placeholder="The Braid Republic">`, { full: true })}
+            ${field(`${f}-cat`, "categoryId", "What you do", `<select id="${f}-cat" name="categoryId">${CATS.map(c => `<option value="${c.id}"${sel(c.id === b.categoryId)}>${esc(c.name)}</option>`).join("")}</select>`)}
+            ${field(`${f}-area`, "area", "Area", `<select id="${f}-area" name="area">${areas}</select>`)}
+            ${field(`${f}-blurb`, "blurb", "A line or two about you", `<textarea id="${f}-blurb" name="blurb" maxlength="400" rows="3" placeholder="Neat parts, gentle hands and a playlist good enough for a six-hour boho."${desc(`${f}-blurb`, true)}>${esc(b.blurb)}</textarea>`,
+              { optional: true, full: true, hint: `<span data-pv-count="blurb">${b.blurb.length}</span> of 400 characters. Shown at the top of your page.` })}
+            ${field(`${f}-addr`, "address", "Address", `<input id="${f}-addr" name="address" value="${esc(b.address)}" maxlength="200" autocomplete="street-address" placeholder="Plot 12, Ntinda Road, opposite the petrol station"${desc(`${f}-addr`, true)}>`,
+              { optional: true, full: true, hint: "Directions people can follow. Landmarks beat plot numbers." })}
+            ${field(`${f}-phone`, "phone", "Mobile number", `<input id="${f}-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" value="${b.phone ? prettyMsisdn(b.phone) : ""}" placeholder="0772 123 456"${desc(`${f}-phone`, true)}>`,
+              { optional: true, hint: "We text new bookings here. Customers see it on their booking." })}
+          </div>
+        </fieldset>
+
+        <fieldset class="pv-card dash-fieldset" data-pv-group="visitMode"><legend>Where bookings happen</legend>
+          <div class="dash-options">${VISIT_MODES.map(m => `<label class="dash-option"><input type="radio" name="visitMode" value="${m.value}"${m.value === b.visitMode ? " checked" : ""}>
+            <span><b>${m.title}</b><span class="pv-muted">${m.body}</span></span></label>`).join("")}</div>
+          <small class="hint is-error" id="${f}-visit-err" data-pv-err="visitMode" hidden></small>
+          <div data-pv-fee${b.visitMode === "both" ? "" : " hidden"}>
+            ${field(`${f}-fee`, "homeVisitFee", "Home-visit fee (UGX)", `<input id="${f}-fee" name="homeVisitFee" inputmode="numeric" value="${b.homeVisitFee}" autocomplete="off"${desc(`${f}-fee`, true)}>`,
+              { cls: "dash-fee", hint: "Added to the bill when a customer picks “At my place”. Use 0 for free home visits." })}
+          </div>
+        </fieldset>
+
+        <fieldset class="pv-card dash-fieldset"><legend>Opening hours</legend>
+          <div class="form-grid">
+            ${field(`${f}-opens`, "opensAt", "Opens at", `<select id="${f}-opens" name="opensAt">${hours(b.opensAt)}</select>`)}
+            ${field(`${f}-closes`, "closesAt", "Closes at", `<select id="${f}-closes" name="closesAt">${hours(b.closesAt)}</select>`)}
+          </div>
+          <fieldset class="dash-subfieldset" data-pv-group="closedDays" aria-describedby="${f}-days-hint"><legend>Closed on</legend>
+            <div class="dash-daychips">${WEEK.map(([d, short, long]) => `<label class="dash-daychip"><input type="checkbox" name="closedDays" value="${d}"${b.closedDays.includes(d) ? " checked" : ""}><span aria-hidden="true">${short}</span><span class="sr-only">${long}</span></label>`).join("")}</div>
+            <small class="hint" id="${f}-days-hint">Tick the days you don't take bookings. Times are Kampala time.</small>
+            <small class="hint is-error" id="${f}-days-err" data-pv-err="closedDays" hidden></small>
+          </fieldset>
+        </fieldset>
+
+        <fieldset class="pv-card dash-fieldset"><legend>Booking options</legend>
+          <label class="pv-check dash-check-row"><input type="checkbox" name="acceptsCash"${b.acceptsCash ? " checked" : ""}>
+            <span><b>Take cash after the service</b><span class="pv-muted">Cash bookings are confirmed straight away. Mark them paid here when the money's in your hand.</span></span></label>
+          <label class="pv-check dash-check-row"><input type="checkbox" name="skipProfessional"${b.skipProfessional ? " checked" : ""}>
+            <span><b>Skip the “pick a professional” step</b><span class="pv-muted">Customers book a time and we give it to whoever is free. Good for laundry, cleaning crews and call-outs.</span></span></label>
+        </fieldset>
+
+        <fieldset class="pv-card dash-fieldset"><legend>Your cover</legend>
+          <p class="pv-muted dash-fieldset-note">Until you add photos, your card is a splash of colour with one big word. Make it yours.</p>
+          <div class="dash-cover-grid">
+            <div class="dash-cover-fields">
+              ${field(`${f}-word`, "coverWord", "Cover word", `<input id="${f}-word" name="coverWord" value="${esc(b.coverWord)}" maxlength="12" autocomplete="off" placeholder="braids"${desc(`${f}-word`, true)}>`,
+                { hint: `<span data-pv-count="coverWord">${b.coverWord.length}</span> of 12 characters. One word works best.` })}
+              <fieldset class="dash-subfieldset" data-pv-group="palette"><legend>Colours</legend>
+                <div class="dash-swatches">${PALETTES.map(p => `<label class="dash-swatch"><input type="radio" name="palette" value="${p.id}"${p.id === paletteId ? " checked" : ""}>
+                  <span class="dash-swatch-art" aria-hidden="true" style="${palStyle(p.colors)}"></span><span class="dash-swatch-name">${p.name}</span></label>`).join("")}</div>
+              </fieldset>
+            </div>
+            <figure class="dash-preview"><div class="vcard" aria-hidden="true" data-pv-preview>${previewCard(b)}</div>
+              <figcaption class="hint">How your card looks in search.</figcaption></figure>
+          </div>
+        </fieldset>
+
+        <div class="dash-submit">
+          <div class="dash-live" role="status" aria-live="polite" data-pv-msg></div>
+          <button type="submit" class="btn btn-black">Save changes</button>
+        </div>
+      </form>`;
+  }
+
+  // What the settings form says right now, before any checks.
+  function readSettings(form) {
+    const fd = new FormData(form), t = k => String(fd.get(k) ?? "");
+    return {
+      name: t("name"), categoryId: t("categoryId"), area: t("area"), blurb: t("blurb"), address: t("address"), phone: t("phone"),
+      visitMode: t("visitMode"), homeVisitFee: t("homeVisitFee"), opensAt: t("opensAt"), closesAt: t("closesAt"),
+      closedDays: fd.getAll("closedDays").map(Number), acceptsCash: fd.get("acceptsCash") === "on", skipProfessional: fd.get("skipProfessional") === "on",
+      coverWord: t("coverWord"), palette: (PALETTES.find(p => p.id === t("palette")) || PALETTES[0]).colors.slice(),
+    };
+  }
+
+  // Counters, the fee field, the hours check and the cover preview, as you type.
+  function liveSettings(form) {
+    const v = readSettings(form);
+    const set = (k, n) => { const el = $(`[data-pv-count="${k}"]`, form); if (el) el.textContent = n; };
+    set("blurb", v.blurb.length);
+    set("coverWord", v.coverWord.length);
+    $("[data-pv-fee]", form).hidden = v.visitMode !== "both";
+    const clash = toMins(v.closesAt) <= toMins(v.opensAt);
+    showErrors(form, { closesAt: clash ? "Closing time must be after opening time." : "" }, { only: ["closesAt"] });
+    $("[data-pv-preview]", form).innerHTML = previewCard(v);
+  }
+
+  // ---------- Form errors: shown in place, so nothing typed is lost ----------
+  function showErrors(form, errors, { only = null, focus = false } = {}) {
+    let firstBad = null;
+    for (const slot of $$("[data-pv-err]", form)) {
+      const name = slot.dataset.pvErr;
+      if (only && !only.includes(name)) continue;
+      const msg = errors[name] || "";
+      slot.textContent = msg;
+      slot.hidden = !msg;
+      const group = form.querySelector(`[data-pv-group="${name}"]`);
+      const ctl = group || form.querySelector(`[name="${name}"]:not([type="hidden"])`);
+      if (!ctl) continue;
+      if (ctl.dataset.pvDesc === undefined) ctl.dataset.pvDesc = ctl.getAttribute("aria-describedby") || "";
+      const base = ctl.dataset.pvDesc;
+      if (msg) {
+        if (!group) ctl.setAttribute("aria-invalid", "true");
+        ctl.setAttribute("aria-describedby", [slot.id, base].filter(Boolean).join(" "));
+        if (!firstBad) firstBad = group ? group.querySelector("input") : ctl;
+      } else {
+        ctl.removeAttribute("aria-invalid");
+        if (base) ctl.setAttribute("aria-describedby", base); else ctl.removeAttribute("aria-describedby");
+      }
+    }
+    if (focus && firstBad) firstBad.focus();
+    return firstBad;
+  }
+  function formMessage(form, text) {
+    const box = $("[data-pv-msg]", form);
+    if (box) box.innerHTML = text ? `<p class="form-err dash-msg">${esc(text)}</p>` : "";
+  }
+  function refuse(form, errors, summary) {
+    showErrors(form, errors, { focus: true });
+    const n = Object.values(errors).filter(Boolean).length;
+    formMessage(form, summary || (n === 1 ? "One field needs a look. It's highlighted above." : `${n} fields need a look. They're highlighted above.`));
+  }
+
+  function saveService(form) {
+    const fd = new FormData(form), t = k => String(fd.get(k) ?? "").trim();
+    const { opensAt, closesAt } = state.biz, open = toMins(opensAt), close = toMins(closesAt);
+    const errors = {};
+    const name = t("name"), groupName = t("groupName"), description = t("description"), durationLabel = t("durationLabel");
+    if (name.length < 2) errors.name = "Give the service a name of at least 2 characters.";
+    else if (name.length > 80) errors.name = "Keep the name under 80 characters.";
+    if (groupName.length > 40) errors.groupName = "Keep the group name under 40 characters.";
+    if (description.length > 300) errors.description = "Keep the description under 300 characters.";
+    if (durationLabel.length > 40) errors.durationLabel = "Keep the length note under 40 characters.";
+    const durationMin = /^\d{1,3}$/.test(t("durationMin")) ? Number(t("durationMin")) : NaN;
+    if (Number.isNaN(durationMin) || durationMin > 720 || durationMin % 5 !== 0) errors.durationMin = "Pick how long it takes from the list.";
+    else if (close > open && durationMin > close - open) errors.durationMin = `That's longer than you're open (${opensAt} to ${closesAt}), so nobody could book it. Pick a shorter time or change your hours in Settings.`;
+    const price = parseUgx(t("price"));
+    if (price === null) errors.price = "Enter the price in shillings, like 45000.";
+    else if (price > 10000000) errors.price = "That price looks high. Keep it under UGX 10,000,000.";
+    const latestStart = t("latestStart");
+    if (latestStart) {
+      if (!TIME_RE.test(latestStart)) errors.latestStart = "Pick a latest start time from the list, or leave it empty.";
+      else if (toMins(latestStart) < open) errors.latestStart = `You open at ${opensAt}, so the latest start can't be before that.`;
+      else if (close > open && toMins(latestStart) >= close) errors.latestStart = `You close at ${closesAt}, so the latest start has to be earlier than that.`;
+    }
+    if (Object.keys(errors).length) { refuse(form, errors, "Check the highlighted fields and try again."); return; }
+    const value = { groupName: groupName || "Services", name, description, durationMin, durationLabel, price, latestStart, active: fd.get("active") === "on" };
+    const existing = state.services.find(s => s.id === form.dataset.pvId);
+    let id;
+    if (existing) { Object.assign(existing, value); id = existing.id; }
+    else {
+      id = newId("svc");
+      state.services.push({ id, sort: state.services.reduce((m, s) => Math.max(m, s.sort), -1) + 1, ...value });
+    }
+    ui.editing = null;
+    render({ focus: `#pv-edit-${id}` });
+    say(existing ? `Saved ${name}.` : `Added ${name} to your menu.`);
+  }
+
+  function saveStaff(form) {
+    const fd = new FormData(form), t = k => String(fd.get(k) ?? "").trim();
+    const errors = {};
+    const name = t("name"), role = t("role"), active = fd.get("active") === "on";
+    if (name.length < 2) errors.name = "Add their name, at least 2 characters.";
+    else if (name.length > 60) errors.name = "Keep the name under 60 characters.";
+    if (role.length > 40) errors.role = "Keep the role under 40 characters.";
+    const existing = state.staff.find(s => s.id === form.dataset.pvId);
+    if (!errors.name && existing && leavesNobodyActive({ id: existing.id, active })) errors.active = LAST_ONE;
+    if (Object.keys(errors).length) { refuse(form, errors, errors.active || "Check the highlighted fields and try again."); return; }
+    let id;
+    if (existing) { Object.assign(existing, { name, role, active }); id = existing.id; }
+    else {
+      id = newId("st");
+      state.staff.push({ id, name, role, active, sort: state.staff.reduce((m, s) => Math.max(m, s.sort), -1) + 1 });
+    }
+    ui.editing = null;
+    render({ focus: `#pv-edit-${id}` });
+    say(existing ? `Saved ${name}.` : `Added ${name} to the team.`);
+  }
+
+  function saveSettings(form) {
+    const v = readSettings(form), errors = {};
+    const name = v.name.trim(), coverWord = v.coverWord.trim();
+    if (name.length < 2) errors.name = "Give your business a name of at least 2 characters.";
+    else if (name.length > 80) errors.name = "Keep the name under 80 characters.";
+    if (v.blurb.trim().length > 400) errors.blurb = "Keep the description under 400 characters.";
+    if (v.address.trim().length > 200) errors.address = "Keep the address under 200 characters.";
+    if (!CATS.some(c => c.id === v.categoryId)) errors.categoryId = "Pick the category that fits you best.";
+    if (!ALL_AREAS.includes(v.area)) errors.area = "Pick the area you work from.";
+    let phone = "";
+    if (v.phone.trim()) { phone = normalizeMsisdn(v.phone); if (!phone) errors.phone = "Enter a Ugandan mobile number, like 0772 123 456."; }
+    if (!VISIT_MODES.some(m => m.value === v.visitMode)) errors.visitMode = "Choose where your bookings happen.";
+    let fee = state.biz.homeVisitFee;
+    if (v.visitMode === "both") {
+      fee = parseUgx(v.homeVisitFee);
+      if (fee === null) errors.homeVisitFee = "Enter the fee in shillings, like 10000. Use 0 for free home visits.";
+      else if (fee > 500000) errors.homeVisitFee = "That fee looks high. Keep it under UGX 500,000.";
+    }
+    if (!HALF_HOURS.includes(v.opensAt)) errors.opensAt = "Pick an opening time from the list.";
+    if (!HALF_HOURS.includes(v.closesAt)) errors.closesAt = "Pick a closing time from the list.";
+    else if (!errors.opensAt && toMins(v.closesAt) <= toMins(v.opensAt)) errors.closesAt = "Closing time must be after opening time.";
+    const closedDays = [...new Set(v.closedDays.filter(d => d >= 0 && d <= 6))].sort();
+    if (closedDays.length === 7) errors.closedDays = "You can't be closed every day. Untick at least one.";
+    if (!coverWord) errors.coverWord = "Pick a word for your cover, like braids or shine.";
+    else if (coverWord.length > 12) errors.coverWord = "Keep the cover word to 12 characters or fewer.";
+    showErrors(form, errors);
+    if (Object.keys(errors).length) { refuse(form, errors); return; }
+    Object.assign(state.biz, {
+      name, categoryId: v.categoryId, area: v.area, blurb: v.blurb.trim(), address: v.address.trim(), phone, visitMode: v.visitMode,
+      homeVisitFee: fee, opensAt: v.opensAt, closesAt: v.closesAt, closedDays, acceptsCash: v.acceptsCash,
+      skipProfessional: v.skipProfessional, coverWord, palette: v.palette,
+    });
+    formMessage(form, "");
+    renderHead();
+    syncPublic();
+    say("Saved. Your public page is up to date.");
+  }
+
+  // ---------- Toast and screen-reader notes ----------
+  let toastTimer;
+  function say(text) {
+    const live = $("#pvLive");
+    $("#toast").hidden = true; // one message on screen at a time
+    clearTimeout(toastTimer);
+    live.innerHTML = "";
+    const p = document.createElement("p");
+    p.className = "toast pv-toast";
+    p.tabIndex = -1;
+    p.textContent = text;
+    live.appendChild(p);
+    const hide = () => { if (document.activeElement === p) { toastTimer = setTimeout(hide, 2000); return; } live.innerHTML = ""; };
+    toastTimer = setTimeout(hide, 5000);
+  }
+  const srSay = text => { const el = $("#pvSr"); el.textContent = ""; requestAnimationFrame(() => { el.textContent = text; }); };
+
+  // ---------- Rendering ----------
+  function renderHead() {
+    const b = state.biz;
+    $("#pvHead").innerHTML = `<div class="dash-id">
+        <div class="cover dash-mini" style="${palStyle(b.palette)}" aria-hidden="true"><span class="cover-word">${esc(b.coverWord)}</span></div>
+        <div class="dash-id-text"><p class="eyebrow">Your business</p><p class="dash-id-name">${esc(b.name)}</p>
+          <p class="pv-muted dash-id-meta">${esc(catName(b.categoryId))} · ${esc(placeOf(b.area))}</p></div>
+      </div>
+      <p class="pv-owner pv-muted">${icon("user")}Logged in as ${esc(OWNER)}</p>`;
+  }
+  function renderTabs() {
+    const row = $("#pvTabs");
+    row.innerHTML = TABS.map(t => `<li><a class="chip" href="${t.hash}"${t.id === ui.tab ? ' aria-current="page"' : ""}>${icon(t.ic)}${t.label}</a></li>`).join("");
+    // On a phone the row scrolls sideways: keep the current tab in sight.
+    const cur = $('[aria-current="page"]', row);
+    if (cur && row.scrollWidth > row.clientWidth) {
+      if (cur.offsetLeft < row.scrollLeft) row.scrollLeft = cur.offsetLeft - 8;
+      else if (cur.offsetLeft + cur.offsetWidth > row.scrollLeft + row.clientWidth) row.scrollLeft = cur.offsetLeft + cur.offsetWidth - row.clientWidth + 8;
+    }
+  }
+  function render({ focus = null } = {}) {
+    const now = Date.now();
+    view.innerHTML = { overview: viewOverview, bookings: viewBookings, services: viewServices, team: viewTeam, settings: viewSettings }[ui.tab](now);
+    renderTabs();
+    if (focus) {
+      const el = typeof focus === "string" ? $(focus, root) : focus;
+      (el || $("h1", view))?.focus();
+    }
+  }
+  function focusBooking(id) {
+    const card = document.getElementById(`pv-bk-${id}`);
+    const target = card && ($("[data-pv-op], [data-pv-ask]", card) || document.getElementById(`pv-bkh-${id}`));
+    (target || $("h1", view)).focus();
+  }
+
+  // ---------- Opening, closing and the address bar ----------
+  const TAB_RE = /^#dashboard(?:\/(bookings|services|team|settings))?\/?$/;
+  function openDash(tab) {
+    const wasOpen = ui.open;
+    let added = [];
+    if (!wasOpen) {
+      // Seeded on first open rather than at page load, so "today" is today even on a page left open for hours.
+      if (!state) fresh();
+      ui.homeY = window.scrollY;
+      const a = document.activeElement;
+      ui.opener = a && a !== document.body && !root.contains(a) ? a : null;
+      ui.title = document.title;
+      closeMenu();
+      $("#top").hidden = true;
+      $(".footer").hidden = true;
+      root.hidden = false;
+      $("#pvFlag").hidden = false;
+      document.body.classList.add("pv-on");
+      ui.open = true;
+      added = syncCustomer();
+      renderHead();
+    }
+    if (!wasOpen || ui.tab !== tab) { ui.editing = null; ui.confirm = null; }
+    ui.tab = tab;
+    if (!ui.date) ui.date = kToday(Date.now());
+    render();
+    document.title = `${TABS.find(t => t.id === tab).label} · Dashboard · reClain`;
+    if (!wasOpen) window.scrollTo({ top: 0, behavior: "instant" });
+    $("h1", view).focus({ preventScroll: !wasOpen });
+    if (added.length) {
+      const b = added[added.length - 1];
+      say(added.length === 1
+        ? `New booking from ${firstName(b.customerName) || "a customer"}: ${kDate(kParts(b.startsAt).date)} at ${kTime(b.startsAt)}.`
+        : `${added.length} new bookings from the customer side are in.`);
+    }
+  }
+  function closeDash() {
+    if (!ui.open) return;
+    ui.open = false;
+    ui.editing = null;
+    ui.confirm = null;
+    root.hidden = true;
+    $("#top").hidden = false;
+    $(".footer").hidden = false;
+    $("#pvFlag").hidden = true;
+    document.body.classList.remove("pv-on");
+    document.title = ui.title;
+    $("#pvLive").innerHTML = "";
+    let target = null;
+    try { target = location.hash.length > 1 ? document.getElementById(decodeURIComponent(location.hash.slice(1))) : null; } catch { /* odd hash */ }
+    if (target && !root.contains(target)) { target.scrollIntoView({ block: "start" }); return; }
+    window.scrollTo({ top: ui.homeY, behavior: "instant" });
+    if (ui.opener && ui.opener.isConnected && ui.opener.offsetParent) ui.opener.focus({ preventScroll: true });
+  }
+  function route(hash = location.hash) {
+    const m = TAB_RE.exec(hash);
+    if (m) openDash(m[1] || "overview");
+    else closeDash();
+  }
+  // Go to a #dashboard address by setting it from script rather than following the link: a page
+  // shown in an iframe can resolve "#..." links against its parent's address and navigate away.
+  function go(hash) {
+    if (location.hash === hash) { route(hash); return; }
+    try { location.hash = hash; } catch { /* sandboxed */ }
+    if (location.hash !== hash) route(hash);
+  }
+  // Back to the homepage, leaving #dashboard in the history so the back button returns here.
+  function goHome() {
+    try { history.pushState(null, "", location.pathname + location.search); closeDash(); }
+    catch { location.hash = ""; }
+  }
+  window.addEventListener("hashchange", () => route());
+  // Every link to the dashboard (menu, business band, log-in modal, tabs, day links) goes through go().
+  document.addEventListener("click", e => {
+    const a = e.target instanceof Element ? e.target.closest('a[href^="#dashboard"]') : null;
+    if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    if (a.dataset.pvGoto && realDate(a.dataset.pvGoto)) { ui.date = a.dataset.pvGoto; ui.filter = "all"; }
+    go(a.getAttribute("href"));
+  });
+
+  // ---------- Actions ----------
+  const OP_DONE = { complete: "Marked as completed.", no_show: "Marked as a no-show.", cash_paid: "Cash payment recorded." };
+  function doOp(id, op) {
+    const b = state.bookings.find(x => x.id === id);
+    ui.confirm = null;
+    if (!b) { render({ focus: "h1" }); say("We couldn't find that booking any more."); return; }
+    const refused = refusal(op, b, Date.now());
+    if (refused) { render(); focusBooking(id); say(refused); return; }
+    if (op === "complete") b.status = "completed";
+    else if (op === "no_show") b.status = "no_show";
+    else if (op === "cancel") b.status = "cancelled";
+    else if (op === "cash_paid") b.paymentStatus = "paid";
+    render();
+    focusBooking(id);
+    say(op === "cancel" ? `Cancelled. We'll text ${firstName(b.customerName) || "the customer"} to let them know.` : OP_DONE[op]);
+  }
+  function openerFor(c) {
+    if (c.kind === "bk") return `[data-pv-ask="${c.op}"][data-pv-bk="${c.id}"]`;
+    return `[data-pv-del="${c.kind}"][data-pv-id="${c.id}"]`;
+  }
+
+  root.addEventListener("click", e => {
+    const el = e.target.closest("a, button");
+    if (!el || !root.contains(el)) return;
+    const d = el.dataset;
+    if (el.id === "pvBack") { e.preventDefault(); goHome(); return; }
+    if (el.matches('a[href^="#dashboard"]')) return; // handled by go(), below
+    if ("pvPublic" in d) { openFlow(VENUE); return; }
+    if ("pvReset" in d) {
+      fresh(); syncCustomer(); syncPublic(true); renderHead();
+      ui.editing = null; ui.confirm = null; ui.date = kToday(Date.now()); ui.filter = "all";
+      render({ focus: "h1" });
+      say("Fresh start. Everything's back to how Aisha left it.");
+      return;
+    }
+    if (d.pvOp) { doOp(d.pvBk, d.pvOp); return; }
+    if (d.pvAsk) { ui.confirm = { kind: "bk", id: d.pvBk, op: d.pvAsk }; render({ focus: `#pv-q-${d.pvBk}` }); return; }
+    if (d.pvYes) {
+      const c = ui.confirm;
+      if (d.pvYes === "delete") {
+        const s = state.services.find(x => x.id === d.pvSvcId);
+        state.services = state.services.filter(x => x.id !== d.pvSvcId);
+        ui.confirm = null;
+        render({ focus: '[data-pv-add="svc"]' });
+        if (s) say(`Deleted ${s.name}. Past bookings keep their details.`);
+        return;
+      }
+      if (d.pvYes === "remove") {
+        const s = state.staff.find(x => x.id === d.pvStaffId);
+        ui.confirm = null;
+        if (!s) { render({ focus: "h1" }); return; }
+        if (leavesNobodyActive({ id: s.id, remove: true })) { render({ focus: `#pv-edit-${s.id}` }); say(LAST_ONE); return; }
+        const now = Date.now();
+        for (const b of state.bookings) {
+          if (b.staffId !== s.id) continue;
+          b.staffId = null;
+          // Upcoming bookings stay booked, just without a name on them. Past ones keep it.
+          b.staffName = b.startsAt >= now ? "" : s.name;
+        }
+        state.staff = state.staff.filter(x => x.id !== s.id);
+        render({ focus: '[data-pv-add="staff"]' });
+        say(`Removed ${s.name} from the team.`);
+        return;
+      }
+      if (c && c.kind === "bk") doOp(d.pvBk, d.pvYes);
+      return;
+    }
+    if ("pvKeep" in d) {
+      const c = ui.confirm;
+      ui.confirm = null;
+      render({ focus: c ? openerFor(c) : "h1" });
+      return;
+    }
+    if (d.pvAdd) { ui.editing = { kind: d.pvAdd, id: "new" }; ui.confirm = null; render({ focus: `#${d.pvAdd === "svc" ? "pvs" : "pvt"}-new-title` }); return; }
+    if (d.pvEdit) { ui.editing = { kind: d.pvEdit, id: d.pvId }; ui.confirm = null; render({ focus: `#${d.pvEdit === "svc" ? "pvs" : "pvt"}-${d.pvId}-title` }); return; }
+    if (d.pvDel) { ui.confirm = { kind: d.pvDel, id: d.pvId }; ui.editing = null; render({ focus: `#pv-q-${d.pvId}` }); return; }
+    if ("pvClose" in d) {
+      const ed = ui.editing;
+      ui.editing = null;
+      render({ focus: ed && ed.id !== "new" ? `#pv-edit-${ed.id}` : `[data-pv-add="${ed ? ed.kind : "svc"}"]` });
+      return;
+    }
+    if (d.pvDay) {
+      ui.date = kAdd(ui.date || kToday(Date.now()), Number(d.pvDay));
+      ui.confirm = null;
+      render({ focus: `[data-pv-day="${d.pvDay}"]` });
+      srSay(`${kDate(ui.date)}. ${plural(onDay(ui.date).length, "booking")}.`);
+      return;
+    }
+    if (d.pvFilter) {
+      ui.filter = d.pvFilter;
+      ui.confirm = null;
+      render({ focus: `[data-pv-filter="${d.pvFilter}"]` });
+      const f = FILTERS.find(x => x.key === ui.filter);
+      const n = onDay(ui.date).filter(b => !f.statuses.length || f.statuses.includes(b.status)).length;
+      srSay(`${f.label}: ${plural(n, "booking")}.`);
+      return;
+    }
+    if ("pvToday" in d) {
+      ui.date = kToday(Date.now());
+      render({ focus: "#pvDayLabel" });
+      srSay(`Today, ${kDate(ui.date)}.`);
+    }
+  });
+
+  view.addEventListener("submit", e => {
+    const form = e.target.closest("form[data-pv-form]");
+    if (!form) return;
+    e.preventDefault();
+    const kind = form.dataset.pvForm;
+    if (kind === "svc") saveService(form);
+    else if (kind === "staff") saveStaff(form);
+    else if (kind === "settings") saveSettings(form);
+    else if (kind === "day") {
+      const value = String(new FormData(form).get("date") || "");
+      if (!realDate(value)) { $("#pvDate").focus(); srSay("Pick a date first."); return; }
+      ui.date = value;
+      ui.confirm = null;
+      render({ focus: "#pvDayLabel" });
+      srSay(`${kDate(value)}. ${plural(onDay(value).length, "booking")}.`);
+    }
+  });
+  const onSettingsEdit = e => { const form = e.target.closest('form[data-pv-form="settings"]'); if (form) liveSettings(form); };
+  view.addEventListener("input", onSettingsEdit);
+  view.addEventListener("change", onSettingsEdit);
+
+  // Escape: close a question or a form first, then go back to the homepage. Runs before the
+  // customer side's own Escape handler, so an open menu or dialog gets to close itself instead.
+  document.addEventListener("keydown", e => {
+    if (e.key !== "Escape" || !ui.open || e.defaultPrevented) return;
+    if (document.querySelector("dialog[open]") || !$("#menuPanel").hidden) return;
+    const t = e.target instanceof Element ? e.target : null;
+    const ask = t && t.closest(".dash-confirm");
+    if (ask) { e.preventDefault(); $("[data-pv-keep]", ask)?.click(); return; }
+    const form = t && t.closest('form[data-pv-form="svc"], form[data-pv-form="staff"]');
+    if (form) { e.preventDefault(); $("[data-pv-close]", form)?.click(); return; }
+    e.preventDefault();
+    goHome();
+  }, true);
+
+  // A booking made in the customer flow lands here when the flow closes.
+  $("#flow").addEventListener("close", () => {
+    if (!ui.open) return;
+    const added = syncCustomer();
+    if (!added.length) return;
+    if (ui.tab === "overview" || ui.tab === "bookings") render();
+    const b = added[added.length - 1];
+    say(`New booking from ${firstName(b.customerName) || "a customer"}: ${kDate(kParts(b.startsAt).date)} at ${kTime(b.startsAt)}.`);
+  });
+
+  if (TAB_RE.test(location.hash)) route();
+})();
