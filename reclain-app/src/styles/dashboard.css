@@ -10,8 +10,7 @@
 .dash-body { display: grid; gap: 28px; align-content: start; min-width: 0; margin-top: 6px; }
 .dash-body > * { min-width: 0; }
 
-/* Tap targets: the shared small buttons are 38px tall; here everything is at least 44px. */
-.dash .btn-sm { height: 44px; }
+/* Tap targets: everything here is at least 44px (.btn-sm already is, in globals.css). */
 .dash .link-btn { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; }
 .dash a.icon-btn { text-decoration: none; }
 /* Headings, questions and messages that take focus from code aren't controls: no ring. */

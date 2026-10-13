@@ -4,7 +4,6 @@ import { features } from "@/config/features";
 import { hero } from "@/config/content";
 import { initials } from "@/lib/format";
 import type { Business, ReviewWithBusiness } from "@/lib/types";
-import { BookedCounter } from "./BookedCounter";
 import { HeroWord } from "./HeroWord";
 import { SearchPill } from "./SearchPill";
 import { readableInk } from "../venue/hours";
@@ -76,6 +75,15 @@ function Floaters({ venue, review }: FloaterData) {
   );
 }
 
+// "12 bookings made today": a real count, worked out on the server for this page view.
+function BookedToday({ count }: { count: number }) {
+  return (
+    <p className="booked-today">
+      <strong>{count.toLocaleString("en-US")}</strong> {count === 1 ? "booking" : "bookings"} made today
+    </p>
+  );
+}
+
 export function Hero({
   index,
   areaGroups,
@@ -84,7 +92,8 @@ export function Hero({
 }: {
   index: SuggestIndex;
   areaGroups: AreaGroup[];
-  booked: number;
+  // Real bookings made today, or null to leave the line out (see bookedTodayShown in stats.ts).
+  booked: number | null;
   floaters: FloaterData;
 }) {
   return (
@@ -107,7 +116,7 @@ export function Hero({
         </h1>
         <p className="hero-sub">{hero.sub}</p>
         <SearchPill index={index} areaGroups={areaGroups} placeholder={hero.searchPlaceholder} />
-        <BookedCounter initial={booked} />
+        {booked !== null && <BookedToday count={booked} />}
       </div>
     </section>
   );

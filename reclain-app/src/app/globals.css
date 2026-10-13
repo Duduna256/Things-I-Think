@@ -93,7 +93,7 @@ img { max-width: 100%; }
 .btn-ghost:not(:disabled):hover { border-color: var(--ink-2); }
 .btn-danger { background: var(--white); color: var(--err); border-color: #f2c4bf; }
 .btn-danger:not(:disabled):hover { border-color: var(--err); }
-.btn-sm { height: 38px; padding: 0 16px; font-size: 0.92rem; }
+.btn-sm { height: 44px; padding: 0 16px; font-size: 0.92rem; } /* 44px: the smallest comfortable tap target */
 .btn-wide { width: 100%; }
 .icon-btn {
   width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: var(--white);
@@ -151,7 +151,7 @@ img { max-width: 100%; }
   border: 1px solid var(--line); border-radius: 999px; background: var(--white); font-weight: 600; cursor: pointer; white-space: nowrap; text-decoration: none;
 }
 .chip:hover { border-color: var(--ink-2); }
-.chip[aria-pressed="true"], .chip[aria-current="page"], .chip.is-on { background: var(--ink); color: var(--white); border-color: var(--ink); }
+.chip[aria-pressed="true"], .chip[aria-current="page"], .chip[aria-current="true"], .chip.is-on { background: var(--ink); color: var(--white); border-color: var(--ink); }
 .chip .ic { width: 18px; height: 18px; }
 .chip .new { font-size: 0.68rem; font-weight: 800; letter-spacing: 0.04em; background: var(--jac); color: var(--white); padding: 2px 6px; border-radius: 6px; }
 .chip[aria-pressed="true"] .new, .chip.is-on .new { background: var(--white); color: var(--ink); }

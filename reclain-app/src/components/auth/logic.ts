@@ -35,6 +35,12 @@ export type LoginView = "link" | "login" | "signup";
 const UNWRAP = new Set(["/login", "/auth/callback", "/auth/confirm"]);
 const SCRATCH = "http://reclain.invalid";
 
+// A path on this site that's safe to send people to: one leading "/", never "//", and no
+// backslashes or control characters (browsers read "/\evil.com" as "//evil.com", another site).
+export function isSafePath(value: unknown): value is string {
+  return typeof value === "string" && value.startsWith("/") && !value.startsWith("//") && !/[\\\u0000-\u001f\u007f]/.test(value);
+}
+
 // The `next` value inside a /login or /auth/callback address, read from the raw text.
 // When the outer address has already been decoded once (Supabase email templates do this
 // with {{ .RedirectTo }}), the inner value is a plain path and is kept whole, query and all.
@@ -88,7 +94,7 @@ export function cleanNext(raw: unknown, origins: readonly string[] = [], depth =
     if (!value.startsWith("/")) value = `/${value}`;
   }
 
-  if (!value.startsWith("/") || value.startsWith("//") || /[\\\u0000-\u001f\u007f]/.test(value)) return "/";
+  if (!isSafePath(value)) return "/";
   let parsed: URL;
   try {
     parsed = new URL(value, SCRATCH);

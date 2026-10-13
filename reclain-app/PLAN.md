@@ -76,9 +76,13 @@ Mobile money first. Card is optional. Cash can be switched on per business.
 | Card | Same Flutterwave checkout. Card numbers never touch reClain |
 | Cash | Booking is confirmed straight away; the provider marks it paid in the dashboard |
 
-`PAYMENT_PROVIDER=mock` (the default) needs no account: a "Simulate payment" button marks a
-payment as paid. Switch to `flutterwave` and add keys when ready. Adding another provider
-(Pesapal, MTN MoMo direct) means adding one file in `src/lib/payments/providers/`.
+Online payments land in reClain's Flutterwave account. In version 1, payouts to businesses and
+refunds to customers are done by hand from the Flutterwave dashboard.
+
+`PAYMENT_PROVIDER=mock` (the default) needs no account: it shows a pretend phone prompt at
+`/pay/mock/[txRef]` with Approve and Decline. Switch to `flutterwave` and add keys when ready.
+Adding another provider (Pesapal, MTN MoMo direct) means adding one file in
+`src/lib/payments/providers/`.
 
 ## SMS
 

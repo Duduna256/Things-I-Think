@@ -1,5 +1,9 @@
 // Words on the homepage and in a few shared places. Edit freely: no code changes needed.
-// Icons are names from src/components/Icon.tsx.
+// Icons are names from src/components/Icon.tsx. Text in `backticks` can borrow values from
+// site.ts: ${site.shortName} is the brand's short name and ${site.freeCancellationHours} the
+// free cancellation window. Change them in site.ts and every sentence here follows.
+
+import { site } from "./site";
 
 export const hero = {
   // The headline reads: "Your <word>, sorted." The first word shows on load, then they rotate.
@@ -54,31 +58,31 @@ export const trust = {
   title: "Safe hands, verified.",
   note: "Booking a stranger is weird. We make it less weird.",
   cards: [
-    { icon: "money", title: "Money held until the job's done", body: "MoMo and Airtel Money payments wait with reClain and reach the pro only after your service." },
+    { icon: "money", title: "Money held until the job's done", body: `Your MoMo, Airtel Money or card payment comes to ${site.shortName} first. Your pro gets paid after the service.` },
     { icon: "shield", title: "Guards from licensed firms only", body: "Security bookings come from registered companies, with the paperwork to prove it." },
     { icon: "chat", title: "Reviews from real bookings", body: "Only people who actually booked can leave a review. No cousins." },
-    { icon: "clock", title: "Plans change. We get it.", body: "Cancel or move a booking for free up to 4 hours before." },
+    { icon: "clock", title: "Plans change. We get it.", body: `Cancel for free up to ${site.freeCancellationHours} hours before. Paid already? Our team sends your money back.` },
   ],
   stats: [
-    { value: "ID-checked", label: "Every pro on reClain passes an ID check and a skills review before their first booking." },
+    { value: "ID-checked", label: `Every pro on ${site.shortName} passes an ID check and a skills review before their first booking.` },
     { value: "UGX 0", label: "to sign up, for customers and for businesses. We earn a small fee only when a booking is done." },
   ],
 };
 
 export const appBand = {
-  eyebrow: "The reClain app",
+  eyebrow: `The ${site.shortName} app`,
   title: "Your next appointment lives in your pocket",
-  body: "Rebook your braider in two taps, get a reminder the night before, and pay with one MoMo prompt. Like a personal assistant who remembers your usual length.",
+  body: "The apps are on their way. Until then, this site does the job on your phone: book your braider again in a few taps, get an SMS the night before, and pay with one MoMo prompt. Like a personal assistant who remembers your usual length.",
 };
 
 export const businessBand = {
-  eyebrow: "reClain for business",
+  eyebrow: `${site.shortName} for business`,
   titleStart: "Run your salon,",
   titleEm: "not",
   titleEnd: "your WhatsApp.",
   points: [
     "A calendar that fills itself while you're mid-braid",
-    "MTN MoMo and Airtel Money payouts every evening",
+    "Customers pay up front by MoMo, Airtel Money or card, so no more “I'll send it later”",
     "Prepaid bookings that make no-shows think twice",
     "SMS reminders, so you stop sending “Are we still on?”",
   ],
@@ -89,7 +93,7 @@ export const businessBand = {
 export const faq = [
   {
     q: "How does paying with MTN MoMo or Airtel Money work?",
-    a: "Pick MTN MoMo or Airtel Money when you book and you'll get a prompt on your phone. Enter your PIN and the money is held by reClain until your service is done. If your pro doesn't show, you get it all back.",
+    a: `Pick MTN MoMo or Airtel Money when you book and you'll get a prompt on your phone. Enter your PIN and the money is held by ${site.shortName} until your service is done. If your pro doesn't show, our team sends back every shilling.`,
   },
   {
     q: "Can my stylist come to my home?",
@@ -97,7 +101,7 @@ export const faq = [
   },
   {
     q: "What if I need to cancel?",
-    a: "Cancel or move your booking for free up to 4 hours before. After that the venue may keep a small fee, because they turned someone else away for you.",
+    a: `Cancel for free up to ${site.freeCancellationHours} hours before. After that the venue may keep a small fee, because they turned someone else away for you. If you'd already paid, our team refunds what's due. To change the time, cancel and book the new one.`,
   },
   {
     q: "Who checks the professionals?",

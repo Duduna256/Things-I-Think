@@ -1,23 +1,17 @@
 // Numbers and groupings the homepage shows, worked out from real data.
 // Pure (no server imports, relative paths only) so it can be unit-tested and used in client code.
 
-import { site } from "../../config/site";
 import type { Area, Business, Category, Service } from "../../lib/types";
 import { normalise, venuesLabel, type SuggestCategory, type SuggestTreatment, type SuggestVenue } from "./suggest";
 
-const DAY_MS = 86_400_000;
+// "12 bookings made today" under the hero search, counted from real bookings since midnight
+// in Kampala. Below this many the line is left out: two bookings by lunchtime is nothing to
+// shout about.
+export const BOOKED_TODAY_MIN = 5;
 
-// "Appointments booked today": one every 8 seconds since Kampala midnight.
-// Derived from the clock, so it only goes up during the day and survives a reload.
-export function bookedToday(now: Date = new Date()): number {
-  const local = (now.getTime() + site.utcOffsetMinutes * 60_000) % DAY_MS;
-  return Math.floor((local < 0 ? local + DAY_MS : local) / 8000);
-}
-
-// The next value for the live counter: never goes backwards, except at midnight.
-export function nextCount(prev: number, now: Date = new Date()): number {
-  const next = bookedToday(now);
-  return next >= prev || prev - next > 1000 ? next : prev;
+// The number to show, or null to leave the line out (too few, or the count couldn't be had).
+export function bookedTodayShown(count: number | null | undefined): number | null {
+  return typeof count === "number" && Number.isFinite(count) && count >= BOOKED_TODAY_MIN ? Math.floor(count) : null;
 }
 
 export interface ReviewScore {

@@ -125,7 +125,6 @@
 }
 .bk-tabs::-webkit-scrollbar { display: none; }
 .bk-tabs .chip { font-size: 0.92rem; padding: 0 16px; }
-.bk-tabs .chip[aria-current="true"] { background: var(--ink); color: var(--white); border-color: var(--ink); }
 .bk-group { display: grid; gap: 12px; scroll-margin-top: 64px; } /* the sticky tabs; the page's scroll-padding covers the top bar */
 .bk-group h2 { font-size: 1.2rem; font-weight: 700; letter-spacing: -0.02em; font-family: var(--font); }
 .bk-svcs { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
@@ -321,7 +320,6 @@
 
 .bkd-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-start; }
 .bkd-inline-form { display: grid; gap: 6px; }
-.bkd-inline-form .btn-sm, .bkd-banner-actions .btn-sm { height: 44px; }
 .bkd-cancel { flex-basis: 100%; display: grid; gap: 12px; border: 1px solid #f2c4bf; background: var(--err-soft); border-radius: 18px; padding: 18px; }
 .bkd-cancel h2 { font-size: 1.15rem; font-weight: 750; }
 .bkd-cancel > p:not(.notice) { color: var(--ink-2); }

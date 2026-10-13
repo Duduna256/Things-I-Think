@@ -11,7 +11,7 @@ import type { Category } from "@/lib/types";
 
 export const metadata: Metadata = {
   title: "For business",
-  description: `List your business on ${site.shortName}: online bookings, mobile money payouts and fewer no-shows. Free to join, a small commission on completed bookings only.`,
+  description: `List your business on ${site.shortName}: online bookings, customers who pay up front by mobile money or card, and fewer no-shows. Free to join, a small commission on completed bookings only.`,
 };
 
 const STEPS = [
@@ -27,13 +27,13 @@ const STEPS = [
   },
   {
     title: "Do the work, get paid",
-    body: "Mark the job done in your dashboard. The money is released to you once the service has happened.",
+    body: `Mark the job done in your dashboard. Online payments come to ${site.shortName} first, and our team sends you your share once the service has happened. Cash jobs pay you on the spot.`,
   },
 ];
 
 const PERKS = [
   { icon: "money", title: "Free to join", body: "UGX 0 to sign up and no monthly fee. We take a small commission on completed bookings only, so we earn when you do." },
-  { icon: "phone", title: "Mobile money payouts", body: "MTN MoMo and Airtel Money payouts every evening. No chasing, no “I'll send it later”." },
+  { icon: "phone", title: "Customers pay up front", body: "They pay by MTN MoMo, Airtel Money or card when they book. No chasing, no “I'll send it later”." },
   { icon: "check", title: "Fewer no-shows", body: "Prepaid bookings make no-shows think twice. Cash after the service is still there if you want it." },
   { icon: "chat", title: "Reminders that send themselves", body: "Customers get an SMS the night before, so you stop typing “Are we still on?”." },
 ];

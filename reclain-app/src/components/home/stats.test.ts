@@ -1,31 +1,18 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { areaLinks, bookedToday, buildTrending, groupAreas, nextCount, reviewScore, scoreNote, treatmentIndex, type VenueOffer } from "./stats";
+import { areaLinks, BOOKED_TODAY_MIN, bookedTodayShown, buildTrending, groupAreas, reviewScore, scoreNote, treatmentIndex, type VenueOffer } from "./stats";
 import type { Area, Category } from "../../lib/types";
 
-// Kampala is UTC+3: 21:00 UTC is midnight in Kampala.
-const kampala = (hh: number, mm = 0, ss = 0) => new Date(Date.UTC(2026, 9, 12, hh - 3, mm, ss));
-
-test("booked today counts from Kampala midnight, one every 8 seconds", () => {
-  assert.equal(bookedToday(kampala(0, 0, 0)), 0);
-  assert.equal(bookedToday(kampala(0, 5)), 37);
-  assert.equal(bookedToday(kampala(9)), 4050);
-  assert.equal(bookedToday(kampala(23, 59, 59)), 10799);
-});
-
-test("booked today only goes up during the day", () => {
-  let prev = -1;
-  for (let h = 0; h < 24; h++) {
-    const n = bookedToday(kampala(h, 30));
-    assert.ok(n > prev);
-    prev = n;
-  }
-});
-
-test("the live counter never steps back, except at midnight", () => {
-  assert.equal(nextCount(400, kampala(1)), 450); // catches up
-  assert.equal(nextCount(460, kampala(1)), 460); // a slow clock doesn't make it drop
-  assert.equal(nextCount(10790, kampala(0, 0, 40)), 5); // a new day starts again
+test("the booked-today line shows real counts only once there are enough of them", () => {
+  assert.equal(BOOKED_TODAY_MIN, 5);
+  assert.equal(bookedTodayShown(BOOKED_TODAY_MIN), BOOKED_TODAY_MIN);
+  assert.equal(bookedTodayShown(1284), 1284);
+  assert.equal(bookedTodayShown(BOOKED_TODAY_MIN - 1), null);
+  assert.equal(bookedTodayShown(0), null);
+  // The count failed to load: no line, no made-up number.
+  assert.equal(bookedTodayShown(null), null);
+  assert.equal(bookedTodayShown(undefined), null);
+  assert.equal(bookedTodayShown(Number.NaN), null);
 });
 
 test("review score is weighted by review count", () => {

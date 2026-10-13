@@ -6,6 +6,7 @@ import {
   callbackUrl,
   cleanNext,
   errorHref,
+  isSafePath,
   loginContext,
   loginHref,
   parseReason,
@@ -55,6 +56,32 @@ test("anything that could leave the site becomes /", () => {
     "/" + "a".repeat(3000),
   ]) {
     assert.equal(cleanNext(bad, [SITE]), "/", String(bad));
+  }
+});
+
+test("isSafePath (behind safeNext) lets through paths on this site and nothing else", () => {
+  for (const ok of ["/", "/bookings", "/book/x?service=a&step=confirm", "/v/fade-kings#reviews", "/search?q=braids%20and%20twists"]) {
+    assert.equal(isSafePath(ok), true, ok);
+  }
+  for (const bad of [
+    "//evil.com",
+    "/\\evil.com",
+    "/\\/evil.com",
+    "/ok\\..\\evil",
+    "\\\\evil.com",
+    "/ok\nLocation: https://evil.com",
+    "/ok\r\nSet-Cookie: x=1",
+    "/tab\there",
+    "/nul\u0000",
+    "/del\u007f",
+    "https://evil.com",
+    "evil.com",
+    "",
+    null,
+    undefined,
+    42,
+  ]) {
+    assert.equal(isSafePath(bad), false, JSON.stringify(bad));
   }
 });
 

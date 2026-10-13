@@ -8,15 +8,41 @@ anything goes live, test it yourself the way a customer would: click every butto
 
 | I want to… | Where |
 |---|---|
-| Change the home-visit fee, cancellation window, booking window, time slots | `src/config/site.ts` |
+| Change the home-visit fee or cancellation window | `src/config/site.ts` |
+| Change the booking window, time slots, earliest booking or how long unpaid bookings are held | `src/config/site.ts` **and** the database (see below) |
 | Switch cash, card, mobile money, reviews, SMS reminders or Google login off | `src/config/features.ts` |
 | Hide a homepage section | `src/config/features.ts` → `home` |
 | Change homepage words: rotating hero words, marquee, occasions, FAQ, trust cards | `src/config/content.ts` |
 | Add or rename a category or an area | Supabase → Table editor → `categories` / `areas` |
 | Feature a venue on the homepage | Supabase → `businesses` → set `is_featured` to true |
 | Make someone an admin | Supabase → `profiles` → set `is_admin` to true for their row |
-| Publish new businesses without review | Supabase → `app_settings` → `require_business_approval` = `false`, and `businessApproval: false` in features.ts |
-| Hold unpaid MoMo bookings for longer | Supabase → `app_settings` → `pending_payment_minutes` |
+| Publish new businesses without review | `businessApproval: false` in `src/config/features.ts` **and** `require_business_approval` in the database (see below) |
+
+### Settings that live in two places
+
+The database keeps its own copy of a few rules in the `app_settings` table, so it can check
+every booking even if someone skips the app. Change one side and you must change the other,
+or the app will offer times the database then refuses.
+
+| Database (`app_settings` key) | App (`src/config`) |
+|---|---|
+| `require_business_approval` | `businessApproval` in `features.ts` |
+| `pending_payment_minutes` | `pendingPaymentMinutes` in `site.ts` |
+| `slot_step_minutes` | `slotStepMinutes` in `site.ts` |
+| `min_lead_minutes` | `minLeadMinutes` in `site.ts` |
+| `booking_window_days` | `bookingWindowDays` in `site.ts` |
+| `timezone` | `timezone` in `site.ts` |
+
+To change the database side, open Supabase → **SQL Editor** → New query, paste one line and
+click Run. For example, to hold unpaid MoMo bookings for 45 minutes:
+
+```sql
+update app_settings set value = '45' where key = 'pending_payment_minutes';
+```
+
+Then set `pendingPaymentMinutes: 45` in `src/config/site.ts` and push. Text values keep their
+double quotes inside the single ones (`'"Africa/Kampala"'`); yes and no are `'true'` and
+`'false'`. To see every current value: `select * from app_settings;`.
 
 ## One-sentence recipes for Claude Code
 

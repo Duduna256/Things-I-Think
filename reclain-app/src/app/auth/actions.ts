@@ -8,13 +8,13 @@ import { site } from "@/config/site";
 import { DEMO_COOKIE, DEMO_USERS } from "@/lib/auth";
 import { env, isDemo } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
-import { authErrorMessage, callbackUrl, cleanNext, type AuthField, type AuthFormState } from "@/components/auth/logic";
+import { authErrorMessage, callbackUrl, cleanNext, isSafePath, type AuthField, type AuthFormState } from "@/components/auth/logic";
 import { firstIssue, formText, linkSchema, loginSchema, signupSchema, typed } from "@/components/auth/schemas";
 
-// Only allow redirects to pages on this site.
+// Only allow redirects to pages on this site: "//evil.com", "/\evil.com" and anything with
+// control characters in it become "/".
 export async function safeNext(next: FormDataEntryValue | string | null | undefined): Promise<string> {
-  const value = typeof next === "string" ? next : "";
-  return value.startsWith("/") && !value.startsWith("//") ? value : "/";
+  return isSafePath(next) ? next : "/";
 }
 
 export async function signOut() {

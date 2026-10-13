@@ -7,18 +7,21 @@ import { signOut } from "@/app/auth/actions";
 import { Icon } from "./Icon";
 
 export function NavMenu({ signedIn, name, ownsBusiness, isAdmin }: { signedIn: boolean; name: string | null; ownsBusiness: boolean; isAdmin: boolean }) {
-  const [open, setOpen] = useState(false);
   const wrap = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
+  // The page the menu was opened on. Going to another page closes it without an effect.
+  const [openOn, setOpenOn] = useState<string | null>(null);
+  const open = openOn === pathname;
+  const setOpen = (value: boolean | ((was: boolean) => boolean)) =>
+    setOpenOn(prev => ((typeof value === "function" ? value(prev === pathname) : value) ? pathname : null));
 
-  // Close on navigation, outside click and Escape.
-  useEffect(() => setOpen(false), [pathname]);
+  // Close on navigation (above), outside click and Escape.
   useEffect(() => {
     if (!open) return;
     const onClick = (e: MouseEvent) => {
-      if (!wrap.current?.contains(e.target as Node)) setOpen(false);
+      if (!wrap.current?.contains(e.target as Node)) setOpenOn(null);
     };
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpenOn(null);
     document.addEventListener("click", onClick);
     document.addEventListener("keydown", onKey);
     return () => {
