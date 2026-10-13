@@ -266,8 +266,11 @@ export function BookingFlow(props: BookingFlowProps) {
   // The main button: in the summary card on wide screens, in the bottom bar on phones.
   const cta = (compact: boolean) => {
     if (step !== "confirm") {
+      // Keys keep this and the submit button below separate elements. Without them React would
+      // turn the clicked button into the submit button mid-click, and the browser would then
+      // submit the booking before the person ever saw the confirm step.
       return (
-        <button type="button" className="btn btn-black" disabled={!valid(step)} onClick={next}>
+        <button key="next" type="button" className="btn btn-black" disabled={!valid(step)} onClick={next}>
           Continue
         </button>
       );
@@ -281,7 +284,7 @@ export function BookingFlow(props: BookingFlowProps) {
     }
     const label = pending ? (compact ? "Sending…" : PENDING_LABEL[pay ?? "cash"]) : compact ? "Confirm" : onlinePay ? `Confirm and pay ${ugx(price.total)}` : "Confirm booking";
     return (
-      <button type="submit" form="bk-form" className="btn btn-black" disabled={pending || !pay || !slot}>
+      <button key="submit" type="submit" form="bk-form" className="btn btn-black" disabled={pending || !pay || !slot}>
         {label}
       </button>
     );

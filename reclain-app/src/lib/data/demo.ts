@@ -139,6 +139,7 @@ function buildStore(): Store {
     categoryId: "nails",
     areaId: "ntinda",
     blurb: "Gel, acrylic and nail art two minutes from Ntinda Shopping Centre.",
+    phone: "701234567",
     visitMode: "salon",
     coverWord: "nails",
     palette: ["#3d1430", "#c2447a", "#ffc9da"],

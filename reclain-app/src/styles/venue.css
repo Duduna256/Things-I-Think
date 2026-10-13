@@ -44,7 +44,7 @@
 .vpage-note { color: var(--muted); margin-top: -6px; max-width: 60ch; }
 
 /* Menu section links stay in reach while scrolling a long menu. */
-.vpage-jump { position: sticky; top: var(--nav-h); z-index: 5; background: var(--white); box-shadow: 0 1px 0 var(--line); padding-block: 8px; }
+.vpage-jump { min-width: 0; position: sticky; top: var(--nav-h); z-index: 5; background: var(--white); box-shadow: 0 1px 0 var(--line); padding-block: 8px; }
 .vpage-jump .chips { list-style: none; margin: 0; padding-inline: 0; }
 .vpage-jump li { flex: none; display: flex; }
 /* html already pads scrolling for the nav; this clears the sticky section links too. */

@@ -12,7 +12,7 @@ export const DEMO_COOKIE = "reclain_demo_user";
 export const DEMO_USERS: Record<string, SessionUser> = {
   customer: { id: "demo-customer", email: "grace@demo.reclain.com", fullName: "Grace Nakato", phone: "772123456", isAdmin: false },
   provider: { id: "demo-provider", email: "aisha@demo.reclain.com", fullName: "Aisha Namuli", phone: "752987654", isAdmin: false },
-  admin: { id: "demo-admin", email: "admin@demo.reclain.com", fullName: `${site.shortName} admin`, phone: "700111222", isAdmin: true },
+  admin: { id: "demo-admin", email: "admin@demo.reclain.com", fullName: `Admin at ${site.shortName}`, phone: "700111222", isAdmin: true },
 };
 
 // Demo mode only: name and phone changes saved on /account, so the nav shows them too.

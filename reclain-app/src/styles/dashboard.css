@@ -137,7 +137,7 @@
 /* ================= A booking ================= */
 .dash-bk {
   display: grid; gap: 6px 20px; align-items: start;
-  grid-template-columns: 76px minmax(0, 1.15fr) minmax(0, 1fr) minmax(150px, auto);
+  grid-template-columns: minmax(76px, max-content) minmax(0, 1.15fr) minmax(0, 1fr) minmax(150px, auto);
   grid-template-areas: "when who what money" "acts acts acts acts";
   padding: 16px 18px; border: 1px solid var(--line); border-radius: 18px; background: var(--white);
 }
@@ -145,7 +145,7 @@
 .dash-bk.is-closed .dash-bk-who h3, .dash-bk.is-closed .dash-bk-when b { color: var(--ink-2); }
 
 .dash-bk-when { grid-area: when; display: grid; align-content: start; line-height: 1.2; font-variant-numeric: tabular-nums; }
-.dash-bk-when b { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.03em; }
+.dash-bk-when b { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.03em; white-space: nowrap; }
 .dash-bk-when small { font-size: 0.8rem; margin-top: 2px; }
 .dash-bk-date { font-size: 0.74rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--jac-ink); margin-bottom: 2px; }
 
@@ -331,7 +331,7 @@
 /* ================= Narrower screens ================= */
 @media (max-width: 1100px) {
   .dash-bk {
-    grid-template-columns: 72px minmax(0, 1fr) auto;
+    grid-template-columns: minmax(72px, max-content) minmax(0, 1fr) auto;
     grid-template-areas: "when who money" "when what money" "acts acts acts";
   }
   .dash-bk-what { margin-top: 4px; }
@@ -356,7 +356,7 @@
 
 @media (max-width: 760px) {
   .dash-bk {
-    grid-template-columns: 60px minmax(0, 1fr);
+    grid-template-columns: minmax(60px, max-content) minmax(0, 1fr);
     grid-template-areas: "when who" "what what" "money money" "acts acts";
     padding: 14px;
   }
