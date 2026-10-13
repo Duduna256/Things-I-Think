@@ -23,6 +23,10 @@ export interface SettleDeps {
   getBooking(id: string): Promise<Booking | null>;
   // Ask the provider. null means it has no record of the payment (checkout closed before paying).
   verify(payment: Payment): Promise<VerifiedPayment | null>;
+  // True for a verify() error meaning "the provider's record doesn't match this payment"
+  // (another currency or reference). Settles as "rejected" for a person to check, instead of
+  // failing again on every webhook retry and every Pay now.
+  isMismatch?(error: unknown): boolean;
   // Records the result. becamePaid is true for exactly one call per booking (the database
   // decides under a row lock), so a webhook and a redirect arriving together text once.
   apply(input: { txRef: string; status: PaymentStatus; providerRef: string | null; amount: number; raw: unknown }): Promise<PaymentResultApplied>;
@@ -58,7 +62,14 @@ export async function settle(txRef: string, deps: SettleDeps, opts: { provider?:
   // Settled already (webhooks repeat): nothing to ask, nothing to text.
   if (payment.status === "paid") return describe(before, false);
 
-  const verified = await deps.verify(payment);
+  let verified: VerifiedPayment | null;
+  try {
+    verified = await deps.verify(payment);
+  } catch (e) {
+    if (!deps.isMismatch?.(e)) throw e;
+    log(`Payment ${txRef}: the provider's record doesn't match it. Not confirming; check it by hand.`, e);
+    return { kind: "rejected", booking: before, reason: "The provider's record doesn't match this payment." };
+  }
   if (!verified) return { kind: "abandoned", booking: before };
   if (verified.txRef !== txRef) {
     log(`Payment ${txRef}: provider answered for ${verified.txRef}`);
@@ -104,8 +115,10 @@ export function bookingPathFor(outcome: SettleOutcome): string {
       return `${base}?paid=1`;
     case "failed":
     case "abandoned":
-    case "rejected":
       return `${base}?failed=1`;
+    // The provider's answer didn't add up: money may have moved, so don't say "nothing was taken".
+    case "rejected":
+      return `${base}?review=1`;
     case "pending":
       return `${base}?pending=1`;
   }

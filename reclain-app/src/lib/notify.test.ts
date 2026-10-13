@@ -209,3 +209,37 @@ test("siteHost drops https and www but keeps a local address usable", () => {
   assert.equal(n.siteHost("https://www.reclain.com/"), "reclain.com");
   assert.equal(n.siteHost("http://localhost:3000"), "http://localhost:3000");
 });
+
+// Plain GSM only, so a message is one 160-character SMS and never a 70-character UCS-2 one.
+const GSM_ONLY = /^[@£$¥èéùìòÇØøÅåΔ_ΦΓΛΩΠΨΣΘΞÆæßÉ !"#¤%&'()*+,\-./0-9:;<=>?¡A-ZÄÖÑÜ§¿a-zäöñüà]*$/;
+
+test("very long names, long addresses and odd characters still make one plain SMS", () => {
+  const long = { name: "Mama Nakato Natural Hair and Beauty Salon Ntinda", slug: "mama-nakato-natural-hair-and-beauty-salon-ntinda", categoryId: "hair" };
+  const odd = { name: "Zoë's Nail Bar ✨", slug: "zoes-nail-bar", categoryId: "nails" };
+  for (const venue of [long, odd, { name: "X".repeat(80), slug: "x".repeat(60), categoryId: "hair" }]) {
+    for (const customerName of ["Grace Nakato", "Christopher Kiwanuka Ssemakula", "Nakato 🌸 Grace", "Y".repeat(80)]) {
+      for (const paymentStatus of ["paid", "unpaid"] as const) {
+        for (const location of ["venue", "home"] as const) {
+          const b = booking({ customerName, paymentStatus, location, paymentMethod: paymentStatus === "paid" ? "mtn" : "cash", total: 150000 }, venue);
+          const messages = [
+            n.confirmationSms(b),
+            n.venueBookingSms(b),
+            n.cancellationSms(b, "customer"),
+            n.cancellationSms(b, "venue"),
+            n.venueCancellationSms(b),
+            n.reminderSms(b),
+          ];
+          for (const text of messages) {
+            assert.ok(text.length <= n.SMS_LIMIT, `${text.length}: ${text}`);
+            assert.match(text, GSM_ONLY, text);
+          }
+        }
+      }
+    }
+  }
+});
+
+test("toGsm keeps letters, drops accents and emoji, swaps two-unit characters", () => {
+  assert.equal(n.toGsm("Zoë's Nail Bar ✨"), "Zoe's Nail Bar");
+  assert.equal(n.toGsm("[VIP] {gold} ~ a|b €5"), "(VIP) (gold) - a/b EUR5");
+});

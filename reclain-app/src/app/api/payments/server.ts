@@ -4,7 +4,7 @@ import { data, DataError } from "@/lib/data";
 import { notifyBookingConfirmed } from "@/lib/notify";
 import { getProviderByName, startPayment } from "@/lib/payments";
 import { normalizeMsisdn } from "@/lib/phone";
-import { isTransactionNotFound } from "@/lib/payments/providers/flutterwave";
+import { FlutterwaveError, isTransactionNotFound } from "@/lib/payments/providers/flutterwave";
 import type { Booking, Payment } from "@/lib/types";
 import { bookingPathFor, settle, type SettleDeps, type SettleOutcome } from "./settle";
 
@@ -23,6 +23,7 @@ export function settleDeps(overrides: Partial<SettleDeps> = {}): SettleDeps {
         throw e;
       }
     },
+    isMismatch: e => e instanceof FlutterwaveError && e.code === "mismatch",
     apply: input => data.server.applyPaymentResult(input),
     // notify.ts sends after the response, so this returns straight away.
     notifyConfirmed: booking => notifyBookingConfirmed(booking),
@@ -56,6 +57,9 @@ export async function payAgain(
   opts: { method: Exclude<Payment["method"], "cash">; msisdn: string | null; email: string | null },
 ): Promise<string> {
   const open = (await data.server.listPaymentsForBooking(booking.id)).filter(p => p.status === "pending").slice(0, 3);
+  // Payments whose provider answer didn't add up (wrong amount, currency or reference). They're
+  // logged for a person to check; they must never be reused or re-checked in a loop.
+  const doubtful = new Set<string>();
   for (const p of open) {
     let outcome: SettleOutcome;
     try {
@@ -63,6 +67,10 @@ export async function payAgain(
     } catch (e) {
       console.error(`[payments] payAgain: couldn't check ${p.txRef}`, e);
       throw new DataError("unavailable", "We couldn't check on your last payment just now. Try again in a minute.");
+    }
+    if (outcome.kind === "rejected") {
+      doubtful.add(p.txRef);
+      continue;
     }
     if (outcome.kind === "paid" || outcome.kind === "paid_late") {
       refreshBookingPages(outcome.booking);
@@ -74,7 +82,7 @@ export async function payAgain(
   // send the customer back to it rather than starting a second payment.
   const msisdn = opts.method === "card" ? null : (normalizeMsisdn(opts.msisdn) ?? normalizeMsisdn(booking.customerPhone));
   const reusable = (await data.server.listPaymentsForBooking(booking.id)).find(
-    p => p.status === "pending" && p.method === opts.method && (p.msisdn ?? null) === msisdn && p.checkoutUrl,
+    p => p.status === "pending" && !doubtful.has(p.txRef) && p.method === opts.method && (p.msisdn ?? null) === msisdn && p.checkoutUrl,
   );
   if (reusable?.checkoutUrl) return reusable.checkoutUrl;
 

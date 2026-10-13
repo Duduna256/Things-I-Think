@@ -183,3 +183,20 @@ test("parseTxRef accepts our references and nothing else", () => {
     assert.equal(parseTxRef(bad), null, String(bad));
   }
 });
+
+test("a provider record that doesn't match settles as 'rejected' for a person to check", async () => {
+  const s = fakeStore();
+  const mismatch = new Error("currency USD");
+  s.deps.verify = async () => {
+    throw mismatch;
+  };
+  s.deps.isMismatch = e => e === mismatch;
+  const outcome = await settle(TX, s.deps);
+  assert.equal(outcome.kind, "rejected");
+  assert.equal(bookingPathFor(outcome), "/bookings/bk-1?review=1");
+  assert.equal(s.calls.apply, 0, "nothing is recorded as paid or failed");
+  assert.deepEqual(s.calls.notified, []);
+  // Any other error still throws, so the webhook asks Flutterwave to retry.
+  s.deps.isMismatch = () => false;
+  await assert.rejects(settle(TX, s.deps));
+});

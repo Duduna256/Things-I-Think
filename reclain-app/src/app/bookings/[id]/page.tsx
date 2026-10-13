@@ -140,6 +140,19 @@ function BannerBox({ banner, booking: b, checkHref }: { banner: Banner; booking:
           </div>
         </div>
       );
+    case "review":
+      return (
+        <div className="bkd-banner notice-warn" role="status">
+          <Icon name="alert" />
+          <div>
+            <p className="bkd-banner-title">We&apos;re double-checking that payment.</p>
+            <p>
+              Something about it didn&apos;t add up, so a person will look at it before your booking is confirmed. If money left
+              your account, we&apos;ll sort it out. Please don&apos;t pay again for now. Questions? Email {site.email}.
+            </p>
+          </div>
+        </div>
+      );
     case "cancelled":
       return (
         <div className="bkd-banner notice-ok" role="status">
@@ -177,7 +190,7 @@ export default async function BookingPage({ params, searchParams }: Props) {
   const now = new Date();
   const banner = bannerFor(
     b,
-    { isNew: flag(query.new), paid: flag(query.paid), failed: flag(query.failed), cancelled: flag(query.cancelled), reviewed: flag(query.reviewed) },
+    { isNew: flag(query.new), paid: flag(query.paid), failed: flag(query.failed), cancelled: flag(query.cancelled), reviewed: flag(query.reviewed), review: flag(query.review) },
     now,
   );
   const status = statusPill(b, now);
@@ -197,7 +210,7 @@ export default async function BookingPage({ params, searchParams }: Props) {
       ? (await data.server.listPaymentsForBooking(b.id)).find(p => p.status === "pending")
       : undefined;
   const checkHref = openPayment ? `/api/payments/return?tx_ref=${encodeURIComponent(openPayment.txRef)}` : `/bookings/${b.id}`;
-  const showPay = canPayAgain(b, now) && banner !== "pending_momo" && banner !== "pending_card" && banner !== "failed";
+  const showPay = canPayAgain(b, now) && banner !== "pending_momo" && banner !== "pending_card" && banner !== "failed" && banner !== "review";
   const cancellable = canCancel(b, now);
   const hours = site.freeCancellationHours;
 

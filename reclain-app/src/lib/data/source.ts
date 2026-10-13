@@ -109,7 +109,10 @@ export interface DataSource {
     listRemindersDue(fromIso: string, toIso: string): Promise<Booking[]>;
     // How many bookings were made since this moment (the homepage's "booked today" line).
     countBookingsSince(fromIso: string): Promise<number>;
-    markReminderSent(bookingId: string): Promise<void>;
+    // Stamps reminder_sent_at only if it's empty. True when this call did it, so overlapping
+    // reminder runs never text the same person twice.
+    claimReminder(bookingId: string): Promise<boolean>;
+    releaseReminder(bookingId: string): Promise<void>; // the SMS didn't go: let the next run retry
     logSms(entry: SmsLogEntry): Promise<void>;
   };
 }

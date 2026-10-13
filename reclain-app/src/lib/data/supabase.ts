@@ -519,8 +519,13 @@ export const supabaseSource: DataSource = {
           .select()
           .single(),
       );
-      // Show the booking as "payment pending" while the customer approves.
-      await createAdminClient().from("bookings").update({ payment_status: "pending" }).eq("id", input.bookingId).eq("payment_status", "unpaid");
+      // Show the booking as "payment pending" while the customer approves, including a retry
+      // after a declined attempt.
+      await createAdminClient()
+        .from("bookings")
+        .update({ payment_status: "pending" })
+        .eq("id", input.bookingId)
+        .in("payment_status", ["unpaid", "failed"]);
       return mapPayment(row);
     },
 
@@ -574,8 +579,19 @@ export const supabaseSource: DataSource = {
       return count ?? 0;
     },
 
-    async markReminderSent(bookingId) {
-      const { error } = await createAdminClient().from("bookings").update({ reminder_sent_at: new Date().toISOString() }).eq("id", bookingId);
+    async claimReminder(bookingId) {
+      const { data, error } = await createAdminClient()
+        .from("bookings")
+        .update({ reminder_sent_at: new Date().toISOString() })
+        .eq("id", bookingId)
+        .is("reminder_sent_at", null)
+        .select("id");
+      if (error) throw fromPostgrest(error);
+      return (data ?? []).length > 0;
+    },
+
+    async releaseReminder(bookingId) {
+      const { error } = await createAdminClient().from("bookings").update({ reminder_sent_at: null }).eq("id", bookingId);
       if (error) throw fromPostgrest(error);
     },
 

@@ -36,7 +36,12 @@ export interface ReminderDeps {
   enabled: boolean; // features.smsReminders
   listDue(fromIso: string, toIso: string): Promise<Booking[]>;
   send(booking: Booking): Promise<boolean>; // true when the SMS went out
-  markSent(bookingId: string): Promise<void>;
+  // Stamps the booking as reminded, but only if nobody has yet. True when this run got it.
+  // Claiming before sending stops two overlapping runs (Vercel can deliver a cron twice)
+  // from texting the same person twice.
+  claim(bookingId: string): Promise<boolean>;
+  // Takes the stamp off again when the SMS didn't go, so the next run can retry.
+  release(bookingId: string): Promise<void>;
   concurrency?: number;
   log?(message: string, detail?: unknown): void;
 }
@@ -48,13 +53,14 @@ export interface ReminderSummary {
   sent: number;
   failed: number;
   failedRefs: string[];
+  alreadyTaken: number; // claimed by another run that's going at the same time
   skipped?: string;
 }
 
 export async function runReminders(now: Date, deps: ReminderDeps): Promise<ReminderSummary> {
   const log = deps.log ?? ((message: string, detail?: unknown) => console.warn(message, detail ?? ""));
   const window = reminderWindow(now);
-  const summary: ReminderSummary = { ok: true, date: window.date, due: 0, sent: 0, failed: 0, failedRefs: [] };
+  const summary: ReminderSummary = { ok: true, date: window.date, due: 0, sent: 0, failed: 0, failedRefs: [], alreadyTaken: 0 };
   if (!deps.enabled) return { ...summary, skipped: "SMS reminders are switched off (features.smsReminders)." };
 
   // The query already asks for these; checking again costs nothing and guards a rerun.
@@ -65,23 +71,36 @@ export async function runReminders(now: Date, deps: ReminderDeps): Promise<Remin
   for (let i = 0; i < due.length; i += size) {
     await Promise.all(
       due.slice(i, i + size).map(async booking => {
+        let claimed = false;
+        try {
+          claimed = await deps.claim(booking.id);
+        } catch (e) {
+          log(`Reminder for ${booking.ref} couldn't be claimed`, e);
+          summary.failed += 1;
+          summary.failedRefs.push(booking.ref);
+          return;
+        }
+        if (!claimed) {
+          summary.alreadyTaken += 1;
+          return;
+        }
         let sent = false;
         try {
           sent = await deps.send(booking);
         } catch (e) {
           log(`Reminder for ${booking.ref} threw`, e);
         }
-        if (!sent) {
-          summary.failed += 1;
-          summary.failedRefs.push(booking.ref);
+        if (sent) {
+          summary.sent += 1;
           return;
         }
-        summary.sent += 1;
+        summary.failed += 1;
+        summary.failedRefs.push(booking.ref);
         try {
-          await deps.markSent(booking.id);
+          await deps.release(booking.id);
         } catch (e) {
-          // The SMS went, but the next run may send it again. Better twice than never.
-          log(`Reminder for ${booking.ref} sent but not marked`, e);
+          // Stays stamped, so no retry: better one missed reminder than a loop of failures.
+          log(`Reminder for ${booking.ref} failed and couldn't be released`, e);
         }
       }),
     );

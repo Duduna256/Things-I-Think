@@ -20,17 +20,32 @@ export const SMS_LIMIT = 160;
 
 // ---------- Wording ----------
 
-// Curly quotes, long dashes and the like aren't in the GSM alphabet. One of them turns a
-// 160-character SMS into a 70-character one, so swap them for plain equivalents.
+// The plain GSM 03.38 alphabet: one character each, 160 to an SMS. Its extension characters
+// ([ ] { } ~ | ^ \ and the euro sign) cost two each, so they're swapped out below too.
+const GSM_BASIC =
+  "@\u00A3$\u00A5\u00E8\u00E9\u00F9\u00EC\u00F2\u00C7\u00D8\u00F8\u00C5\u00E5\u0394_\u03A6\u0393\u039B\u03A9\u03A0\u03A8\u03A3\u0398\u039E\u00C6\u00E6\u00DF\u00C9 !\"#\u00A4%&'()*+,-./0123456789:;<=>?\u00A1ABCDEFGHIJKLMNOPQRSTUVWXYZ\u00C4\u00D6\u00D1\u00DC\u00A7\u00BFabcdefghijklmnopqrstuvwxyz\u00E4\u00F6\u00F1\u00FC\u00E0";
+const GSM_SET = new Set(GSM_BASIC);
+
+// Curly quotes, long dashes, accents and emoji aren't in the GSM alphabet. One of them turns a
+// 160-character SMS into a 70-character one, so swap them for plain equivalents or drop them.
 export function toGsm(text: string): string {
-  return text
+  const swapped = text
     .replace(/[\u2018\u2019\u201A\u2032`\u00B4]/g, "'")
     .replace(/[\u201C\u201D\u201E\u2033]/g, '"')
     .replace(/[\u2010-\u2015\u2212]/g, "-")
     .replace(/\u2026/g, "...")
     .replace(/[\u00A0\u2007\u2009\u202F]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+    .replace(/[[{]/g, "(")
+    .replace(/[\]}]/g, ")")
+    .replace(/~/g, "-")
+    .replace(/[|\\]/g, "/")
+    .replace(/\u20AC/g, "EUR")
+    .replace(/\^/g, "");
+  // "Zoë" -> "Zoe": take accents off and keep the letter; drop anything else (emoji).
+  const plain = [...swapped.normalize("NFKD").replace(/[\u0300-\u036f]/g, "")]
+    .filter(c => GSM_SET.has(c) || /\s/.test(c))
+    .join("");
+  return plain.replace(/\s+/g, " ").trim();
 }
 
 // "https://reclain.com" -> "reclain.com". Phones turn it into a link on their own.
@@ -66,7 +81,9 @@ function shorten(wording: Wording, full: boolean, name: string, min: number): st
 
 // Picks the richest wording that fits one SMS. Order of sacrifice: the wit, then a few letters
 // of the name, then the booking's own link (for the bookings list), then more of the name.
-function fit(wordings: Wording[], name: string): string {
+// `rescue` wordings (plainer still, e.g. without the phone number) are tried only when nothing
+// else fits, before the last-resort cut.
+function fit(wordings: Wording[], name: string, rescue: Wording[] = []): string {
   const plainest = wordings[wordings.length - 1];
   for (const full of [true, false]) {
     for (const wording of wordings) {
@@ -78,7 +95,11 @@ function fit(wordings: Wording[], name: string): string {
       if (clipped.length <= SMS_LIMIT) return clipped;
     }
   }
-  return shorten(plainest, false, name, 10);
+  const last = shorten(plainest, false, name, 10);
+  if (last.length <= SMS_LIMIT) return last;
+  if (rescue.length) return fit(rescue, name);
+  // A last guard for very long names: never more than one SMS.
+  return `${last.slice(0, SMS_LIMIT - 3).trimEnd()}...`;
 }
 
 function when(b: Pick<Booking, "startsAt">) {
@@ -136,6 +157,11 @@ export function venueBookingSms(b: Booking): string {
       ({ name }) => `${head}, ${date} ${time}${visit}. ${stop(name + more)} ${money(b, false)}. ${dashboardLink()}`,
     ],
     names[0] ?? all,
+    // A very long customer name: shorter, and the number is on the dashboard.
+    [
+      ({ name }) =>
+        `New booking ${b.ref}: ${clip(b.customerName.trim() || "A customer", 18)}, ${date} ${time}${visit}. ${stop(name + more)} ${money(b, false)}. ${dashboardLink()}`,
+    ],
   );
 }
 
@@ -150,6 +176,8 @@ export function cancellationSms(b: Booking, by: "customer" | "venue"): string {
       [
         ({ name }) => `Cancelled: ${b.ref} at ${name}, ${date} at ${time}.${money} No hard feelings. Book again any time: ${venueLink(b)}`,
         ({ name }) => `Cancelled: ${b.ref} at ${name}, ${date} ${time}.${money} Book again: ${venueLink(b)}`,
+        // A long venue address: the homepage link instead.
+        ({ name }) => `Cancelled: ${b.ref} at ${name}, ${date} ${time}.${money} ${siteHost()}`,
       ],
       b.business.name,
     );
@@ -160,6 +188,7 @@ export function cancellationSms(b: Booking, by: "customer" | "venue"): string {
     [
       ({ name }) => `Sorry, ${name} had to cancel ${b.ref} on ${date} at ${time}.${money} Pick another time: ${venueLink(b)}`,
       ({ name }) => `${name} cancelled ${b.ref}, ${date} ${time}.${money} Rebook: ${venueLink(b)}`,
+      ({ name }) => `${name} cancelled ${b.ref}, ${date} ${time}.${money} ${siteHost()}`,
     ],
     b.business.name,
   );

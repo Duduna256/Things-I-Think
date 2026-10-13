@@ -669,7 +669,7 @@ export const demoSource: DataSource = {
       const p: Payment = { id: newId("pay"), currency: site.currency, status: "pending", createdAt: now(), ...input };
       db().payments.push(p);
       const b = db().bookings.find(x => x.id === input.bookingId);
-      if (b && b.paymentStatus === "unpaid") b.paymentStatus = "pending";
+      if (b && (b.paymentStatus === "unpaid" || b.paymentStatus === "failed")) b.paymentStatus = "pending";
       return p;
     },
     async getPaymentByTxRef(txRef) {
@@ -716,8 +716,14 @@ export const demoSource: DataSource = {
     async countBookingsSince(fromIso) {
       return db().bookings.filter(b => b.createdAt >= fromIso).length;
     },
-    async markReminderSent(bookingId) {
-      findBooking(bookingId).reminderSentAt = now();
+    async claimReminder(bookingId) {
+      const b = findBooking(bookingId);
+      if (b.reminderSentAt) return false;
+      b.reminderSentAt = now();
+      return true;
+    },
+    async releaseReminder(bookingId) {
+      findBooking(bookingId).reminderSentAt = null;
     },
     async logSms(entry) {
       db().sms.push({ ...entry, createdAt: now() });

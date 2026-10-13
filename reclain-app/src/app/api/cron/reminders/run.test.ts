@@ -44,15 +44,17 @@ test("switched off: nothing is looked up or sent", async () => {
       return [];
     },
     send: async () => true,
-    markSent: async () => undefined,
+    claim: async () => true,
+    release: async () => undefined,
   });
   assert.equal(looked, false);
   assert.equal(r.sent, 0);
   assert.ok(r.skipped);
 });
 
-test("sends each reminder, marks the ones that went, counts the rest", async () => {
-  const marked: string[] = [];
+test("claims each reminder, sends it, and releases the ones that failed", async () => {
+  const claimed = new Set<string>();
+  const released: string[] = [];
   let asked: [string, string] | null = null;
   const r = await runReminders(new Date("2026-10-12T15:00:00Z"), {
     enabled: true,
@@ -72,19 +74,53 @@ test("sends each reminder, marks the ones that went, counts the rest", async () 
       if (b.id === "c") throw new Error("gateway down");
       return true;
     },
-    markSent: async id => {
+    claim: async id => {
       if (id === "f") throw new Error("database blip");
-      marked.push(id);
+      if (claimed.has(id)) return false;
+      claimed.add(id);
+      return true;
+    },
+    release: async id => {
+      released.push(id);
     },
     log: () => undefined,
   });
   assert.deepEqual(asked, ["2026-10-12T21:00:00.000Z", "2026-10-13T21:00:00.000Z"]);
   assert.equal(r.date, "2026-10-13");
   assert.equal(r.due, 4);
-  assert.equal(r.sent, 2);
-  assert.equal(r.failed, 2);
-  assert.deepEqual(r.failedRefs.sort(), ["RCL-b", "RCL-c"]);
-  assert.deepEqual(marked, ["a"]);
+  assert.equal(r.sent, 1);
+  assert.equal(r.failed, 3);
+  assert.deepEqual(r.failedRefs.sort(), ["RCL-b", "RCL-c", "RCL-f"]);
+  assert.deepEqual(released.sort(), ["b", "c"], "failed sends are released for the next run");
+});
+
+test("two runs at the same time text each person once", async () => {
+  const stamped = new Set<string>();
+  const texts: string[] = [];
+  const deps = {
+    enabled: true,
+    listDue: async () => [booking("a"), booking("b")],
+    send: async (b: Booking) => {
+      await new Promise(res => setTimeout(res, 2));
+      texts.push(b.id);
+      return true;
+    },
+    // Like the database's "update ... where reminder_sent_at is null returning id".
+    claim: async (id: string) => {
+      await new Promise(res => setTimeout(res, 1));
+      if (stamped.has(id)) return false;
+      stamped.add(id);
+      return true;
+    },
+    release: async (id: string) => {
+      stamped.delete(id);
+    },
+  };
+  const now = new Date("2026-10-12T15:00:00Z");
+  const [x, y] = await Promise.all([runReminders(now, deps), runReminders(now, deps)]);
+  assert.deepEqual(texts.sort(), ["a", "b"]);
+  assert.equal(x.sent + y.sent, 2);
+  assert.equal(x.alreadyTaken + y.alreadyTaken, 2);
 });
 
 test("sends a few at a time", async () => {
@@ -102,7 +138,8 @@ test("sends a few at a time", async () => {
       inFlight -= 1;
       return true;
     },
-    markSent: async () => undefined,
+    claim: async () => true,
+    release: async () => undefined,
   });
   assert.equal(r.sent, 12);
   assert.equal(most, 3);

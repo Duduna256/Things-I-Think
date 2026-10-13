@@ -112,6 +112,7 @@ export type Banner =
   | "paid_late"
   | "cancelled"
   | "reviewed"
+  | "review"
   | null;
 
 export interface BannerFlags {
@@ -120,6 +121,7 @@ export interface BannerFlags {
   failed?: boolean;
   cancelled?: boolean;
   reviewed?: boolean;
+  review?: boolean; // the payment provider's answer didn't add up; a person checks it
 }
 
 // Which message sits at the top of the booking page, from the booking itself and the
@@ -127,6 +129,7 @@ export interface BannerFlags {
 export function bannerFor(b: BookingLike, flags: BannerFlags, now: Date): Banner {
   if (flags.cancelled && b.status === "cancelled") return "cancelled";
   if (flags.reviewed && b.hasReview) return "reviewed";
+  if (flags.review && b.paymentStatus !== "paid") return "review";
   if (b.status === "confirmed") {
     if (flags.paid && b.paymentStatus === "paid") return "paid";
     if (flags.isNew || flags.paid) return "booked";

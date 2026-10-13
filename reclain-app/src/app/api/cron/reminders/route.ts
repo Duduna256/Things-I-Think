@@ -27,7 +27,8 @@ export async function GET(request: NextRequest) {
       enabled: features.smsReminders,
       listDue: (fromIso, toIso) => data.server.listRemindersDue(fromIso, toIso),
       send: booking => sendReminder(booking),
-      markSent: id => data.server.markReminderSent(id),
+      claim: id => data.server.claimReminder(id),
+      release: id => data.server.releaseReminder(id),
       log: (message, detail) => console.error(`[reminders] ${message}`, detail ?? ""),
     });
     return json(summary);
