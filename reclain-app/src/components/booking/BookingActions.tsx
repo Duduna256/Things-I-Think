@@ -7,8 +7,15 @@ import { cancelBookingAction, payAgainAction, reviewBookingAction } from "@/app/
 import { Icon } from "@/components/Icon";
 import type { BookingPageResult } from "./types";
 
+// The submit buttons here are disabled while sending, which drops focus to the page. When an
+// action comes back refused, focus goes to the field to fix, or to the message.
+
 export function PayNowButton({ bookingId }: { bookingId: string }) {
   const [state, action, pending] = useActionState(payAgainAction, null as BookingPageResult);
+  const msg = useRef<HTMLParagraphElement>(null);
+  useEffect(() => {
+    if (state?.error) msg.current?.focus();
+  }, [state]);
   return (
     <form action={action} className="bkd-inline-form">
       <input type="hidden" name="bookingId" value={bookingId} />
@@ -16,7 +23,7 @@ export function PayNowButton({ bookingId }: { bookingId: string }) {
         {pending ? "Starting payment…" : "Pay now"}
       </button>
       {state?.error && (
-        <p className="form-err" role="alert">
+        <p ref={msg} tabIndex={-1} className="form-err" role="alert">
           {state.error}
         </p>
       )}
@@ -30,7 +37,12 @@ export function CancelBooking({ bookingId, policy, lateWarning }: { bookingId: s
   const openBtn = useRef<HTMLButtonElement>(null);
   const title = useRef<HTMLHeadingElement>(null);
   const opened = useRef(false);
+  const msg = useRef<HTMLParagraphElement>(null);
   const titleId = useId();
+
+  useEffect(() => {
+    if (state?.error) msg.current?.focus();
+  }, [state]);
 
   // Focus the question when the confirm step opens, and the button again when it closes.
   useEffect(() => {
@@ -76,7 +88,7 @@ export function CancelBooking({ bookingId, policy, lateWarning }: { bookingId: s
         </button>
       </form>
       {state?.error && (
-        <p className="form-err" role="alert">
+        <p ref={msg} tabIndex={-1} className="form-err" role="alert">
           {state.error}
         </p>
       )}
@@ -94,6 +106,18 @@ export function ReviewForm({ bookingId, venueName }: { bookingId: string; venueN
   const [body, setBody] = useState("");
   const shown = hover || rating;
   const err = (f: "rating" | "title" | "body") => (state?.field === f ? state.error : "");
+  const form = useRef<HTMLFormElement>(null);
+  const msg = useRef<HTMLParagraphElement>(null);
+  useEffect(() => {
+    if (!state?.error) return;
+    const target =
+      state.field === "rating"
+        ? form.current?.querySelector<HTMLInputElement>('input[name="rating"]')
+        : state.field
+          ? document.getElementById(`bkd-${state.field}`)
+          : msg.current;
+    target?.focus();
+  }, [state]);
 
   // Submitted by hand (not <form action>) so a refused review keeps what was typed.
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -107,7 +131,7 @@ export function ReviewForm({ bookingId, venueName }: { bookingId: string; venueN
     <section className="card bkd-review" aria-labelledby="bkd-review-title">
       <h2 id="bkd-review-title">How was it?</h2>
       <p className="muted">Your review helps other people pick {venueName}, and tells the team what to keep doing.</p>
-      <form onSubmit={onSubmit} className="form" noValidate>
+      <form ref={form} onSubmit={onSubmit} className="form" noValidate>
         <input type="hidden" name="bookingId" value={bookingId} />
         <fieldset aria-describedby={err("rating") ? "bkd-rating-err" : undefined}>
           <legend>Your rating</legend>
@@ -167,7 +191,7 @@ export function ReviewForm({ bookingId, venueName }: { bookingId: string; venueN
             </small>
           )}
         </div>
-        <p className="form-err" role="alert">
+        <p ref={msg} tabIndex={-1} className="form-err" role="alert">
           {state?.error && !state.field ? state.error : ""}
         </p>
         {state?.field && (

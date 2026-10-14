@@ -16,7 +16,7 @@ import { NETWORKS } from "@/lib/phone";
 import { formatDate, parseHHMM } from "@/lib/time";
 import type { BookingLocation, PaymentMethod, Service } from "@/lib/types";
 import { Icon } from "@/components/Icon";
-import { errorText, groupServices, isAvailability, loginHref, STEP_LABELS, stepsFor } from "./flow-state";
+import { errorFix, errorText, groupServices, isAvailability, loginHref, STEP_LABELS, stepsFor } from "./flow-state";
 import { dayId, ProStep, ServicesStep, SummaryDetails, TimeStep, type AvailState, type Staffer } from "./FlowSteps";
 import type { BookingActionResult, DetailField, FlowBusiness, FlowSelection, FlowStep } from "./types";
 import { detailErrors, firstError, isMobileMoney, looksComplete, momoSource } from "./validate";
@@ -74,6 +74,7 @@ export function BookingFlow(props: BookingFlowProps) {
   const [submittedFor, setSubmittedFor] = useState<string | null>(null);
 
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const errRef = useRef<HTMLDivElement>(null);
   const shownStep = useRef(stepIndex);
   // When people arrive at Time and the day has nothing free, move to the next free day once.
   const autoJump = useRef(props.initial.step === "time");
@@ -164,10 +165,26 @@ export function BookingFlow(props: BookingFlowProps) {
     } else if (res?.field && res.field !== "pay") {
       const f = res.field;
       setTouched(t => ({ ...t, [f]: true }));
-      requestAnimationFrame(() => document.getElementById(`bk-${f}`)?.focus());
     }
     return res;
   }, null);
+
+  // After a refusal, take people to what needs fixing: the field, or the error box (which
+  // would otherwise sit under the bottom bar on phones, with focus dropped to the page).
+  useEffect(() => {
+    if (!result || result.kind === "conflict" || result.kind === "auth") return;
+    const frame = requestAnimationFrame(() => {
+      if (result.field === "pay") {
+        document.querySelector<HTMLInputElement>('#bk-form input[name="pay"]:checked')?.focus();
+      } else if (result.field) {
+        document.getElementById(`bk-${result.field}`)?.focus();
+      } else if (errRef.current) {
+        errRef.current.focus({ preventScroll: true });
+        errRef.current.scrollIntoView({ block: "center" });
+      }
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [result]);
 
   /* ---- Moving between steps ---- */
   const valid = (s: FlowStep) =>
@@ -245,6 +262,7 @@ export function BookingFlow(props: BookingFlowProps) {
   const loginUrl = loginHref(business.slug, { ...selection, step: "confirm" });
   const onlinePay = pay !== null && pay !== "cash";
   const formError = result && result.kind !== "conflict" && result.kind !== "auth" && submittedFor === selectionKey ? result : null;
+  const fix = formError && !formError.field ? errorFix(formError) : null;
   const who = business.skipProfessional ? null : staffId === "any" ? "Any professional" : (pro?.name ?? null);
   const when = slot ? `${formatDate(date)} · ${slot.time}${price.durationMin ? ` (${duration(price.durationMin)})` : ""}` : null;
   const notesFor = business.skipProfessional ? business.name : pro ? shortName(pro.name) : "your professional";
@@ -514,12 +532,17 @@ export function BookingFlow(props: BookingFlowProps) {
             {policy}
 
             {formError && formError.field !== "pay" && (
-              <div className="bk-form-err full" role="alert">
+              <div className="bk-form-err full" role="alert" ref={errRef} tabIndex={-1}>
                 <p className="form-err">{formError.error}</p>
-                {formError.kind === "invalid" && !formError.field && (
+                {fix === "time" && (
                   <button type="button" className="link-btn" onClick={() => goTo(steps.indexOf("time"), false)}>
                     Pick another time
                   </button>
+                )}
+                {fix === "bookings" && (
+                  <Link className="link-btn" href="/bookings">
+                    See my bookings
+                  </Link>
                 )}
               </div>
             )}

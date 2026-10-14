@@ -8,6 +8,7 @@ import { Icon } from "./Icon";
 
 export function NavMenu({ signedIn, name, ownsBusiness, isAdmin }: { signedIn: boolean; name: string | null; ownsBusiness: boolean; isAdmin: boolean }) {
   const wrap = useRef<HTMLDivElement>(null);
+  const button = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
   // The page the menu was opened on. Going to another page closes it without an effect.
   const [openOn, setOpenOn] = useState<string | null>(null);
@@ -15,18 +16,32 @@ export function NavMenu({ signedIn, name, ownsBusiness, isAdmin }: { signedIn: b
   const setOpen = (value: boolean | ((was: boolean) => boolean)) =>
     setOpenOn(prev => ((typeof value === "function" ? value(prev === pathname) : value) ? pathname : null));
 
-  // Close on navigation (above), outside click and Escape.
+  // Close on navigation (above), outside click, Escape (focus goes back to the button) and
+  // tabbing out of the menu.
   useEffect(() => {
     if (!open) return;
+    const el = wrap.current;
     const onClick = (e: MouseEvent) => {
-      if (!wrap.current?.contains(e.target as Node)) setOpenOn(null);
+      if (!el?.contains(e.target as Node)) setOpenOn(null);
     };
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpenOn(null);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setOpenOn(null);
+      button.current?.focus();
+    };
+    // relatedTarget is null when focus goes nowhere in particular (a click on the panel's own
+    // padding, or the window losing focus), so only a known element outside closes it.
+    const onFocusOut = (e: FocusEvent) => {
+      const to = e.relatedTarget;
+      if (to instanceof Node && !el?.contains(to)) setOpenOn(null);
+    };
     document.addEventListener("click", onClick);
     document.addEventListener("keydown", onKey);
+    el?.addEventListener("focusout", onFocusOut);
     return () => {
       document.removeEventListener("click", onClick);
       document.removeEventListener("keydown", onKey);
+      el?.removeEventListener("focusout", onFocusOut);
     };
   }, [open]);
 
@@ -42,7 +57,7 @@ export function NavMenu({ signedIn, name, ownsBusiness, isAdmin }: { signedIn: b
   const close = () => setOpen(false);
   return (
     <div className="menu-wrap" ref={wrap}>
-      <button type="button" className="pill-btn" aria-expanded={open} aria-controls="menuPanel" onClick={() => setOpen(o => !o)}>
+      <button ref={button} type="button" className="pill-btn" aria-expanded={open} aria-controls="menuPanel" onClick={() => setOpen(o => !o)}>
         <span>{signedIn && name ? name.split(" ")[0] : "Menu"}</span>
         <Icon name="menu" />
       </button>

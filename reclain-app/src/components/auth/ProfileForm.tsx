@@ -11,15 +11,20 @@ const IDLE: ProfileFormState = { status: "idle" };
 export function ProfileForm({ fullName, phone }: { fullName: string; phone: string }) {
   const [state, action, pending] = useActionState(updateProfileAction, IDLE);
   const form = useRef<HTMLFormElement>(null);
+  const errMsg = useRef<HTMLParagraphElement>(null);
+  const okMsg = useRef<HTMLParagraphElement>(null);
   const ids = useId();
   const errId = `${ids}-err`;
   const v = state.values ?? { fullName, phone };
   const bad = (field: "fullName" | "phone") => state.status === "error" && state.field === field;
 
+  // Save is disabled while sending, so focus fell to the page. Put it back on the field to fix,
+  // or on the message.
   useEffect(() => {
-    if (state.status !== "error" || !state.field) return;
-    const el = form.current?.elements.namedItem(state.field);
+    if (state.status === "idle") return;
+    const el = state.status === "error" && state.field ? form.current?.elements.namedItem(state.field) : null;
     if (el instanceof HTMLElement) el.focus();
+    else (state.status === "error" ? errMsg : okMsg).current?.focus();
   }, [state]);
 
   return (
@@ -62,7 +67,7 @@ export function ProfileForm({ fullName, phone }: { fullName: string; phone: stri
         </span>
       </div>
       {state.status === "error" && state.message && (
-        <p className="form-err auth-err" id={errId} role="alert">
+        <p ref={errMsg} tabIndex={-1} className="form-err auth-err" id={errId} role="alert">
           <Icon name="alert" />
           <span>{state.message}</span>
         </p>
@@ -71,7 +76,7 @@ export function ProfileForm({ fullName, phone }: { fullName: string; phone: stri
         <button type="submit" className="btn btn-black" disabled={pending}>
           {pending ? "Saving…" : "Save changes"}
         </button>
-        <p className="form-ok" role="status">
+        <p ref={okMsg} tabIndex={-1} className="form-ok" role="status">
           {state.status === "ok" && !pending ? state.message : ""}
         </p>
       </div>

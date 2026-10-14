@@ -129,7 +129,7 @@ export function ServicesStep({
           <p className="bk-toggle-note">
             {props.location === "home"
               ? "They bring the tools. You provide the chair."
-              : `${props.areaName || b.name}. Directions come with your confirmation SMS.`}
+              : `${props.areaName || b.name}. The address is on your booking page once you've booked.`}
           </p>
         </div>
       )}
@@ -198,14 +198,14 @@ export function ProStep({
       <h1 className="bk-h1" ref={headingRef} tabIndex={-1}>
         Pick a professional
       </h1>
-      <p className="bk-step-note">Everyone here is ID-checked and skills-reviewed. Pick a favourite or let us match you.</p>
+      <p className="bk-step-note">Pick someone, or let us choose whoever&apos;s free.</p>
       <div className="bk-pros" role="group" aria-label="Professionals">
         <button type="button" className="bk-pro bk-pro-any" aria-pressed={props.staffId === "any"} onClick={() => props.onPick("any")}>
           <span className="avatar" aria-hidden="true">
             <Icon name="users" />
           </span>
           <b>Any professional</b>
-          <small>Whoever&apos;s free first. We vetted them all.</small>
+          <small>Whoever&apos;s free first.</small>
         </button>
         {props.staff.map((p, i) => (
           <button key={p.id} type="button" className="bk-pro" aria-pressed={props.staffId === p.id} onClick={() => props.onPick(p.id)}>
@@ -214,11 +214,18 @@ export function ProStep({
             </span>
             <b>{p.name}</b>
             {p.role && <small>{p.role}</small>}
-            <span className="bk-pro-rating">
-              <span aria-hidden="true">{p.rating.toFixed(1)}</span>
-              <Icon name="star" />
-              <span className="sr-only">Rated {p.rating.toFixed(1)} out of 5</span>
-            </span>
+            {/* A rating of 0 means nobody has rated them yet. */}
+            {p.rating > 0 ? (
+              <span className="bk-pro-rating">
+                <span aria-hidden="true">{p.rating.toFixed(1)}</span>
+                <Icon name="star" />
+                <span className="sr-only">Rated {p.rating.toFixed(1)} out of 5</span>
+              </span>
+            ) : (
+              <span className="bk-pro-rating">
+                New<span className="sr-only">, not rated yet</span>
+              </span>
+            )}
           </button>
         ))}
       </div>

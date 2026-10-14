@@ -59,12 +59,12 @@ export const trust = {
   note: "Booking a stranger is weird. We make it less weird.",
   cards: [
     { icon: "money", title: "Money held until the job's done", body: `Your MoMo, Airtel Money or card payment comes to ${site.shortName} first. Your pro gets paid after the service.` },
-    { icon: "shield", title: "Guards from licensed firms only", body: "Security bookings come from registered companies, with the paperwork to prove it." },
+    { icon: "shield", title: "Guards from registered firms only", body: "We only list security businesses that are registered companies, and we check each one before it goes live." },
     { icon: "chat", title: "Reviews from real bookings", body: "Only people who actually booked can leave a review. No cousins." },
     { icon: "clock", title: "Plans change. We get it.", body: `Cancel for free up to ${site.freeCancellationHours} hours before. Paid already? Our team sends your money back.` },
   ],
   stats: [
-    { value: "ID-checked", label: `Every pro on ${site.shortName} passes an ID check and a skills review before their first booking.` },
+    { value: "Vetted", label: `The ${site.shortName} team checks every business before it can take a single booking. Businesses are responsible for their own staff.` },
     { value: "UGX 0", label: "to sign up, for customers and for businesses. We earn a small fee only when a booking is done." },
   ],
 };
@@ -105,7 +105,7 @@ export const faq = [
   },
   {
     q: "Who checks the professionals?",
-    a: "Every pro passes an ID check and a skills review. Massage therapists show a recognised certification, and security guards come from registered security companies.",
+    a: `The ${site.shortName} team checks every business before it can take a single booking. Each business picks its own staff and is responsible for them. Security gets an extra rule: we only list security businesses that are registered companies.`,
   },
   {
     q: "How does laundry pickup work?",

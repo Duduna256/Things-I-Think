@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import type { Service } from "../../lib/types";
 import {
   allowedLocation,
+  errorFix,
   errorText,
   flowQuery,
   groupServices,
@@ -151,4 +152,21 @@ test("availability answers are checked before use", () => {
   assert.equal(errorText({ error: "Pick a day" }), "Pick a day");
   assert.equal(errorText({ error: 4 }), null);
   assert.equal(errorText(null), null);
+});
+
+test("errorFix offers another time only for errors about the time", () => {
+  const fix = (error: string, kind = "invalid") => errorFix({ error, kind });
+  assert.equal(fix("That slot was just taken. Pick another time.", "conflict"), "time");
+  assert.equal(fix("That time has already passed."), "time");
+  assert.equal(fix("That time is too soon. Pick a later slot."), "time");
+  assert.equal(fix("Pick one of the times shown."), "time");
+  assert.equal(fix("The venue is closed that day."), "time");
+  assert.equal(fix("That time is outside opening hours."), "time");
+  assert.equal(fix("One of those services has to start earlier in the day."), "time");
+  assert.equal(fix("Pick a day in the next 14 days."), "time");
+  assert.equal(fix("You already have 6 upcoming bookings. Cancel one, or wait until one is done, to book another."), "bookings");
+  assert.equal(fix("That's a lot of bookings for one day. Try again tomorrow, or call the venue."), "bookings");
+  assert.equal(fix("This venue isn't taking bookings right now.", "not_found"), null);
+  assert.equal(fix("We couldn't save your booking. Try again in a minute.", "unavailable"), null);
+  assert.equal(fix("One of those services is no longer available."), null);
 });

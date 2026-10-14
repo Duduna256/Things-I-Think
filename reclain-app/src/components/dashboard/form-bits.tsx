@@ -18,6 +18,8 @@ export function useSubmit(action: Action, opts: { onDone?: (result: NonNullable<
   const [result, setResult] = useState<FormResult>(null);
   const [pending, start] = useTransition();
   const formRef = useRef<HTMLFormElement>(null);
+  // Pass to <FormMessage focusRef>: the message takes focus when no field does.
+  const messageRef = useRef<HTMLParagraphElement>(null);
 
   const submit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -39,15 +41,16 @@ export function useSubmit(action: Action, opts: { onDone?: (result: NonNullable<
     });
   };
 
-  // After a refusal, move focus to the first field that needs fixing.
+  // The submit button was disabled while sending, so focus fell to the page. After a refusal it
+  // goes to the first field that needs fixing; otherwise to the message, if it's shown.
   useEffect(() => {
-    if (!result || result.ok || !result.errors) return;
-    const first = formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]');
-    first?.focus();
+    if (!result) return;
+    const first = !result.ok && result.errors ? formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]') : null;
+    (first ?? messageRef.current)?.focus();
   }, [result]);
 
   const error = (field: string): string | undefined => (result && !result.ok ? result.errors?.[field] : undefined);
-  return { result, pending, submit, formRef, error, clear: () => setResult(null) };
+  return { result, pending, submit, formRef, messageRef, error, clear: () => setResult(null) };
 }
 
 // Props for an input with an error: aria-invalid and a link to the message.

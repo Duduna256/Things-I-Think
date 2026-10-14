@@ -123,7 +123,7 @@ const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
 function ServiceRow({ service: s, businessId, onEdit, onDeleted }: { service: Service; businessId: string; onEdit: () => void; onDeleted: (msg: string) => void }) {
   const [confirming, setConfirming] = useState(false);
-  const { result, pending, submit } = useSubmit(deleteServiceAction, { onDone: r => onDeleted(r.message ?? "Deleted.") });
+  const { result, pending, submit, messageRef } = useSubmit(deleteServiceAction, { onDone: r => onDeleted(r.message ?? "Deleted.") });
   const question = useRef<HTMLParagraphElement>(null);
   const deleteBtn = useRef<HTMLButtonElement>(null);
   const opened = useRef(false);
@@ -169,7 +169,7 @@ function ServiceRow({ service: s, businessId, onEdit, onDeleted }: { service: Se
               Keep it
             </button>
           </div>
-          {result && !result.ok && <FormMessage result={result} />}
+          {result && !result.ok && <FormMessage result={result} focusRef={messageRef} />}
         </form>
       ) : (
         <div className="dash-row-btns">
@@ -204,7 +204,7 @@ function ServiceForm({
   onCancel: () => void;
   onDone: (msg: string) => void;
 }) {
-  const { result, pending, submit, formRef, error } = useSubmit(saveServiceAction, { onDone: r => onDone(r.message ?? "Saved.") });
+  const { result, pending, submit, formRef, messageRef, error } = useSubmit(saveServiceAction, { onDone: r => onDone(r.message ?? "Saved.") });
   const id = useId();
   const f = (name: string) => `${id}-${name}`;
   const e = (name: string) => `${id}-${name}-err`;
@@ -300,7 +300,7 @@ function ServiceForm({
           Show on your menu
         </label>
       </div>
-      <FormMessage result={result} />
+      <FormMessage result={result} focusRef={messageRef} />
       <div className="dash-form-btns">
         <button type="submit" className="btn btn-black" disabled={pending}>
           {pending ? "Saving…" : service ? "Save changes" : "Add to menu"}

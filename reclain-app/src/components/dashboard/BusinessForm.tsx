@@ -44,7 +44,7 @@ export function BusinessForm({
   areas: AreaOption[];
   flags: { homeVisits: boolean; cash: boolean };
 }) {
-  const { result, pending, submit, formRef, error } = useSubmit(mode === "create" ? createBusinessAction : saveSettingsAction);
+  const { result, pending, submit, formRef, messageRef, error } = useSubmit(mode === "create" ? createBusinessAction : saveSettingsAction);
   const uid = useId();
   const e = (name: string) => `${uid}-${name}-err`;
 
@@ -377,6 +377,7 @@ export function BusinessForm({
 
       <div className="dash-submit">
         <FormMessage
+          focusRef={messageRef}
           result={
             errorCount
               ? { message: errorCount === 1 ? "One field needs a look. It's highlighted above." : `${errorCount} fields need a look. They're highlighted above.` }

@@ -110,7 +110,7 @@ function StaffRow({
   onDeleted: (msg: string) => void;
 }) {
   const [confirming, setConfirming] = useState(false);
-  const { result, pending, submit } = useSubmit(deleteStaffAction, { onDone: r => onDeleted(r.message ?? "Removed.") });
+  const { result, pending, submit, messageRef } = useSubmit(deleteStaffAction, { onDone: r => onDeleted(r.message ?? "Removed.") });
   const question = useRef<HTMLParagraphElement>(null);
   const removeBtn = useRef<HTMLButtonElement>(null);
   const opened = useRef(false);
@@ -171,7 +171,7 @@ function StaffRow({
                 Keep {first}
               </button>
             </div>
-            {result && !result.ok && <FormMessage result={result} />}
+            {result && !result.ok && <FormMessage result={result} focusRef={messageRef} />}
           </form>
         )
       ) : (
@@ -203,7 +203,7 @@ function StaffForm({
   onCancel: () => void;
   onDone: (msg: string) => void;
 }) {
-  const { result, pending, submit, formRef, error } = useSubmit(saveStaffAction, { onDone: r => onDone(r.message ?? "Saved.") });
+  const { result, pending, submit, formRef, messageRef, error } = useSubmit(saveStaffAction, { onDone: r => onDone(r.message ?? "Saved.") });
   const id = useId();
   const f = (name: string) => `${id}-${name}`;
   const e = (name: string) => `${id}-${name}-err`;
@@ -253,7 +253,7 @@ function StaffForm({
           <FieldError id={e("active")} error={error("active")} />
         </div>
       </div>
-      <FormMessage result={result} />
+      <FormMessage result={result} focusRef={messageRef} />
       <div className="dash-form-btns">
         <button type="submit" className="btn btn-black" disabled={pending}>
           {pending ? "Saving…" : member ? "Save changes" : "Add to the team"}

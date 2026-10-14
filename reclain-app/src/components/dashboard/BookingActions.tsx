@@ -26,7 +26,7 @@ export function BookingActions({
 }) {
   const announce = useAnnounce();
   const [confirming, setConfirming] = useState<Confirm>(null);
-  const { result, pending, submit } = useSubmit(bookingAction, {
+  const { result, pending, submit, messageRef } = useSubmit(bookingAction, {
     onDone: r => {
       setConfirming(null);
       announce?.(r.message ?? "Done.");
@@ -115,7 +115,7 @@ export function BookingActions({
           </div>
         )
       )}
-      <FormMessage result={shown} />
+      <FormMessage result={shown} focusRef={messageRef} />
     </form>
   );
 }

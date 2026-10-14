@@ -234,7 +234,7 @@
 }
 .biz-band .eyebrow { color: var(--lilac); }
 .biz-band .biz-copy { display: grid; gap: 20px; }
-.biz-band h2 { font-size: clamp(2rem, 4.4vw, 3.6rem); font-weight: 800; letter-spacing: -0.045em; line-height: 1; }
+.biz-band h2 { font-size: clamp(2rem, 4.4vw, 3.6rem); font-weight: 800; letter-spacing: -0.045em; line-height: 1; overflow-wrap: anywhere; }
 .biz-band h2 em { font-family: var(--serif); font-style: italic; font-weight: 400; color: var(--lilac); letter-spacing: -0.01em; }
 .biz-band .biz-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
 .biz-band .biz-list li { display: flex; gap: 12px; align-items: flex-start; color: #e7e4ee; }
@@ -294,8 +294,8 @@
 .search-page .search-results { padding-top: 8px; }
 
 /* ---------- For business ---------- */
-.fb-hero { padding-block: clamp(40px, 7vw, 96px) clamp(16px, 3vw, 32px); display: grid; gap: 18px; justify-items: start; }
-.fb-hero h1 { font-size: clamp(2.4rem, 6vw, 4.8rem); font-weight: 800; letter-spacing: -0.045em; line-height: 1; max-width: 16ch; }
+.fb-hero { padding-block: clamp(40px, 7vw, 96px) clamp(16px, 3vw, 32px); display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; justify-items: start; }
+.fb-hero h1 { font-size: clamp(1.9rem, 6vw + 0.5rem, 4.8rem); font-weight: 800; letter-spacing: -0.045em; line-height: 1; max-width: 16ch; overflow-wrap: anywhere; }
 .fb-hero .fb-sub { font-size: clamp(1.02rem, 1.6vw, 1.18rem); color: var(--ink-2); max-width: 60ch; }
 .fb-hero .fb-cta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 6px; }
 .fb-hero .fb-small { color: var(--muted); font-size: 0.92rem; }
@@ -379,4 +379,6 @@
 /* Small phones: a size at which every rotating word keeps the headline the same height. */
 @media (max-width: 400px) {
   .home-hero h1 { font-size: 2.15rem; }
+  /* "WhatsApp." on one line inside the band's padding, down to 320px. */
+  .biz-band h2 { font-size: clamp(1.6rem, 10vw - 0.5rem, 2rem); }
 }

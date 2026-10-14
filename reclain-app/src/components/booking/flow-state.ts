@@ -156,3 +156,12 @@ export function errorText(body: unknown): string | null {
 export function loginHref(slug: string, sel: FlowSelection): string {
   return `/login?next=${encodeURIComponent(`/book/${encodeURIComponent(slug)}?${flowQuery(sel)}`)}`;
 }
+
+// What a refused booking's error box offers next: another time (the slot or day was the
+// problem), the customer's bookings (they hit an account limit), or nothing.
+export function errorFix(result: { error: string; kind: string }): "time" | "bookings" | null {
+  if (/upcoming bookings|a lot of bookings for one day/i.test(result.error)) return "bookings";
+  if (result.kind === "conflict") return "time";
+  if (/\b(time|times|slot)\b|opening hours|closed that day|earlier in the day|next \d+ days/i.test(result.error)) return "time";
+  return null;
+}

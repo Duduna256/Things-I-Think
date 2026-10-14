@@ -10,7 +10,7 @@ export function TeamList({ staff, palette }: { staff: Staff[]; palette: [string,
   return (
     <section className="vpage-section" id="team" aria-labelledby="team-title">
       <h2 id="team-title">The team</h2>
-      <p className="vpage-note">Everyone here is ID-checked and skills-reviewed. Pick a favourite when you book, or let us match you.</p>
+      <p className="vpage-note">Pick a favourite when you book, or let us choose whoever&apos;s free.</p>
       <ul className="vpage-team">
         {staff.map((p, i) => (
           <li key={p.id} className="vpage-pro">
@@ -19,12 +19,17 @@ export function TeamList({ staff, palette }: { staff: Staff[]; palette: [string,
             </span>
             <b>{p.name}</b>
             <small>{p.role}</small>
-            {p.rating > 0 && (
+            {/* A rating of 0 means nobody has rated them yet. */}
+            {p.rating > 0 ? (
               <span className="rating">
                 <span className="sr-only">Rated </span>
                 {p.rating.toFixed(1)}
                 <Icon name="star" className="ic ic-fill vpage-star" />
                 <span className="sr-only"> out of 5</span>
+              </span>
+            ) : (
+              <span className="rating">
+                New<span className="sr-only">, not rated yet</span>
               </span>
             )}
           </li>

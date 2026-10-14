@@ -207,7 +207,9 @@
 .bk-policy { background: var(--soft); border-radius: 14px; padding: 16px; color: var(--ink-2); font-size: 0.92rem; display: grid; gap: 4px; }
 .bk-policy b { color: var(--ink); }
 .bk-form-err { display: grid; gap: 2px; justify-items: start; }
+.bk-form-err:focus { outline: none; }
 .bk-form-err .link-btn, .bk-times .link-btn { min-height: 44px; }
+.bk-form-err a.link-btn { display: inline-flex; align-items: center; }
 
 /* ---------- Wide to narrow ---------- */
 @media (max-width: 1100px) {
@@ -228,6 +230,8 @@
   .bk-bar-total { display: grid; line-height: 1.25; min-width: 0; }
   .bk-bar-total b { font-weight: 800; font-variant-numeric: tabular-nums; }
   .bk-bar-total small { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* Scrolled to, the error box clears the bottom bar (about 70px tall). */
+  .bk-form-err { scroll-margin-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
   .bk-crumbs li:not(.is-current) { display: none; }
   .bk-crumbs li::before { display: none; }
 }
@@ -275,6 +279,8 @@
 
 /* ================= One booking ================= */
 .bkd { display: grid; gap: 20px; align-content: start; }
+/* A refused action's message takes focus (its button was disabled meanwhile); no ring needed. */
+.bkd .form-err:focus { outline: none; }
 .bkd-back { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; justify-self: start; font-weight: 600; text-decoration: none; color: var(--ink-2); }
 .bkd-back:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
 

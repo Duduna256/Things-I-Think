@@ -12,7 +12,7 @@ export function ReviewCard({ review, showBusiness = false, headingLevel = 3 }: {
   return (
     <article className="rv-card">
       <span className="rv-stars" role="img" aria-label={`Rated ${stars} out of 5`}>
-        <Stars count={stars} />
+        <Stars value={stars} />
       </span>
       <Heading className="rv-title">{review.title}</Heading>
       <p className="rv-body">{review.body}</p>

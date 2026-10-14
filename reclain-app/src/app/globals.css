@@ -134,7 +134,11 @@ img { max-width: 100%; }
 /* ---------- Sections ---------- */
 .block { padding-block: clamp(24px, 3.5vw, 40px); }
 .block-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
-.block h2, .page-title { font-size: clamp(1.55rem, 2.6vw, 2.1rem); font-weight: 750; letter-spacing: -0.03em; line-height: 1.1; }
+/* Under about 355px wide the heading shrinks with the screen, so "Recommended" fits a 288px column. */
+.block h2, .page-title {
+  font-size: clamp(1.4rem, 7vw, clamp(1.55rem, 2.6vw, 2.1rem)); font-weight: 750; letter-spacing: -0.03em; line-height: 1.1;
+  min-width: 0; overflow-wrap: anywhere;
+}
 .page-title { font-size: clamp(1.9rem, 3.6vw, 2.8rem); font-weight: 800; letter-spacing: -0.04em; }
 .block-note { color: var(--muted); }
 .page { padding-block: clamp(24px, 4vw, 48px) clamp(48px, 6vw, 80px); min-height: 60vh; }
@@ -200,6 +204,11 @@ img { max-width: 100%; }
 .rating { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; font-size: 0.95rem; font-variant-numeric: tabular-nums; }
 .stars { display: inline-flex; gap: 1px; color: var(--ink); }
 .stars .ic { width: 14px; height: 14px; fill: currentColor; stroke: none; }
+/* Stars not earned are outlines. A part-earned one lays a clipped full star over an outline;
+   the clip runs across the star's own width (x 2.9 to 21.1 of 24), so 0.5 reads as half. */
+.stars .ic.star-off { fill: none; stroke: currentColor; stroke-width: 2; }
+.stars .star-part { position: relative; display: inline-flex; flex: none; }
+.stars .star-part .star-on { position: absolute; top: 0; left: 0; clip-path: inset(0 calc(88% - 76% * var(--fill, 1)) 0 0); }
 .rating .count { color: var(--muted); font-weight: 500; }
 
 .avatar { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; flex: none; font-weight: 700; font-size: 0.9rem; color: var(--ink); background: var(--lilac); }

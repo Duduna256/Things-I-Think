@@ -20,7 +20,7 @@ export function HomeReviews({ reviews, score }: { reviews: ReviewWithBusiness[];
                 <small>/5</small>
               </span>
             </p>
-            <Stars />
+            <Stars value={score.avg} />
             <p className="score-note">{scoreNote(score)}</p>
           </div>
         )}

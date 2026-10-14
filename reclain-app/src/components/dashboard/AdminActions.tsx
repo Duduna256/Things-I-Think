@@ -28,7 +28,7 @@ export function AdminActions({ businessId, name, ops }: { businessId: string; na
   const [confirming, setConfirming] = useState(false);
   // Which button was pressed, so only that one says it's saving.
   const [pressed, setPressed] = useState<string | null>(null);
-  const { result, pending, submit } = useSubmit(setBusinessStatusAction, {
+  const { result, pending, submit, messageRef } = useSubmit(setBusinessStatusAction, {
     onDone: r => {
       setConfirming(false);
       announce?.(r.message ?? "Done.");
@@ -92,7 +92,7 @@ export function AdminActions({ businessId, name, ops }: { businessId: string; na
           )}
         </div>
       )}
-      <FormMessage result={shown} />
+      <FormMessage result={shown} focusRef={messageRef} />
     </form>
   );
 }
