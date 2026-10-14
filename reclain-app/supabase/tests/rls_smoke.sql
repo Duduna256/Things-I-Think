@@ -24,6 +24,8 @@ select
   (select id from public.staff st where st.business_id = (select id from public.businesses where slug = 'braid-republic') and st.sort = 0) as aisha,
   ((date_trunc('week', now() at time zone 'Africa/Kampala') + interval '8 days 10 hours') at time zone 'Africa/Kampala') as slot;
 grant all on t_ctx to anon, authenticated, service_role;
+create temp table t_staff_before as select rating from public.staff where id = (select aisha from t_ctx);
+grant all on t_staff_before to anon, authenticated, service_role;
 
 insert into t_results (step, ok, detail)
 select 'profile created by signup trigger', count(*) = 3, count(*)::text from public.profiles where id in (
@@ -107,6 +109,17 @@ reset role;
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"33333333-3333-3333-3333-333333333333","role":"authenticated"}', true);
 insert into t_results (step, ok, detail) select 'owner sees venue bookings', count(*) = 2, count(*)::text from public.bookings;
+do $$ begin
+  perform public.set_booking_status(current_setting('test.booking1')::uuid, 'completed');
+  insert into t_results (step, ok, detail) values ('owner cannot complete a booking that has not started', false, 'completed');
+exception when others then
+  insert into t_results (step, ok, detail) values ('owner cannot complete a booking that has not started', sqlerrm like '%hasn''t started%', sqlerrm);
+end $$;
+reset role;
+-- The appointment happens: move booking 1 into the past.
+update public.bookings set starts_at = now() - interval '3 hours', ends_at = now() - interval '90 minutes' where id = current_setting('test.booking1')::uuid;
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"33333333-3333-3333-3333-333333333333","role":"authenticated"}', true);
 do $$ declare b public.bookings; begin
   b := public.set_booking_status(current_setting('test.booking1')::uuid, 'completed');
   insert into t_results (step, ok, detail) values ('owner marks booking completed', b.status = 'completed', b.status::text);
@@ -125,6 +138,14 @@ do $$ begin
   insert into t_results (step, ok, detail) select 'owner cannot fake ratings', rating_count = 1284, rating_count::text from public.businesses where slug = 'braid-republic';
 end $$;
 do $$ begin
+  update public.businesses set sort = -999, is_new = true where slug = 'braid-republic';
+  insert into t_results (step, ok, detail) select 'owner cannot move their business up the listings', sort <> -999, sort::text from public.businesses where slug = 'braid-republic';
+end $$;
+do $$ begin
+  update public.staff set rating = 5.0 where id = (select aisha from t_ctx);
+  insert into t_results (step, ok, detail) select 'owner cannot set staff ratings', rating = (select rating from t_staff_before), rating::text from public.staff where id = (select aisha from t_ctx);
+end $$;
+do $$ begin
   update public.businesses set blurb = 'Hacked' where slug = 'fade-kings';
   insert into t_results (step, ok, detail) select 'owner cannot edit someone else''s venue', blurb <> 'Hacked', blurb from public.businesses where slug = 'fade-kings';
 end $$;
@@ -135,8 +156,9 @@ set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}', true);
 do $$ begin
   insert into public.reviews (business_id, booking_id, customer_id, rating, title, body, author_name, author_area)
-  values ((select biz from t_ctx), current_setting('test.booking1')::uuid, '11111111-1111-1111-1111-111111111111', 5, 'Neat!', 'Lovely cornrows', 'Grace T.', 'Ntinda');
-  insert into t_results (step, ok, detail) select 'review of completed booking updates rating', rating_count = 1285, rating_count::text from public.businesses where slug = 'braid-republic';
+  values ((select biz from t_ctx), current_setting('test.booking1')::uuid, '11111111-1111-1111-1111-111111111111', 1, 'Neat!', 'Lovely cornrows', 'Someone Famous', 'Paris');
+  insert into t_results (step, ok, detail) select 'review of completed booking updates rating', rating_count = 1285 and rating_sum = 4.9 * 1284 + 1, rating_count::text || ' / ' || rating_sum::text from public.businesses where slug = 'braid-republic';
+  insert into t_results (step, ok, detail) select 'review author comes from the profile, not the form', author_name = 'Grace T.' and author_area <> 'Paris', author_name || ' / ' || author_area from public.reviews where booking_id = current_setting('test.booking1')::uuid;
 exception when others then
   insert into t_results (step, ok, detail) values ('review of completed booking updates rating', false, sqlerrm);
 end $$;
@@ -154,15 +176,18 @@ set local role service_role;
 select set_config('request.jwt.claims', '{"role":"service_role"}', true);
 insert into public.payments (booking_id, provider, method, amount, msisdn, tx_ref)
 select id, 'mock', 'mtn', total, '772123456', 'TEST-TX-1' from public.bookings where status = 'pending_payment' limit 1;
-do $$ declare b public.bookings; begin
+do $$ declare b public.bookings; r record; again record; begin
   begin
-    perform public.apply_payment_result('TEST-TX-1', 'paid', 'MOCK-1', 1, '{}');
+    perform public.record_payment_result('TEST-TX-1', 'paid', 'MOCK-1', 1, '{}');
     insert into t_results (step, ok, detail) values ('wrong amount is refused', false, 'accepted');
   exception when others then
     insert into t_results (step, ok, detail) values ('wrong amount is refused', true, sqlerrm);
   end;
-  b := public.apply_payment_result('TEST-TX-1', 'paid', 'MOCK-1', 50000, '{"ok":true}');
-  insert into t_results (step, ok, detail) values ('paid webhook confirms booking', b.status = 'confirmed' and b.payment_status = 'paid', b.status || '/' || b.payment_status);
+  select * into r from public.record_payment_result('TEST-TX-1', 'paid', 'MOCK-1', 50000, '{"ok":true}');
+  select * into b from public.bookings where id = r.booking_id;
+  insert into t_results (step, ok, detail) values ('paid webhook confirms booking, once', b.status = 'confirmed' and b.payment_status = 'paid' and r.became_paid, b.status || '/' || b.payment_status || '/' || r.became_paid);
+  select * into again from public.record_payment_result('TEST-TX-1', 'paid', 'MOCK-1', 50000, '{"ok":true}');
+  insert into t_results (step, ok, detail) values ('a repeated webhook changes nothing', not again.became_paid, again.became_paid::text);
 end $$;
 reset role;
 

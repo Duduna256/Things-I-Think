@@ -209,3 +209,28 @@ test("an old attempt failing doesn't mark the booking failed while a newer promp
   assert.equal(s.bookings.get("bk-1")!.paymentStatus, "pending", "NEW-1 is still waiting for the customer");
   assert.equal(outcome.kind, "pending");
 });
+
+test("an abandoned checkout is closed once the hold is well over, so the booking can move on", async () => {
+  const s = fakeStore({ booking: { expiresAt: "2030-01-01T00:30:00.000Z" } });
+  s.answer = () => null; // the provider never saw a payment attempt
+  // Shortly after the hold: still might land.
+  s.deps.now = () => Date.parse("2030-01-01T00:35:00.000Z");
+  assert.equal((await settle(TX, s.deps)).kind, "abandoned");
+  assert.equal(s.payments.get(TX)!.status, "pending");
+  // Well after: recorded as failed.
+  s.deps.now = () => Date.parse("2030-01-01T01:00:00.000Z");
+  const outcome = await settle(TX, s.deps);
+  assert.equal(outcome.kind, "failed");
+  assert.equal(s.payments.get(TX)!.status, "failed");
+  assert.deepEqual(s.calls.notified, []);
+});
+
+test("a prompt still 'pending' long after the hold is closed as failed, and a late success still counts", async () => {
+  const s = fakeStore({ booking: { expiresAt: "2030-01-01T00:30:00.000Z" } });
+  s.answer = answerWith("pending");
+  s.deps.now = () => Date.parse("2030-01-01T01:00:00.000Z");
+  assert.equal((await settle(TX, s.deps)).kind, "failed");
+  s.answer = answerWith("paid");
+  const late = await settle(TX, s.deps);
+  assert.ok(late.kind === "paid" || late.kind === "paid_late");
+});

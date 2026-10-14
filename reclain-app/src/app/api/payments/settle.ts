@@ -6,6 +6,7 @@
 // wired to the real data layer in ./server.ts. Relative imports only, for the tests.
 
 import { z } from "zod";
+import { site } from "../../../config/site";
 import type { Booking, Payment, PaymentStatus } from "../../../lib/types";
 import type { PaymentResultApplied } from "../../../lib/data/source";
 import type { VerifiedPayment } from "../../../lib/payments/types";
@@ -32,7 +33,14 @@ export interface SettleDeps {
   apply(input: { txRef: string; status: PaymentStatus; providerRef: string | null; amount: number; raw: unknown }): Promise<PaymentResultApplied>;
   notifyConfirmed(booking: Booking): Promise<void> | void;
   log?(message: string, detail?: unknown): void;
+  now?(): number;
 }
+
+// How long after a hold runs out a payment may still turn up. Checkout pages close when the hold
+// does (at least 5 minutes after Pay now), and a MoMo prompt times out within minutes. After this,
+// an attempt the provider never saw, or still calls pending, is recorded as failed. A payment
+// that somehow lands later is still recorded (failed can turn into paid).
+export const LATE_PAYMENT_MINUTES = site.latePaymentMinutes;
 
 export type SettleOutcome =
   | { kind: "unknown" } // no such payment (or not one for this provider)
@@ -70,16 +78,28 @@ export async function settle(txRef: string, deps: SettleDeps, opts: { provider?:
     log(`Payment ${txRef}: the provider's record doesn't match it. Not confirming; check it by hand.`, e);
     return { kind: "rejected", booking: before, reason: "The provider's record doesn't match this payment." };
   }
-  if (!verified) return { kind: "abandoned", booking: before };
-  if (verified.txRef !== txRef) {
+  if (verified && verified.txRef !== txRef) {
     log(`Payment ${txRef}: provider answered for ${verified.txRef}`);
     return { kind: "rejected", booking: before, reason: "The provider answered about a different payment." };
+  }
+  const now = deps.now?.() ?? Date.now();
+  const holdOver = !!before.expiresAt && Date.parse(before.expiresAt) + LATE_PAYMENT_MINUTES * 60_000 < now;
+  if (!verified || verified.status === "pending" || verified.status === "unpaid") {
+    if (!holdOver) return verified ? { kind: "pending", booking: before } : { kind: "abandoned", booking: before };
+    // Nothing is coming: close the attempt so the booking stops saying "still checking".
+    const { booking: after } = await deps.apply({
+      txRef,
+      status: "failed",
+      providerRef: payment.providerRef,
+      amount: payment.amount,
+      raw: { gaveUp: true, provider: verified?.raw ?? null },
+    });
+    return describe(after, false);
   }
   if (verified.status === "paid" && verified.amount !== payment.amount) {
     log(`Payment ${txRef}: paid ${verified.amount}, expected ${payment.amount}. Not confirming; check it by hand.`);
     return { kind: "rejected", booking: before, reason: "The amount paid doesn't match the booking." };
   }
-  if (verified.status === "pending" || verified.status === "unpaid") return { kind: "pending", booking: before };
   // Another attempt already paid for this booking: don't let this one's failure undo that.
   if (verified.status !== "paid" && before.paymentStatus === "paid") return describe(before, false);
   if (verified.status === "paid" && before.paymentStatus === "paid") {

@@ -32,13 +32,19 @@ export async function GET(request: NextRequest) {
 
     const now = new Date();
     const bookable = bookableDates(site.bookingWindowDays, now);
-    if (!bookable.includes(q.date)) {
-      return json({ error: `Pick a day in the next ${site.bookingWindowDays} days.` }, 400);
-    }
-
     const planned = planFor(venue, q.services, q.staff);
     if (!planned.ok) return json({ error: planned.error }, 400);
     const opts = { now, stepMin: site.slotStepMinutes, minLeadMin: site.minLeadMinutes };
+
+    // A day that has just gone (the page was left open past midnight): answer like a day whose
+    // last start has passed, so the flow offers the next free day instead of a dead end.
+    if (q.date < bookable[0]) {
+      const busy = await data.getBusySlots(venue.id, dayRange(bookable[0]).fromIso, dayRange(bookable[bookable.length - 1]).toIso);
+      return json(toResponse(q.date, { kind: "too_late" }, nextAvailableDate(planned.plan, bookable, busy, opts)));
+    }
+    if (!bookable.includes(q.date)) {
+      return json({ error: `Pick a day in the next ${site.bookingWindowDays} days.` }, 400);
+    }
 
     const day = dayRange(q.date);
     const busy = await data.getBusySlots(venue.id, day.fromIso, day.toIso);

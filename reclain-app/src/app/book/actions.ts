@@ -112,7 +112,10 @@ export async function createBookingAction(_prev: BookingActionResult, formData: 
     }
     const range = dayRange(day);
     const busy = await data.getBusySlots(venue.id, range.fromIso, range.toIso);
-    const free = slotsFor(planned.plan, day, busy, { now, stepMin: site.slotStepMinutes, minLeadMin: site.minLeadMinutes });
+    // The grace matches create_booking(): a slot that was offered stays bookable while the
+    // customer fills in their details.
+    const minLeadMin = Math.max(site.minLeadMinutes - site.leadGraceMinutes, 0);
+    const free = slotsFor(planned.plan, day, busy, { now, stepMin: site.slotStepMinutes, minLeadMin });
     if (free.kind !== "ok" || !free.slots.some(s => s.startsAt === startsAt)) {
       return { error: "That time has just gone. Pick another one.", kind: "conflict" };
     }

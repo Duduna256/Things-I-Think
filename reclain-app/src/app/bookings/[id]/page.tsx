@@ -158,6 +158,21 @@ function BannerBox({ banner, booking: b, checkHref }: { banner: Banner; booking:
           </div>
         </div>
       );
+    case "cancelled_refund":
+      return (
+        <div className="bkd-banner notice-info" role="status">
+          <Icon name="money" />
+          <div>
+            <p className="bkd-banner-title">Booking cancelled.</p>
+            <p>
+              {b.cancelledBy === "customer"
+                ? `You paid ${ugx(b.total)} by ${method}. The ${site.shortName} team will be in touch about getting it back to you.`
+                : `${b.business.name} called it off, so you get the full ${ugx(b.total)} back. The ${site.shortName} team will send it to your ${method}.`}{" "}
+              Questions? Email {site.email}.
+            </p>
+          </div>
+        </div>
+      );
     case "review":
       return (
         <div className="bkd-banner notice-warn" role="status">

@@ -64,7 +64,8 @@ export default async function BookPage({ params, searchParams }: Props) {
     dates,
     payMethods,
     now,
-    minLeadMinutes: site.minLeadMinutes,
+    // A slot kept through the log-in round trip gets the same grace as checkout.
+    minLeadMinutes: Math.max(site.minLeadMinutes - site.leadGraceMinutes, 0),
   });
 
   const business: FlowBusiness = {

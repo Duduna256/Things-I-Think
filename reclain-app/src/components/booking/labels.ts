@@ -1,6 +1,7 @@
 // Words and rules for a customer's bookings: status pills, payment pills, which actions
 // are allowed, and which banner the booking page shows. Pure, so it's tested and shared.
 
+import { site } from "../../config/site";
 import type { Booking, BookingStatus, PaymentMethod } from "../../lib/types";
 
 export type Tone = "ok" | "warn" | "err" | "info" | "mute";
@@ -45,6 +46,7 @@ export function paymentPill(b: Pick<Booking, "status" | "paymentMethod" | "payme
   if (b.total === 0) return { label: "Free", tone: "ok" };
   const method = METHOD_LABEL[b.paymentMethod];
   if (b.paymentStatus === "refunded") return { label: "Refunded", tone: "info" };
+  if (b.paymentStatus === "paid" && b.status === "cancelled" && b.paymentMethod !== "cash") return { label: "Refund due", tone: "info" };
   if (b.paymentStatus === "paid") return { label: b.paymentMethod === "cash" ? "Paid in cash" : `Paid · ${method}`, tone: "ok" };
   if (b.status === "cancelled" || b.status === "no_show") return { label: "Not charged", tone: "mute" };
   if (b.paymentMethod === "cash") return { label: "Cash after service", tone: "mute" };
@@ -117,6 +119,7 @@ export type Banner =
   | "reviewed"
   | "review"
   | "checking" // the hold ran out while a payment was still in flight
+  | "cancelled_refund" // cancelled after paying: the money goes back
   | null;
 
 export interface BannerFlags {
@@ -139,11 +142,20 @@ export function bannerFor(b: BookingLike, flags: BannerFlags, now: Date): Banner
     if (flags.isNew || flags.paid) return "booked";
     return null;
   }
-  if (b.status === "cancelled" && b.paymentStatus === "paid") return "paid_late";
-  // The hold ran out but a payment is still out there: say so, and don't send them to book again.
-  if (b.status === "cancelled" && b.cancelledBy === "expired" && b.paymentStatus === "pending") return "checking";
+  if (b.status === "cancelled" && b.paymentStatus === "paid") {
+    // Paid after the hold ran out and someone else took the slot, or cancelled after paying.
+    return b.cancelledBy === "expired" ? "paid_late" : "cancelled_refund";
+  }
+  // The hold ran out but a payment may still land: say so for a short while, and don't send them
+  // to book again. After that (or once a check says it failed) it's simply expired.
+  const stillLanding =
+    b.paymentStatus === "pending" &&
+    !flags.failed &&
+    !!b.expiresAt &&
+    now.getTime() < Date.parse(b.expiresAt) + site.latePaymentMinutes * 60_000;
+  if (b.status === "cancelled" && b.cancelledBy === "expired" && stillLanding) return "checking";
   if (b.status === "pending_payment") {
-    if (holdExpired(b, now)) return b.paymentStatus === "pending" ? "checking" : "expired";
+    if (holdExpired(b, now)) return stillLanding ? "checking" : "expired";
     if (flags.failed || b.paymentStatus === "failed") return "failed";
     if (b.paymentMethod === "mtn" || b.paymentMethod === "airtel") return "pending_momo";
     if (b.paymentMethod === "card") return "pending_card";

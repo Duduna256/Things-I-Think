@@ -112,12 +112,29 @@ test("banners", () => {
   assert.equal(bannerFor({ ...waiting, paymentMethod: "card" }, {}, NOW), "pending_card");
   assert.equal(bannerFor(waiting, { failed: true }, NOW), "failed");
   // Hold ran out: still checking while a payment is in flight, otherwise expired.
-  assert.equal(bannerFor({ ...waiting, expiresAt: hours(-1) }, { failed: true }, NOW), "checking");
+  assert.equal(bannerFor({ ...waiting, expiresAt: hours(-0.1) }, {}, NOW), "checking");
+  assert.equal(bannerFor({ ...waiting, expiresAt: hours(-0.1) }, { failed: true }, NOW), "expired");
+  assert.equal(bannerFor({ ...waiting, expiresAt: hours(-1) }, {}, NOW), "expired");
   assert.equal(bannerFor({ ...waiting, paymentStatus: "failed", expiresAt: hours(-1) }, {}, NOW), "expired");
   assert.equal(bannerFor({ ...waiting, paymentStatus: "unpaid", expiresAt: hours(-1) }, {}, NOW), "expired");
-  assert.equal(bannerFor(make({ status: "cancelled", cancelledBy: "expired", paymentStatus: "pending", paymentMethod: "mtn" }), {}, NOW), "checking");
+  assert.equal(bannerFor(make({ status: "cancelled", cancelledBy: "expired", paymentStatus: "pending", paymentMethod: "mtn", expiresAt: hours(-0.1) }), {}, NOW), "checking");
   assert.equal(bannerFor({ ...waiting, paymentStatus: "pending" }, { review: true }, NOW), "review");
-  assert.equal(bannerFor(make({ status: "cancelled", paymentStatus: "paid", paymentMethod: "mtn" }), { paid: true }, NOW), "paid_late");
+  assert.equal(bannerFor(make({ status: "cancelled", cancelledBy: "expired", paymentStatus: "paid", paymentMethod: "mtn" }), { paid: true }, NOW), "paid_late");
   assert.equal(bannerFor(make({ status: "cancelled" }), { cancelled: true }, NOW), "cancelled");
   assert.equal(bannerFor(make({ status: "completed", hasReview: true }), { reviewed: true }, NOW), "reviewed");
+});
+
+test("a paid booking cancelled by someone says a refund is due, not 'arrived late'", () => {
+  const paid = { status: "cancelled" as const, paymentStatus: "paid" as const, paymentMethod: "mtn" as const };
+  assert.equal(bannerFor(make({ ...paid, cancelledBy: "customer" }), {}, NOW), "cancelled_refund");
+  assert.equal(bannerFor(make({ ...paid, cancelledBy: "venue" }), {}, NOW), "cancelled_refund");
+  assert.equal(bannerFor(make({ ...paid, cancelledBy: "expired" }), {}, NOW), "paid_late");
+});
+
+test("'still checking' only lasts a short while after the hold, and a failed check ends it", () => {
+  const base = make({ status: "pending_payment", paymentMethod: "mtn", paymentStatus: "pending" });
+  const minutesAgo = (m: number) => new Date(NOW.getTime() - m * 60_000).toISOString();
+  assert.equal(bannerFor({ ...base, expiresAt: minutesAgo(5) }, {}, NOW), "checking");
+  assert.equal(bannerFor({ ...base, expiresAt: minutesAgo(5) }, { failed: true }, NOW), "expired");
+  assert.equal(bannerFor({ ...base, expiresAt: minutesAgo(60) }, {}, NOW), "expired");
 });

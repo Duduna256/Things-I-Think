@@ -28,9 +28,11 @@ export const site = {
   // Booking rules
   slotStepMinutes: 30, // a new start time every 30 minutes
   minLeadMinutes: 60, // earliest booking is one hour from now
+  leadGraceMinutes: 15, // a slot shown at 60 minutes still books if checkout takes a while
   bookingWindowDays: 14, // how far ahead customers can book
   freeCancellationHours: 4, // shown in the policy text
-  pendingPaymentMinutes: 30, // an unpaid MoMo booking holds its slot this long
+  pendingPaymentMinutes: 30,
+  latePaymentMinutes: 15, // after a hold ends, how long a payment may still turn up // an unpaid MoMo booking holds its slot this long
   reminderHourLocal: 18, // day-before SMS reminders go out around 18:00
 } as const;
 

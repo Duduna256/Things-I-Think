@@ -33,7 +33,7 @@ interface StoredBooking extends Omit<Booking, "business" | "staffName" | "hasRev
 }
 
 // A slow checkout can run a little past the lead time; create_booking() allows the same grace.
-const GRACE_MIN = 15;
+const GRACE_MIN = site.leadGraceMinutes;
 
 interface Store {
   categories: Category[];
@@ -46,6 +46,7 @@ interface Store {
   reviews: Review[];
   profiles: Record<string, { fullName: string | null; phone: string | null }>;
   sms: unknown[];
+  ratingSums: Record<string, number>; // exact totals behind each rounded average
 }
 
 let counter = 0;
@@ -64,6 +65,7 @@ function buildStore(): Store {
     reviews: [],
     profiles: {},
     sms: [],
+    ratingSums: {},
   };
   for (const b of seed.businesses) {
     const id = `biz-${b.slug}`;
@@ -488,8 +490,11 @@ export const demoSource: DataSource = {
     };
     db().reviews.push(review);
     const biz = db().businesses.find(x => x.id === b.businessId)!;
-    biz.ratingAvg = Math.round(((biz.ratingAvg * biz.ratingCount + review.rating) / (biz.ratingCount + 1)) * 10) / 10;
+    // Keep the exact total, so every review moves the average (rounding each time would freeze it).
+    const sum = (db().ratingSums[biz.id] ?? biz.ratingAvg * biz.ratingCount) + review.rating;
+    db().ratingSums[biz.id] = sum;
     biz.ratingCount += 1;
+    biz.ratingAvg = Math.round((sum / biz.ratingCount) * 10) / 10;
     return review;
   },
 
