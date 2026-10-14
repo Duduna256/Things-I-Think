@@ -1,7 +1,7 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { site } from "../../config/site";
-import { serverEnv } from "../env";
+import { isDemo, serverEnv } from "../env";
 import { data, DataError } from "../data";
 import { normalizeMsisdn } from "../phone";
 import type { Booking } from "../types";
@@ -14,9 +14,24 @@ const providers: Record<string, () => Promise<PaymentProvider>> = {
   flutterwave: async () => (await import("./providers/flutterwave")).flutterwaveProvider,
 };
 
+// Which provider takes payments right now. Demo mode always pretends (no real money for
+// in-memory bookings). With a real database, pretend payments must be chosen on purpose with
+// PAYMENT_PROVIDER=mock, because anyone could "approve" their own. Anything else unset or
+// misspelt means online payments are off: customers see cash only, never a dead end.
+export function activePaymentProvider(): "mock" | "flutterwave" | null {
+  if (isDemo) return "mock";
+  const name = serverEnv.paymentProvider;
+  return name === "mock" || name === "flutterwave" ? name : null;
+}
+
+export function onlinePaymentsReady(): boolean {
+  return activePaymentProvider() !== null;
+}
+
 export async function getPaymentProvider(): Promise<PaymentProvider> {
-  const load = providers[serverEnv.paymentProvider] ?? providers.mock;
-  return load();
+  const name = activePaymentProvider();
+  if (!name) throw new DataError("unavailable", "Online payments aren't switched on yet. Pick cash, or try again later.");
+  return providers[name]();
 }
 
 // The provider that took a particular payment (payments.provider). Verifying with the provider

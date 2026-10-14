@@ -17,7 +17,8 @@ export const METHOD_LABEL: Record<PaymentMethod, string> = {
   cash: "Cash after service",
 };
 
-type BookingLike = Pick<Booking, "status" | "expiresAt" | "startsAt" | "endsAt" | "paymentMethod" | "paymentStatus" | "hasReview">;
+type BookingLike = Pick<Booking, "status" | "expiresAt" | "startsAt" | "endsAt" | "paymentMethod" | "paymentStatus" | "hasReview"> &
+  Partial<Pick<Booking, "cancelledBy">>;
 
 const isOnline = (m: PaymentMethod) => m !== "cash";
 
@@ -40,7 +41,8 @@ export function statusPill(b: Pick<Booking, "status" | "expiresAt"> & Partial<Pi
   return STATUS[b.status];
 }
 
-export function paymentPill(b: Pick<Booking, "status" | "paymentMethod" | "paymentStatus">): PillInfo {
+export function paymentPill(b: Pick<Booking, "status" | "paymentMethod" | "paymentStatus"> & Partial<Pick<Booking, "total">>): PillInfo {
+  if (b.total === 0) return { label: "Free", tone: "ok" };
   const method = METHOD_LABEL[b.paymentMethod];
   if (b.paymentStatus === "refunded") return { label: "Refunded", tone: "info" };
   if (b.paymentStatus === "paid") return { label: b.paymentMethod === "cash" ? "Paid in cash" : `Paid · ${method}`, tone: "ok" };
@@ -52,7 +54,8 @@ export function paymentPill(b: Pick<Booking, "status" | "paymentMethod" | "payme
 }
 
 // The payment's state on its own, for a row that already names the method.
-export function paymentStatusPill(b: Pick<Booking, "status" | "paymentMethod" | "paymentStatus">): PillInfo {
+export function paymentStatusPill(b: Pick<Booking, "status" | "paymentMethod" | "paymentStatus"> & Partial<Pick<Booking, "total">>): PillInfo {
+  if (b.total === 0) return { label: "Nothing to pay", tone: "ok" };
   if (b.paymentStatus === "refunded") return { label: "Refunded", tone: "info" };
   if (b.paymentStatus === "paid") return { label: "Paid", tone: "ok" };
   if (b.status === "cancelled" || b.status === "no_show") return { label: "Not charged", tone: "mute" };
@@ -113,6 +116,7 @@ export type Banner =
   | "cancelled"
   | "reviewed"
   | "review"
+  | "checking" // the hold ran out while a payment was still in flight
   | null;
 
 export interface BannerFlags {
@@ -136,8 +140,10 @@ export function bannerFor(b: BookingLike, flags: BannerFlags, now: Date): Banner
     return null;
   }
   if (b.status === "cancelled" && b.paymentStatus === "paid") return "paid_late";
+  // The hold ran out but a payment is still out there: say so, and don't send them to book again.
+  if (b.status === "cancelled" && b.cancelledBy === "expired" && b.paymentStatus === "pending") return "checking";
   if (b.status === "pending_payment") {
-    if (holdExpired(b, now)) return "expired";
+    if (holdExpired(b, now)) return b.paymentStatus === "pending" ? "checking" : "expired";
     if (flags.failed || b.paymentStatus === "failed") return "failed";
     if (b.paymentMethod === "mtn" || b.paymentMethod === "airtel") return "pending_momo";
     if (b.paymentMethod === "card") return "pending_card";

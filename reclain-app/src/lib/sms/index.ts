@@ -1,5 +1,5 @@
 import "server-only";
-import { serverEnv } from "../env";
+import { isDemo, serverEnv } from "../env";
 import { data } from "../data";
 import { internationalMsisdn, normalizeMsisdn } from "../phone";
 
@@ -32,7 +32,8 @@ const providers: Record<string, () => Promise<SmsProvider>> = {
 export async function sendSms(phone: string, body: string, meta: { kind: string; bookingId?: string | null }): Promise<SmsResult> {
   const msisdn = normalizeMsisdn(phone);
   if (!msisdn) return { ok: false, providerRef: null, error: "Not a Ugandan mobile number" };
-  const provider = await (providers[serverEnv.smsProvider] ?? providers.console)();
+  // Demo mode never sends real texts: the bookings are pretend, the phone numbers may not be.
+  const provider = await ((isDemo ? undefined : providers[serverEnv.smsProvider]) ?? providers.console)();
   let result: SmsResult;
   try {
     result = await provider.send(internationalMsisdn(msisdn), body);

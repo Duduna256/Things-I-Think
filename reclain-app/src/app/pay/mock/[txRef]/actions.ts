@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getSessionUser } from "@/lib/auth";
 import { data, isDataError } from "@/lib/data";
-import { serverEnv } from "@/lib/env";
+import { activePaymentProvider } from "@/lib/payments";
 import { bookingPathFor, describe, settle, txRefSchema, type SettleOutcome } from "@/app/api/payments/settle";
 import { refreshBookingPages, settleDeps } from "@/app/api/payments/server";
 import type { MockPromptState } from "./prompt";
@@ -20,7 +20,7 @@ const NOT_YOURS = "We couldn't find that payment on your account. Check you're l
 // part of the customer's phone: the result is recorded for the payment's own amount, exactly
 // as a real provider's answer would be, then the customer lands on their booking.
 export async function answerMockPrompt(_prev: MockPromptState, formData: FormData): Promise<MockPromptState> {
-  if (serverEnv.paymentProvider !== "mock") {
+  if (activePaymentProvider() !== "mock") {
     return { error: "Test payments are switched off on this site, so this prompt can't be used. Go back to your booking to pay." };
   }
   const parsed = schema.safeParse({ txRef: formData.get("txRef"), decision: formData.get("decision") });

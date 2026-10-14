@@ -200,3 +200,12 @@ test("a provider record that doesn't match settles as 'rejected' for a person to
   s.deps.isMismatch = () => false;
   await assert.rejects(settle(TX, s.deps));
 });
+
+test("an old attempt failing doesn't mark the booking failed while a newer prompt is out", async () => {
+  const s = fakeStore({ payments: [{ txRef: "OLD-1" }, { txRef: "NEW-1" }] });
+  s.answer = answerWith("failed");
+  const outcome = await settle("OLD-1", s.deps);
+  assert.equal(s.payments.get("OLD-1")!.status, "failed");
+  assert.equal(s.bookings.get("bk-1")!.paymentStatus, "pending", "NEW-1 is still waiting for the customer");
+  assert.equal(outcome.kind, "pending");
+});

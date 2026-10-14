@@ -163,7 +163,8 @@ export function statusPill(b: Pick<Booking, "status" | "expiresAt">, now: Date):
   return STATUS[b.status];
 }
 
-export function paymentPill(b: Money): Pill {
+export function paymentPill(b: Money & { total?: number }): Pill {
+  if (b.total === 0) return { label: "Free", tone: "ok" };
   const method = METHOD_LABEL[b.paymentMethod];
   if (b.paymentStatus === "refunded") return { label: "Refunded", tone: "info" };
   if (b.paymentStatus === "paid") {

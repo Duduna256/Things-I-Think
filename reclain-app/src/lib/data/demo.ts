@@ -347,6 +347,14 @@ export const demoSource: DataSource = {
 
   async createBooking(input) {
     const user = await me();
+    // Same limits as create_booking() in the database.
+    const mine = db().bookings.filter(b => b.customerId === user.id);
+    if (mine.filter(b => holding(b) && b.startsAt > now()).length >= 6) {
+      throw new DataError("invalid", "You already have 6 upcoming bookings. Cancel one, or wait until one is done, to book another.");
+    }
+    if (mine.filter(b => b.createdAt > new Date(Date.now() - 86_400_000).toISOString()).length >= 10) {
+      throw new DataError("invalid", "That's a lot of bookings for one day. Try again tomorrow, or call the venue.");
+    }
     const biz = db().businesses.find(b => b.id === input.businessId && b.status === "published");
     if (!biz) throw new DataError("not_found", "This venue is not taking bookings.");
     if (!input.serviceIds.length) throw new DataError("invalid", "Pick at least one service.");
@@ -356,9 +364,10 @@ export const demoSource: DataSource = {
 
     const location = effectiveLocation(biz.visitMode, input.location);
     if (location === "home" && !input.address.trim()) throw new DataError("invalid", "Add the address where the pro should come.");
-    if (input.paymentMethod === "cash" && !biz.acceptsCash) throw new DataError("invalid", "This venue does not take cash.");
-
     const price = priceBooking(biz, services, location);
+    // Nothing to pay: confirmed straight away, like cash.
+    const method = price.total === 0 ? "cash" : input.paymentMethod;
+    if (method === "cash" && price.total > 0 && !biz.acceptsCash) throw new DataError("invalid", "This venue does not take cash.");
     const start = new Date(input.startsAt);
     const end = new Date(start.getTime() + price.blockMin * 60_000);
     if (start.getTime() < Date.now()) throw new DataError("invalid", "That time has already passed.");
@@ -394,7 +403,7 @@ export const demoSource: DataSource = {
       if (!staffId) throw new DataError("conflict", "That slot was just taken. Pick another time.");
     }
 
-    const cash = input.paymentMethod === "cash";
+    const cash = method === "cash";
     const id = newId("bk");
     const stored: StoredBooking = {
       id,
@@ -414,7 +423,7 @@ export const demoSource: DataSource = {
       total: price.total,
       currency: site.currency,
       status: cash ? "confirmed" : "pending_payment",
-      paymentMethod: input.paymentMethod,
+      paymentMethod: method,
       paymentStatus: "unpaid",
       expiresAt: cash ? null : new Date(Date.now() + site.pendingPaymentMinutes * 60_000).toISOString(),
       reminderSentAt: null,
@@ -459,9 +468,12 @@ export const demoSource: DataSource = {
     const user = await me();
     const b = findBooking(input.bookingId);
     if (b.customerId !== user.id) throw new DataError("not_found", "Booking not found.");
+    if (db().businesses.some(x => x.id === b.businessId && x.ownerId === user.id)) {
+      throw new DataError("forbidden", "You can't review your own business.");
+    }
     if (b.status !== "completed") throw new DataError("forbidden", "You can review a booking once it's completed.");
     if (db().reviews.some(r => r.bookingId === b.id)) throw new DataError("conflict", "You've already reviewed this booking.");
-    const parts = (user.fullName ?? "Reclain customer").split(/\s+/);
+    const parts = (user.fullName?.trim() || "A customer").split(/\s+/);
     const review: Review = {
       id: newId("rv"),
       businessId: b.businessId,
@@ -624,6 +636,7 @@ export const demoSource: DataSource = {
     const closed: BookingStatus[] = ["completed", "cancelled", "no_show"];
     if (closed.includes(b.status) && status !== b.status) throw new DataError("invalid", "This booking is already closed.");
     if (status === "confirmed" && b.status !== "pending_payment") throw new DataError("invalid", "Only an unpaid booking can be confirmed.");
+    if ((status === "completed" || status === "no_show") && b.startsAt > now()) throw new DataError("invalid", "This booking hasn't started yet.");
     b.status = status;
     if (status === "cancelled") {
       b.cancelledAt = now();
@@ -686,11 +699,14 @@ export const demoSource: DataSource = {
       const b = findBooking(p.bookingId);
       // Settled already (webhooks repeat): nothing changes.
       if (p.status === "paid") return { booking: hydrate(b), becamePaid: false };
+      // The same answer again: nothing to do.
+      if (p.status === input.status) return { booking: hydrate(b), becamePaid: false };
       const wasPaid = b.paymentStatus === "paid";
+      const otherWaiting = db().payments.some(x => x.bookingId === b.id && x.id !== p.id && x.status === "pending");
       p.status = input.status;
       p.providerRef = input.providerRef || p.providerRef;
       // Once paid, a late "failed" from another attempt doesn't undo it.
-      if (!wasPaid) b.paymentStatus = input.status;
+      if (!wasPaid && (input.status === "paid" || !otherWaiting)) b.paymentStatus = input.status;
       // Paying revives a hold that ran out, but never a booking someone cancelled.
       const revivable = b.status === "pending_payment" || (b.status === "cancelled" && b.cancelledBy === "expired");
       if (input.status === "paid" && revivable) {

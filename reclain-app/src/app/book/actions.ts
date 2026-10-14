@@ -8,7 +8,7 @@ import { site } from "@/config/site";
 import { getSessionUser } from "@/lib/auth";
 import { data, isDataError } from "@/lib/data";
 import { notifyBookingConfirmed } from "@/lib/notify";
-import { startPayment } from "@/lib/payments";
+import { onlinePaymentsReady, startPayment } from "@/lib/payments";
 import { bookableDates } from "@/lib/booking/rules";
 import { normalizeMsisdn } from "@/lib/phone";
 import { localParts } from "@/lib/time";
@@ -73,7 +73,12 @@ export async function createBookingAction(_prev: BookingActionResult, formData: 
     const venue = await data.getBusinessBySlug(input.slug);
     if (!venue) return { error: "This venue isn't taking bookings right now.", kind: "not_found" };
 
-    if (!payMethodsFor(features, venue.acceptsCash).includes(input.pay)) {
+    const online = onlinePaymentsReady();
+    const offered = payMethodsFor(
+      { ...features, mobileMoney: features.mobileMoney && online, cardPayments: features.cardPayments && online },
+      venue.acceptsCash,
+    );
+    if (!offered.includes(input.pay)) {
       return {
         error: input.pay === "cash" ? "This venue doesn't take cash. Pick mobile money or card." : "That payment method isn't available. Pick another one.",
         kind: "validation",
@@ -140,13 +145,15 @@ export async function createBookingAction(_prev: BookingActionResult, formData: 
   revalidatePath("/bookings");
 
   let next: string;
-  if (input.pay === "cash") {
+  // Cash, and free bookings (nothing to pay), are confirmed straight away.
+  const method = booking.paymentMethod;
+  if (booking.status === "confirmed" || method === "cash") {
     await notifyBookingConfirmed(booking);
     next = `/bookings/${booking.id}?new=1`;
   } else {
-    const msisdn = isMobileMoney(input.pay) ? normalizeMsisdn(momoSource(input)) : null;
+    const msisdn = isMobileMoney(method) ? normalizeMsisdn(momoSource(input)) : null;
     try {
-      next = await startPayment(booking, { method: input.pay, msisdn, email: user.email });
+      next = await startPayment(booking, { method, msisdn, email: user.email });
     } catch (e) {
       // The booking exists and holds the slot; the booking page offers "Pay now".
       console.error("startPayment failed", e);

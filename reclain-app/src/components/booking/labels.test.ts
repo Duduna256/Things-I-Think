@@ -18,7 +18,8 @@ import {
 const NOW = new Date("2030-01-07T09:00:00Z");
 const hours = (h: number) => new Date(NOW.getTime() + h * 3_600_000).toISOString();
 
-type B = Pick<Booking, "status" | "expiresAt" | "startsAt" | "endsAt" | "paymentMethod" | "paymentStatus" | "hasReview"> & { id: string };
+type B = Pick<Booking, "status" | "expiresAt" | "startsAt" | "endsAt" | "paymentMethod" | "paymentStatus" | "hasReview"> &
+  Partial<Pick<Booking, "cancelledBy">> & { id: string };
 const make = (over: Partial<B> = {}): B => ({
   id: "x",
   status: "confirmed",
@@ -110,7 +111,12 @@ test("banners", () => {
   assert.equal(bannerFor(waiting, { paid: true }, NOW), "pending_momo", "webhook not in yet");
   assert.equal(bannerFor({ ...waiting, paymentMethod: "card" }, {}, NOW), "pending_card");
   assert.equal(bannerFor(waiting, { failed: true }, NOW), "failed");
-  assert.equal(bannerFor({ ...waiting, expiresAt: hours(-1) }, { failed: true }, NOW), "expired");
+  // Hold ran out: still checking while a payment is in flight, otherwise expired.
+  assert.equal(bannerFor({ ...waiting, expiresAt: hours(-1) }, { failed: true }, NOW), "checking");
+  assert.equal(bannerFor({ ...waiting, paymentStatus: "failed", expiresAt: hours(-1) }, {}, NOW), "expired");
+  assert.equal(bannerFor({ ...waiting, paymentStatus: "unpaid", expiresAt: hours(-1) }, {}, NOW), "expired");
+  assert.equal(bannerFor(make({ status: "cancelled", cancelledBy: "expired", paymentStatus: "pending", paymentMethod: "mtn" }), {}, NOW), "checking");
+  assert.equal(bannerFor({ ...waiting, paymentStatus: "pending" }, { review: true }, NOW), "review");
   assert.equal(bannerFor(make({ status: "cancelled", paymentStatus: "paid", paymentMethod: "mtn" }), { paid: true }, NOW), "paid_late");
   assert.equal(bannerFor(make({ status: "cancelled" }), { cancelled: true }, NOW), "cancelled");
   assert.equal(bannerFor(make({ status: "completed", hasReview: true }), { reviewed: true }, NOW), "reviewed");

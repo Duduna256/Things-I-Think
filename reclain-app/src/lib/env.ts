@@ -14,10 +14,12 @@ export const isDemo = !env.supabaseUrl || !env.supabaseKey || process.env.NEXT_P
 // Server-only secrets. Never import this object into a "use client" file.
 export const serverEnv = {
   supabaseSecretKey: process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY ?? "",
-  paymentProvider: (process.env.PAYMENT_PROVIDER ?? "mock") as "mock" | "flutterwave",
+  // "mock" or "flutterwave". Read through activePaymentProvider() in src/lib/payments, which
+  // refuses a typo instead of quietly falling back to pretend payments.
+  paymentProvider: (process.env.PAYMENT_PROVIDER ?? "").trim().toLowerCase(),
   flutterwaveSecretKey: process.env.FLW_SECRET_KEY ?? "",
   flutterwaveWebhookHash: process.env.FLW_WEBHOOK_HASH ?? "",
-  smsProvider: (process.env.SMS_PROVIDER ?? "console") as "console" | "africastalking",
+  smsProvider: (process.env.SMS_PROVIDER ?? "console").trim().toLowerCase(),
   africasTalkingUsername: process.env.AT_USERNAME ?? "",
   africasTalkingApiKey: process.env.AT_API_KEY ?? "",
   africasTalkingSenderId: process.env.AT_SENDER_ID ?? "",

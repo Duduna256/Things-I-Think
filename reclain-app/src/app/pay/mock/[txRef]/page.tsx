@@ -5,7 +5,7 @@ import { notFound, redirect } from "next/navigation";
 import { site } from "@/config/site";
 import { requireUser } from "@/lib/auth";
 import { data, isDataError } from "@/lib/data";
-import { serverEnv } from "@/lib/env";
+import { activePaymentProvider } from "@/lib/payments";
 import { ugx } from "@/lib/format";
 import { normalizeMsisdn, prettyMsisdn } from "@/lib/phone";
 import { formatInstant, formatTime } from "@/lib/time";
@@ -56,7 +56,7 @@ function TestLabel() {
 // Test payments only (PAYMENT_PROVIDER=mock): a stand-in for the MoMo or Airtel prompt on the
 // customer's phone, or for the card checkout.
 export default async function MockPaymentPage({ params }: Props) {
-  if (serverEnv.paymentProvider !== "mock") notFound();
+  if (activePaymentProvider() !== "mock") notFound();
   const { txRef: raw } = await params;
   const txRef = parseTxRef(raw);
   if (!txRef) notFound();

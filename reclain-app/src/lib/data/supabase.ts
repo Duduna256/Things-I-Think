@@ -135,16 +135,18 @@ function mapBooking(r: Row): Booking {
     cancelledBy: r.cancelled_by ?? null,
     createdAt: r.created_at,
     items: ((r.booking_items ?? []) as Row[]).map(i => ({ id: i.id, serviceId: i.service_id, name: i.name, price: i.price, durationMin: i.duration_min })),
+    // If the database hides the business (it was suspended before the customer could see it),
+    // keep the page working with a plain stand-in rather than crashing.
     business: {
-      id: biz.id,
-      slug: biz.slug,
-      name: biz.name,
-      areaId: biz.area_id,
-      categoryId: biz.category_id,
-      coverWord: biz.cover_word,
-      palette: biz.palette,
-      address: biz.address,
-      phone: biz.phone,
+      id: biz.id ?? r.business_id,
+      slug: biz.slug ?? "",
+      name: biz.name ?? "This business",
+      areaId: biz.area_id ?? "",
+      categoryId: biz.category_id ?? "",
+      coverWord: biz.cover_word ?? "",
+      palette: Array.isArray(biz.palette) && biz.palette.length === 3 ? biz.palette : ["#2b1a4a", "#7b4fd6", "#f6b9a3"],
+      address: biz.address ?? "",
+      phone: biz.phone ?? null,
     },
     hasReview: !!review,
   };
@@ -239,7 +241,8 @@ export const supabaseSource: DataSource = {
 
   async listReviews(opts = {}) {
     const sb = await createClient();
-    let q = sb.from("reviews").select("*, businesses(slug, name, palette)").order("created_at", { ascending: false });
+    // Only reviews of businesses this visitor can see (a suspended one drops out).
+    let q = sb.from("reviews").select("*, businesses!inner(slug, name, palette)").order("created_at", { ascending: false });
     if (opts.businessId) q = q.eq("business_id", opts.businessId);
     if (opts.limit) q = q.limit(opts.limit);
     const rows = await must(q);

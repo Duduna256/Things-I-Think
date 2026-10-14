@@ -118,6 +118,24 @@ function BannerBox({ banner, booking: b, checkHref }: { banner: Banner; booking:
           </div>
         </div>
       );
+    case "checking":
+      return (
+        <div className="bkd-banner notice-info" role="status">
+          <Icon name="clock" />
+          <div>
+            <p className="bkd-banner-title">We&apos;re still checking your payment.</p>
+            <p>
+              Your slot hold ran out while we waited to hear from {method}. If the money went through, we&apos;ll confirm your
+              booking, or refund you if the slot has gone. Please don&apos;t book or pay again yet.
+            </p>
+            <div className="bkd-banner-actions">
+              <a className="btn btn-ghost btn-sm" href={checkHref}>
+                Check again
+              </a>
+            </div>
+          </div>
+        </div>
+      );
     case "expired":
       return (
         <div className="bkd-banner notice-warn" role="status">
@@ -206,7 +224,7 @@ export default async function BookingPage({ params, searchParams }: Props) {
   // "Check again" asks the provider about the latest open payment (the webhook may be slow or,
   // in local development, not set up at all), then comes back here.
   const openPayment =
-    banner === "pending_momo" || banner === "pending_card"
+    banner === "pending_momo" || banner === "pending_card" || banner === "checking"
       ? (await data.server.listPaymentsForBooking(b.id)).find(p => p.status === "pending")
       : undefined;
   const checkHref = openPayment ? `/api/payments/return?tx_ref=${encodeURIComponent(openPayment.txRef)}` : `/bookings/${b.id}`;
@@ -314,9 +332,12 @@ export default async function BookingPage({ params, searchParams }: Props) {
 
       <div className="bkd-actions">
         {showPay && <PayNowButton bookingId={b.id} />}
-        <Link className="btn btn-black" href={bookAgain}>
-          Book again
-        </Link>
+        {/* Not while a payment is still being checked: it could be paid twice. */}
+        {banner !== "checking" && (
+          <Link className="btn btn-black" href={bookAgain}>
+            Book again
+          </Link>
+        )}
         {cancellable && (
           <CancelBooking
             bookingId={b.id}

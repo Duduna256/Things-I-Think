@@ -86,7 +86,10 @@ touch reClain: customers approve on Flutterwave's page or their phone.
 5. To go live: complete Flutterwave's business verification (KYC), switch to **Live mode**, and
    swap in the live secret key and webhook hash.
 
-Until then, `PAYMENT_PROVIDER=mock` gives a pretend phone prompt with Approve and Decline.
+Until then, `PAYMENT_PROVIDER=mock` gives a pretend phone prompt with Approve and Decline. Use it
+only while you test: anyone can press Approve, so never leave it on once real customers arrive.
+With your real database connected, MoMo, Airtel and card stay hidden until `PAYMENT_PROVIDER` is
+set to exactly `mock` or `flutterwave`; customers can still book with cash in the meantime.
 
 ## 3. SMS: Africa's Talking
 

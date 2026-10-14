@@ -122,10 +122,12 @@ export function fakeStore(opts: { booking?: Partial<Booking>; payments?: Partial
       if (input.status === "paid" && input.amount !== p.amount) throw new Error("Paid amount does not match the booking.");
       const b = store.bookings.get(p.bookingId)!;
       if (p.status === "paid") return { booking: { ...b }, becamePaid: false };
+      if (p.status === input.status) return { booking: { ...b }, becamePaid: false };
       const wasPaid = b.paymentStatus === "paid";
+      const otherWaiting = [...store.payments.values()].some(x => x.bookingId === b.id && x.txRef !== p.txRef && x.status === "pending");
       p.status = input.status;
       p.providerRef = input.providerRef ?? p.providerRef;
-      if (!wasPaid) b.paymentStatus = input.status;
+      if (!wasPaid && (input.status === "paid" || !otherWaiting)) b.paymentStatus = input.status;
       const revivable = b.status === "pending_payment" || (b.status === "cancelled" && b.cancelledBy === "expired");
       if (input.status === "paid" && revivable && !store.slotTaken) {
         b.status = "confirmed";

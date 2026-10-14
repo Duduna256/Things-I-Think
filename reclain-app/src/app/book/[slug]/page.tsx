@@ -11,6 +11,7 @@ import { prettyMsisdn } from "@/lib/phone";
 import { localParts } from "@/lib/time";
 import { placeName } from "@/components/VenueCard";
 import { BookingFlow } from "@/components/booking/BookingFlow";
+import { onlinePaymentsReady } from "@/lib/payments";
 import { parseFlowQuery, payMethodsFor } from "@/components/booking/flow-state";
 import type { FlowBusiness } from "@/components/booking/types";
 
@@ -46,7 +47,12 @@ export default async function BookPage({ params, searchParams }: Props) {
 
   const now = new Date();
   const dates = bookableDates(site.bookingWindowDays, now);
-  const payMethods = payMethodsFor(features, venue.acceptsCash);
+  // MoMo, Airtel and card only when a payment provider is set up (src/lib/payments).
+  const online = onlinePaymentsReady();
+  const payMethods = payMethodsFor(
+    { ...features, mobileMoney: features.mobileMoney && online, cardPayments: features.cardPayments && online },
+    venue.acceptsCash,
+  );
   const homeVisitsOn = features.homeVisits;
   const initial = parseFlowQuery(query, {
     menuIds: venue.services.map(s => s.id),
