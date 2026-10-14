@@ -8,8 +8,9 @@ export function bookHref(slug: string, serviceId?: string): string {
   return serviceId ? `${base}?service=${encodeURIComponent(serviceId)}` : base;
 }
 
-// The menu: services grouped by section, each with its own Book link.
-export function ServiceMenu({ slug, services }: { slug: string; services: Service[] }) {
+// The menu: services grouped by section, each with its own Book link (left out on a preview of
+// a business that isn't live).
+export function ServiceMenu({ slug, services, bookable = true }: { slug: string; services: Service[]; bookable?: boolean }) {
   const groups = groupServices(services).map((g, i) => ({ ...g, id: `menu-${slugify(g.name) || "group"}-${i}` }));
   return (
     <section className="vpage-section" id="services" aria-labelledby="services-title">
@@ -52,9 +53,11 @@ export function ServiceMenu({ slug, services }: { slug: string; services: Servic
                       </div>
                       <div className="vpage-svc-side">
                         <span className="vpage-price">{ugx(s.price)}</span>
-                        <Link className="btn btn-ghost vpage-book" href={bookHref(slug, s.id)} aria-label={`Book ${s.name}`}>
-                          Book
-                        </Link>
+                        {bookable && (
+                          <Link className="btn btn-ghost vpage-book" href={bookHref(slug, s.id)} aria-label={`Book ${s.name}`}>
+                            Book
+                          </Link>
+                        )}
                       </div>
                     </li>
                   );

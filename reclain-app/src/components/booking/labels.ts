@@ -134,7 +134,10 @@ export interface BannerFlags {
 // Which message sits at the top of the booking page, from the booking itself and the
 // ?new=1 / ?paid=1 / ?failed=1 flags the flow and the payment pages add.
 export function bannerFor(b: BookingLike, flags: BannerFlags, now: Date): Banner {
-  if (flags.cancelled && b.status === "cancelled") return "cancelled";
+  // Just cancelled: a paid one still needs the refund line, not a plain "cancelled".
+  if (flags.cancelled && b.status === "cancelled") {
+    return b.paymentStatus === "paid" && b.cancelledBy !== "expired" ? "cancelled_refund" : "cancelled";
+  }
   if (flags.reviewed && b.hasReview) return "reviewed";
   if (flags.review && b.paymentStatus !== "paid") return "review";
   if (b.status === "confirmed") {

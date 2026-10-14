@@ -1,11 +1,17 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { env, isDemo } from "./lib/env";
+import { PATH_HEADER } from "./lib/request-path";
 
-// Runs before every page. Its only job is keeping the Supabase login fresh: it refreshes an
-// expiring token and passes the new cookies on. Pages decide for themselves who may see them.
+// Runs before every page. It keeps the Supabase login fresh (refreshing an expiring token and
+// passing the new cookies on) and tells the page which address was asked for, so a log-in
+// redirect can come back to it. Pages decide for themselves who may see them.
 export async function proxy(request: NextRequest) {
-  if (isDemo) return NextResponse.next();
+  // Always overwritten here, so a visitor can't send their own.
+  const url = request.nextUrl.clone();
+  url.searchParams.delete("_rsc");
+  request.headers.set(PATH_HEADER, url.pathname + url.search);
+  if (isDemo) return NextResponse.next({ request });
 
   let response = NextResponse.next({ request });
   const supabase = createServerClient(env.supabaseUrl, env.supabaseKey, {

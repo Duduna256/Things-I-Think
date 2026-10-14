@@ -16,6 +16,7 @@
 /* ---------- Venue page ---------- */
 .vpage { padding-bottom: clamp(32px, 5vw, 64px); }
 .vpage-top { padding-top: clamp(16px, 3vw, 28px); }
+.vpage-preview { margin-bottom: 16px; }
 .vpage-crumbs ol { list-style: none; margin: 0 0 16px; padding: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 0.9rem; color: var(--muted); }
 .vpage-crumbs li { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
 .vpage-crumbs li + li::before { content: "›"; color: var(--muted); }

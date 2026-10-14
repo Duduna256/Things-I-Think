@@ -2,7 +2,7 @@ import "server-only";
 import { createClient } from "../supabase/server";
 import { createAdminClient } from "../supabase/admin";
 import { getSessionUser } from "../auth";
-import { slugify } from "../format";
+import { safePalette, slugify } from "../format";
 import { features } from "../../config/features";
 import { DataError, fromPostgrest } from "./errors";
 import { applyFilter } from "./search";
@@ -47,7 +47,7 @@ function mapBusiness(r: Row): Business {
     acceptsCash: r.accepts_cash,
     skipProfessional: r.skip_professional,
     coverWord: r.cover_word,
-    palette: r.palette as [string, string, string],
+    palette: safePalette(r.palette),
     imageUrl: r.image_url,
     status: r.status,
     isFeatured: r.is_featured,
@@ -144,7 +144,7 @@ function mapBooking(r: Row): Booking {
       areaId: biz.area_id ?? "",
       categoryId: biz.category_id ?? "",
       coverWord: biz.cover_word ?? "",
-      palette: Array.isArray(biz.palette) && biz.palette.length === 3 ? biz.palette : ["#2b1a4a", "#7b4fd6", "#f6b9a3"],
+      palette: safePalette(biz.palette),
       address: biz.address ?? "",
       phone: biz.phone ?? null,
     },
@@ -239,6 +239,18 @@ export const supabaseSource: DataSource = {
     return mapDetail(data, true);
   },
 
+  async previewBusinessBySlug(slug) {
+    const user = await getSessionUser();
+    if (!user) return null;
+    const sb = await createClient();
+    // RLS already limits hidden businesses to their owner and admins; the check below says so too.
+    const { data, error } = await sb.from("businesses").select("*, services(*), staff(*)").eq("slug", slug).maybeSingle();
+    if (error) throw fromPostgrest(error);
+    if (!data || data.status === "published") return null;
+    if (!user.isAdmin && data.owner_id !== user.id) return null;
+    return mapDetail(data, true);
+  },
+
   async listReviews(opts = {}) {
     const sb = await createClient();
     // Only reviews of businesses this visitor can see (a suspended one drops out).
@@ -246,7 +258,7 @@ export const supabaseSource: DataSource = {
     if (opts.businessId) q = q.eq("business_id", opts.businessId);
     if (opts.limit) q = q.limit(opts.limit);
     const rows = await must(q);
-    return rows.map((r: Row): ReviewWithBusiness => ({ ...mapReview(r), business: r.businesses }));
+    return rows.map((r: Row): ReviewWithBusiness => ({ ...mapReview(r), business: { ...r.businesses, palette: safePalette(r.businesses?.palette) } }));
   },
 
   async listServiceIndex() {

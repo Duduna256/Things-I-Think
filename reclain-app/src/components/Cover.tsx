@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
+import { safePalette } from "@/lib/format";
 
 // The venue picture. Until a business uploads a photo it's a gradient in their three
 // colours with one big italic word ("braids", "fade", "I do").
@@ -17,7 +18,8 @@ export function Cover({
   className?: string;
   style?: CSSProperties;
 }) {
-  const vars = { "--c1": palette[0], "--c2": palette[1], "--c3": palette[2], ...style } as CSSProperties;
+  const [c1, c2, c3] = safePalette(palette);
+  const vars = { "--c1": c1, "--c2": c2, "--c3": c3, ...style } as CSSProperties;
   return (
     <div className={`cover ${className}`} style={vars}>
       {badge}

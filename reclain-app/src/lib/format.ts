@@ -46,3 +46,13 @@ export function slugify(text: string): string {
     .replace(/^-+|-+$/g, "")
     .slice(0, 60);
 }
+
+// Cover colours go into inline styles, so only plain #rrggbb is let through (the database
+// enforces the same). Anything else falls back to the house palette.
+export const DEFAULT_PALETTE: [string, string, string] = ["#2b1a4a", "#7b4fd6", "#f6b9a3"];
+const HEX = /^#[0-9a-f]{6}$/i;
+export function safePalette(value: unknown): [string, string, string] {
+  return Array.isArray(value) && value.length === 3 && value.every(c => typeof c === "string" && HEX.test(c))
+    ? (value as [string, string, string])
+    : DEFAULT_PALETTE;
+}

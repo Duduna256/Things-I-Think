@@ -12,7 +12,7 @@ import { site } from "@/config/site";
 import { data } from "@/lib/data";
 import { plural, ugx } from "@/lib/format";
 import { openDaysText } from "@/lib/time";
-import type { BusinessDetail, ReviewWithBusiness } from "@/lib/types";
+import type { BusinessDetail, BusinessStatus, ReviewWithBusiness } from "@/lib/types";
 import { closedToday, fromPrice, todayText, weekRows } from "@/components/venue/hours";
 import { ReviewCard } from "@/components/venue/ReviewCard";
 import { bookHref, ServiceMenu } from "@/components/venue/ServiceMenu";
@@ -20,11 +20,18 @@ import { TeamList } from "@/components/venue/TeamList";
 
 type Props = { params: Promise<{ slug: string }> };
 
-// One fetch per request, shared by generateMetadata and the page.
+// One fetch per request, shared by generateMetadata and the page. A business that isn't live
+// yet still shows to its owner and to admins, so they can check it before it goes up.
 const getVenue = cache(async (slug: string): Promise<BusinessDetail | null> => {
   if (!slug || slug.length > 80) return null;
-  return data.getBusinessBySlug(slug);
+  return (await data.getBusinessBySlug(slug)) ?? (await data.previewBusinessBySlug(slug));
 });
+
+const NOT_LIVE: Record<Exclude<BusinessStatus, "published">, string> = {
+  draft: "This page isn't live yet. Customers can't see it until it's approved.",
+  pending: "This page is waiting for approval. Customers can't see it yet.",
+  suspended: "This page is suspended. Customers can't see it.",
+};
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -33,6 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description = b.blurb || site.description;
   return {
     title: b.name,
+    ...(b.status !== "published" && { robots: { index: false } }),
     description,
     openGraph: { title: `${b.name} · ${site.shortName}`, description, type: "website" },
   };
@@ -57,7 +65,7 @@ function visitInfo(b: BusinessDetail, place: string) {
         : `Visit them${place ? ` in ${place}` : ""}, or choose “At my place” when you book. Home visits cost nothing extra.`,
     };
   }
-  return { badge: "At the venue", icon: "store", note: "Directions come with your confirmation SMS." };
+  return { badge: "At the venue", icon: "store", note: "The address is on your booking page once you've booked." };
 }
 
 export default async function VenuePage({ params }: Props) {
@@ -78,7 +86,8 @@ export default async function VenuePage({ params }: Props) {
   const today = todayText(b, now);
   const week = weekRows(b, now);
   const from = fromPrice(b.services);
-  const canBook = b.services.length > 0;
+  const live = b.status === "published";
+  const canBook = live && b.services.length > 0;
   const reviews = allReviews.filter(r => r.business);
 
   const bookCta = canBook && (
@@ -90,6 +99,12 @@ export default async function VenuePage({ params }: Props) {
   return (
     <div className="vpage">
       <div className="wrap vpage-top">
+        {b.status !== "published" && (
+          <p className="notice notice-warn vpage-preview" role="status">
+            <Icon name="eye" />
+            <span>{NOT_LIVE[b.status]} Booking is switched off here.</span>
+          </p>
+        )}
         <nav aria-label="Breadcrumb" className="vpage-crumbs">
           <ol>
             <li>
@@ -154,7 +169,7 @@ export default async function VenuePage({ params }: Props) {
 
       <div className="wrap vpage-body">
         <div className="vpage-main">
-          <ServiceMenu slug={b.slug} services={b.services} />
+          <ServiceMenu slug={b.slug} services={b.services} bookable={live} />
 
           {!b.skipProfessional && <TeamList staff={b.staff} palette={b.palette} />}
 

@@ -58,6 +58,9 @@ export interface DataSource {
   listAreas(): Promise<Area[]>;
   listBusinesses(filter?: BusinessFilter): Promise<Business[]>;
   getBusinessBySlug(slug: string): Promise<BusinessDetail | null>; // active services and staff only
+  // A business that isn't live yet, for its owner or an admin to check before it goes up.
+  // Null for anyone else, and for a live business (use getBusinessBySlug for those).
+  previewBusinessBySlug(slug: string): Promise<BusinessDetail | null>;
   listReviews(opts?: { businessId?: string; limit?: number }): Promise<ReviewWithBusiness[]>;
   getBusySlots(businessId: string, fromIso: string, toIso: string): Promise<BusySlot[]>;
   // Every active service at a published business, for search suggestions and "from" prices.

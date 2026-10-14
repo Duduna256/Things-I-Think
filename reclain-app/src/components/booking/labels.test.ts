@@ -129,6 +129,8 @@ test("a paid booking cancelled by someone says a refund is due, not 'arrived lat
   assert.equal(bannerFor(make({ ...paid, cancelledBy: "customer" }), {}, NOW), "cancelled_refund");
   assert.equal(bannerFor(make({ ...paid, cancelledBy: "venue" }), {}, NOW), "cancelled_refund");
   assert.equal(bannerFor(make({ ...paid, cancelledBy: "expired" }), {}, NOW), "paid_late");
+  // Straight after the customer cancels, the refund line still shows.
+  assert.equal(bannerFor(make({ ...paid, cancelledBy: "customer" }), { cancelled: true }, NOW), "cancelled_refund");
 });
 
 test("'still checking' only lasts a short while after the hold, and a failed check ends it", () => {

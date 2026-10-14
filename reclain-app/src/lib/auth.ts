@@ -1,9 +1,10 @@
 import "server-only";
 import { cache } from "react";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { site } from "../config/site";
 import { isDemo } from "./env";
+import { PATH_HEADER } from "./request-path";
 import { createClient } from "./supabase/server";
 import type { SessionUser } from "./types";
 
@@ -46,11 +47,20 @@ export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
   };
 });
 
-// Sends people to the log-in page (and back here afterwards) if they aren't logged in.
+// Sends people to the log-in page (and back here afterwards) if they aren't logged in. nextPath
+// is the section; the exact page asked for (from the proxy) wins when it's inside that section,
+// so a layout guarding /business still brings people back to /business/bookings.
 export async function requireUser(nextPath: string): Promise<SessionUser> {
   const user = await getSessionUser();
-  if (!user) redirect(`/login?next=${encodeURIComponent(nextPath)}`);
+  if (!user) redirect(`/login?next=${encodeURIComponent(await returnPath(nextPath))}`);
   return user;
+}
+
+async function returnPath(section: string): Promise<string> {
+  const asked = (await headers()).get(PATH_HEADER);
+  if (!asked || !asked.startsWith("/") || asked.startsWith("//")) return section;
+  const inside = asked === section || asked.startsWith(`${section}/`) || asked.startsWith(`${section}?`);
+  return inside ? asked : section;
 }
 
 export async function requireAdmin(): Promise<SessionUser> {

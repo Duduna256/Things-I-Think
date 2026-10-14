@@ -311,6 +311,12 @@ export const demoSource: DataSource = {
     const b = db().businesses.find(x => x.slug === slug && x.status === "published");
     return b ? detail(b, true) : null;
   },
+  async previewBusinessBySlug(slug) {
+    const user = await getSessionUser();
+    if (!user) return null;
+    const b = db().businesses.find(x => x.slug === slug && x.status !== "published");
+    return b && (user.isAdmin || b.ownerId === user.id) ? detail(b, true) : null;
+  },
   async listReviews(opts = {}) {
     const list = db()
       .reviews.filter(r => !opts.businessId || r.businessId === opts.businessId)
@@ -543,7 +549,7 @@ export const demoSource: DataSource = {
     };
     if (parseHHMM(b.closesAt) <= parseHHMM(b.opensAt)) throw new DataError("invalid", "Closing time must be after opening time.");
     db().businesses.push(b);
-    db().staff.push({ id: newId("staff"), businessId: b.id, name: ownerName.trim() || "Owner", role: "Owner", rating: 5, sort: 0, active: true });
+    db().staff.push({ id: newId("staff"), businessId: b.id, name: ownerName.trim() || "Owner", role: "Owner", rating: 0, sort: 0, active: true });
     return b;
   },
   async updateBusiness(id, patch) {
@@ -606,7 +612,7 @@ export const demoSource: DataSource = {
       businessId,
       name: input.name.trim(),
       role: input.role.trim(),
-      rating: 5,
+      rating: 0,
       sort: input.sort ?? db().staff.filter(x => x.businessId === businessId).length,
       active: input.active,
     };

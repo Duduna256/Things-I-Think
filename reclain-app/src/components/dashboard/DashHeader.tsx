@@ -22,7 +22,7 @@ export function DashHeader({ business, businesses, place }: { business: Business
         </div>
       </div>
       {businesses.length > 1 && (
-        <form action={switchBusinessAction} className="dash-switch">
+        <form key={business.id} action={switchBusinessAction} className="dash-switch">
           <label className="field">
             <span>Managing</span>
             <select name="businessId" defaultValue={business.id}>

@@ -88,7 +88,10 @@ export default async function AdminPage({ searchParams }: Props) {
                       <div className="adm-name">
                         <Cover palette={b.palette} word={b.coverWord} imageUrl={b.imageUrl} className="dash-mini" />
                         <div className="adm-name-text">
-                          {b.status === "published" ? <Link href={`/v/${b.slug}`}>{b.name}</Link> : <span>{b.name}</span>}
+                          <Link href={`/v/${b.slug}`}>
+                            {b.name}
+                            {b.status !== "published" && <span className="sr-only"> (preview)</span>}
+                          </Link>
                           <PillTag pill={BUSINESS_STATUS[b.status].pill} />
                           {b.phone && /^\d{9}$/.test(b.phone) && (
                             <a className="dash-tel" href={`tel:${internationalMsisdn(b.phone)}`}>

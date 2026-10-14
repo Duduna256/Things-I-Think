@@ -146,6 +146,22 @@ do $$ begin
   insert into t_results (step, ok, detail) select 'owner cannot set staff ratings', rating = (select rating from t_staff_before), rating::text from public.staff where id = (select aisha from t_ctx);
 end $$;
 do $$ begin
+  update public.businesses set image_url = 'https://evil.example/x.png' where slug = 'braid-republic';
+  insert into t_results (step, ok, detail) select 'owner cannot point the cover at any address', image_url is distinct from 'https://evil.example/x.png', coalesce(image_url, 'null') from public.businesses where slug = 'braid-republic';
+end $$;
+do $$ begin
+  update public.businesses set palette = array['red;background:url(x)', '#000000', '#ffffff'] where slug = 'braid-republic';
+  insert into t_results (step, ok, detail) values ('cover colours must be hex colours', false, 'accepted');
+exception when others then
+  insert into t_results (step, ok, detail) values ('cover colours must be hex colours', sqlerrm like '%businesses_palette_hex%', sqlerrm);
+end $$;
+do $$ declare st public.staff; begin
+  insert into public.staff (business_id, name, role, rating) values ((select biz from t_ctx), 'New Hire', 'Stylist', 5.0) returning * into st;
+  insert into t_results (step, ok, detail) values ('a new team member starts without a rating', st.rating = 0, st.rating::text);
+exception when others then
+  insert into t_results (step, ok, detail) values ('a new team member starts without a rating', false, sqlerrm);
+end $$;
+do $$ begin
   update public.businesses set blurb = 'Hacked' where slug = 'fade-kings';
   insert into t_results (step, ok, detail) select 'owner cannot edit someone else''s venue', blurb <> 'Hacked', blurb from public.businesses where slug = 'fade-kings';
 end $$;

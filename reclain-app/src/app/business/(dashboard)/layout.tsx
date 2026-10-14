@@ -18,7 +18,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <DashHeader business={business} businesses={businesses} place={place} />
         <StatusBanner business={business} />
         <DashNav />
-        <div className="dash-body">{children}</div>
+        {/* Keyed by business: switching business starts every form afresh instead of carrying
+            the last one's values over (and saving them onto the other business). */}
+        <div className="dash-body" key={business.id}>
+          {children}
+        </div>
       </div>
     </ToastProvider>
   );
