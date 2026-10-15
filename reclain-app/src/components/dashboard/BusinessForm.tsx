@@ -37,7 +37,7 @@ export function BusinessForm({
   categories,
   areas,
   flags,
-  live = false,
+  securityReview = false,
 }: {
   mode: "create" | "update";
   businessId?: string;
@@ -45,7 +45,7 @@ export function BusinessForm({
   categories: { id: string; name: string }[];
   areas: AreaOption[];
   flags: { homeVisits: boolean; cash: boolean };
-  live?: boolean; // the page is published right now
+  securityReview?: boolean; // moving into Security would send this page back for review
 }) {
   const { result, pending, submit, formRef, messageRef, error } = useSubmit(mode === "create" ? createBusinessAction : saveSettingsAction);
   const uid = useId();
@@ -124,7 +124,7 @@ export function BusinessForm({
               ))}
             </select>
             <FieldError id={e("categoryId")} error={error("categoryId")} />
-            {live && categoryId === SECURITY_CATEGORY && initial.categoryId !== SECURITY_CATEGORY && (
+            {securityReview && categoryId === SECURITY_CATEGORY && initial.categoryId !== SECURITY_CATEGORY && (
               <small className="hint">
                 Security businesses are checked before they go live. Saving this takes your page down until our team has had a look.
               </small>

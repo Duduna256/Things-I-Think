@@ -31,10 +31,14 @@ out.push(upsert("services", svcCols, seed.businesses.flatMap(b => b.services.map
   id(`svc:${b.slug}:${s.key}`), id("biz:" + b.slug), q(s.groupName), q(s.name), q(s.description), s.durationMin, q(s.durationLabel), s.price, q(s.latestStart), s.sort,
 ])), "id", svcCols.slice(2)));
 
-const staffCols = ["id", "business_id", "name", "role", "rating", "sort"];
+// A sample rating stands for 20 earlier reviews (as in demo.ts and migration 8), so a real review
+// nudges it. Re-running leaves ratings alone: by then real reviews may have moved them.
+const SAMPLE_STAFF_REVIEWS = 20;
+const staffCols = ["id", "business_id", "name", "role", "rating", "rating_count", "rating_sum", "sort"];
 out.push(upsert("staff", staffCols, seed.businesses.flatMap(b => b.staff.map(st => [
-  id(`staff:${b.slug}:${st.sort}`), id("biz:" + b.slug), q(st.name), q(st.role), st.rating, st.sort,
-])), "id", staffCols.slice(2)));
+  id(`staff:${b.slug}:${st.sort}`), id("biz:" + b.slug), q(st.name), q(st.role), st.rating,
+  st.rating > 0 ? SAMPLE_STAFF_REVIEWS : 0, st.rating > 0 ? +(st.rating * SAMPLE_STAFF_REVIEWS).toFixed(1) : 0, st.sort,
+])), "id", ["name", "role", "sort"]));
 
 // Sample reviews don't touch the rating counters (the seed already sets them).
 out.push("alter table public.reviews disable trigger reviews_rating;");

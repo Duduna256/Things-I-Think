@@ -24,6 +24,8 @@ select
   (select id from public.staff st where st.business_id = (select id from public.businesses where slug = 'braid-republic') and st.sort = 0) as aisha,
   ((date_trunc('week', now() at time zone 'Africa/Kampala') + interval '8 days 10 hours') at time zone 'Africa/Kampala') as slot;
 grant all on t_ctx to anon, authenticated, service_role;
+-- Aisha's sample rating with no tally behind it, like a database seeded by an older seed.sql.
+update public.staff set rating_count = 0, rating_sum = 0 where id = (select aisha from t_ctx);
 create temp table t_staff_before as select rating, rating_count, rating_sum from public.staff where id = (select aisha from t_ctx);
 grant all on t_staff_before to anon, authenticated, service_role;
 
@@ -176,8 +178,8 @@ do $$ begin
   insert into t_results (step, ok, detail) select 'review of completed booking updates rating', rating_count = 1285 and rating_sum = 4.9 * 1284 + 1, rating_count::text || ' / ' || rating_sum::text from public.businesses where slug = 'braid-republic';
   insert into t_results (step, ok, detail) select 'review author comes from the profile, not the form', author_name = 'Grace T.' and author_area <> 'Paris', author_name || ' / ' || author_area from public.reviews where booking_id = current_setting('test.booking1')::uuid;
   insert into t_results (step, ok, detail)
-  select 'review moves the professional''s rating too',
-    s.rating_count = b.rating_count + 1 and s.rating = round((b.rating_sum + 1) / (b.rating_count + 1), 1),
+  select 'review nudges the professional''s rating (a sample rating counts as 20 reviews)',
+    s.rating_count = 21 and s.rating = round((b.rating * 20 + 1) / 21, 1),
     s.rating::text || ' / ' || s.rating_count::text
   from public.staff s, t_staff_before b where s.id = (select aisha from t_ctx);
 exception when others then
