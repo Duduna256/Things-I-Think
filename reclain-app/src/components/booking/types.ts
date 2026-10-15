@@ -56,6 +56,7 @@ export interface FlowBusiness {
   closedDays: number[];
   ratingAvg: number;
   ratingCount: number;
+  address: string;
 }
 
 export type DetailField = "name" | "phone" | "address" | "momo";

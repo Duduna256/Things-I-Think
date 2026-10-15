@@ -7,6 +7,7 @@ import { useId, useState, type CSSProperties } from "react";
 import { createBusinessAction } from "@/app/business/onboarding/actions";
 import { saveSettingsAction } from "@/app/business/(dashboard)/settings/actions";
 import { Cover } from "@/components/Cover";
+import { SECURITY_CATEGORY } from "@/config/site";
 import { FieldError, FormMessage, invalid, useSubmit } from "./form-bits";
 import {
   BLURB_MAX,
@@ -36,6 +37,7 @@ export function BusinessForm({
   categories,
   areas,
   flags,
+  live = false,
 }: {
   mode: "create" | "update";
   businessId?: string;
@@ -43,6 +45,7 @@ export function BusinessForm({
   categories: { id: string; name: string }[];
   areas: AreaOption[];
   flags: { homeVisits: boolean; cash: boolean };
+  live?: boolean; // the page is published right now
 }) {
   const { result, pending, submit, formRef, messageRef, error } = useSubmit(mode === "create" ? createBusinessAction : saveSettingsAction);
   const uid = useId();
@@ -121,6 +124,11 @@ export function BusinessForm({
               ))}
             </select>
             <FieldError id={e("categoryId")} error={error("categoryId")} />
+            {live && categoryId === SECURITY_CATEGORY && initial.categoryId !== SECURITY_CATEGORY && (
+              <small className="hint">
+                Security businesses are checked before they go live. Saving this takes your page down until our team has had a look.
+              </small>
+            )}
           </div>
           <div className="field">
             <label htmlFor="bf-area">Area</label>
@@ -165,7 +173,7 @@ export function BusinessForm({
           {mode === "update" && (
             <div className="field full">
               <label htmlFor="address">
-                Address <span className="hint">(optional)</span>
+                Address {visitMode === "mobile" && <span className="hint">(optional)</span>}
               </label>
               <input
                 id="address"

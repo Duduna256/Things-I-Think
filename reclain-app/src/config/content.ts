@@ -12,7 +12,7 @@ export const hero = {
   after: "sorted.",
   // What screen readers and search engines get instead of the rotating word.
   plain: "Your to-do list, sorted.",
-  sub: "Hair, laundry, cleaning, repairs, massage and licensed security from Kampala's best-rated pros. Book in seconds, pay by MoMo, skip the WhatsApp back-and-forth.",
+  sub: "Hair, laundry, cleaning, repairs, massage and security from Kampala's best-rated pros. Book in seconds, pay by MoMo, skip the WhatsApp back-and-forth.",
   searchPlaceholder: "All services and businesses",
 };
 
@@ -39,7 +39,7 @@ export const occasions = [
   { title: "In-laws arrive Friday", sub: "A deep clean. Yes, behind the fridge too.", q: "deep clean", cta: "Book the clean", tone: "mint", icon: "sparkle" },
   { title: "It's payday", sub: "You've earned a hot stone massage.", q: "massage", cta: "Claim your massage", tone: "peach", icon: "stones" },
   { title: "Rainy season hair", sub: "Passion twists that ignore the weather.", q: "twists", cta: "See the twists", tone: "sun", icon: "braid" },
-  { title: "Taking cash to the bank", sub: "A licensed guard, calm and very hard to argue with.", q: "security", cta: "Book a guard", tone: "slate", icon: "shield" },
+  { title: "Taking cash to the bank", sub: "A guard from a registered security firm, calm and very hard to argue with.", q: "security", cta: "Book a guard", tone: "slate", icon: "shield" },
 ] as const;
 
 // Treatments shown in "Trending this week" (matched by name in search).

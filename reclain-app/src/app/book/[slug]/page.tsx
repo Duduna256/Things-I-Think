@@ -85,6 +85,7 @@ export default async function BookPage({ params, searchParams }: Props) {
     closedDays: venue.closedDays,
     ratingAvg: venue.ratingAvg,
     ratingCount: venue.ratingCount,
+    address: venue.address,
   };
   const phone = profile?.phone ?? user?.phone ?? null;
 

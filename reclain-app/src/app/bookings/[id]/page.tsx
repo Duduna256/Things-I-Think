@@ -7,7 +7,7 @@ import { site } from "@/config/site";
 import { requireUser } from "@/lib/auth";
 import { data, isDataError } from "@/lib/data";
 import { duration, ugx } from "@/lib/format";
-import { prettyMsisdn } from "@/lib/phone";
+import { internationalMsisdn, prettyMsisdn } from "@/lib/phone";
 import { formatInstant, formatTime } from "@/lib/time";
 import type { Booking } from "@/lib/types";
 import { Cover } from "@/components/Cover";
@@ -301,6 +301,17 @@ export default async function BookingPage({ params, searchParams }: Props) {
               {where}
             </dd>
           </div>
+          {b.business.phone && /^\d{9}$/.test(b.business.phone) && (
+            <div className="bkd-row">
+              <dt>Contact</dt>
+              <dd>
+                <a href={`tel:${internationalMsisdn(b.business.phone)}`}>
+                  <span className="sr-only">Call {b.business.name} on </span>
+                  {prettyMsisdn(b.business.phone)}
+                </a>
+              </dd>
+            </div>
+          )}
           {b.notes && (
             <div className="bkd-row">
               <dt>Your notes</dt>

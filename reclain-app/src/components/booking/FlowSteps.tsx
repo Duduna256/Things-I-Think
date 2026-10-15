@@ -129,7 +129,9 @@ export function ServicesStep({
           <p className="bk-toggle-note">
             {props.location === "home"
               ? "They bring the tools. You provide the chair."
-              : `${props.areaName || b.name}. The address is on your booking page once you've booked.`}
+              : b.address
+                ? `${b.address}${props.areaName ? `, ${props.areaName}` : ""}.`
+                : `${props.areaName || b.name}.`}
           </p>
         </div>
       )}

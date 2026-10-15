@@ -24,7 +24,7 @@ select
   (select id from public.staff st where st.business_id = (select id from public.businesses where slug = 'braid-republic') and st.sort = 0) as aisha,
   ((date_trunc('week', now() at time zone 'Africa/Kampala') + interval '8 days 10 hours') at time zone 'Africa/Kampala') as slot;
 grant all on t_ctx to anon, authenticated, service_role;
-create temp table t_staff_before as select rating from public.staff where id = (select aisha from t_ctx);
+create temp table t_staff_before as select rating, rating_count, rating_sum from public.staff where id = (select aisha from t_ctx);
 grant all on t_staff_before to anon, authenticated, service_role;
 
 insert into t_results (step, ok, detail)
@@ -142,8 +142,8 @@ do $$ begin
   insert into t_results (step, ok, detail) select 'owner cannot move their business up the listings', sort <> -999, sort::text from public.businesses where slug = 'braid-republic';
 end $$;
 do $$ begin
-  update public.staff set rating = 5.0 where id = (select aisha from t_ctx);
-  insert into t_results (step, ok, detail) select 'owner cannot set staff ratings', rating = (select rating from t_staff_before), rating::text from public.staff where id = (select aisha from t_ctx);
+  update public.staff set rating = 5.0, rating_count = 999, rating_sum = 4995 where id = (select aisha from t_ctx);
+  insert into t_results (step, ok, detail) select 'owner cannot set staff ratings', rating = (select rating from t_staff_before) and rating_count = (select rating_count from t_staff_before), rating::text || ' / ' || rating_count::text from public.staff where id = (select aisha from t_ctx);
 end $$;
 do $$ begin
   update public.businesses set image_url = 'https://evil.example/x.png' where slug = 'braid-republic';
@@ -175,6 +175,11 @@ do $$ begin
   values ((select biz from t_ctx), current_setting('test.booking1')::uuid, '11111111-1111-1111-1111-111111111111', 1, 'Neat!', 'Lovely cornrows', 'Someone Famous', 'Paris');
   insert into t_results (step, ok, detail) select 'review of completed booking updates rating', rating_count = 1285 and rating_sum = 4.9 * 1284 + 1, rating_count::text || ' / ' || rating_sum::text from public.businesses where slug = 'braid-republic';
   insert into t_results (step, ok, detail) select 'review author comes from the profile, not the form', author_name = 'Grace T.' and author_area <> 'Paris', author_name || ' / ' || author_area from public.reviews where booking_id = current_setting('test.booking1')::uuid;
+  insert into t_results (step, ok, detail)
+  select 'review moves the professional''s rating too',
+    s.rating_count = b.rating_count + 1 and s.rating = round((b.rating_sum + 1) / (b.rating_count + 1), 1),
+    s.rating::text || ' / ' || s.rating_count::text
+  from public.staff s, t_staff_before b where s.id = (select aisha from t_ctx);
 exception when others then
   insert into t_results (step, ok, detail) values ('review of completed booking updates rating', false, sqlerrm);
 end $$;
@@ -204,6 +209,17 @@ do $$ declare b public.bookings; r record; again record; begin
   insert into t_results (step, ok, detail) values ('paid webhook confirms booking, once', b.status = 'confirmed' and b.payment_status = 'paid' and r.became_paid, b.status || '/' || b.payment_status || '/' || r.became_paid);
   select * into again from public.record_payment_result('TEST-TX-1', 'paid', 'MOCK-1', 50000, '{"ok":true}');
   insert into t_results (step, ok, detail) values ('a repeated webhook changes nothing', not again.became_paid, again.became_paid::text);
+end $$;
+reset role;
+
+-- ---------- a live business moving into Security goes back for review ----------
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"33333333-3333-3333-3333-333333333333","role":"authenticated"}', true);
+do $$ begin
+  update public.businesses set category_id = 'escort' where slug = 'braid-republic';
+  insert into t_results (step, ok, detail) select 'moving a live business into Security sends it back for review', status = 'pending', status::text from public.businesses where slug = 'braid-republic';
+exception when others then
+  insert into t_results (step, ok, detail) values ('moving a live business into Security sends it back for review', false, sqlerrm);
 end $$;
 reset role;
 

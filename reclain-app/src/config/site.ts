@@ -8,7 +8,7 @@ export const site = {
   pronounced: "reclaim",
   tagline: "Your to-do list, sorted.",
   description:
-    "Book Kampala's best-rated pros for hair, laundry, cleaning, repairs, massage and licensed security. Pay with MTN MoMo, Airtel Money or card.",
+    "Book Kampala's best-rated pros for hair, laundry, cleaning, repairs, massage and security from registered firms. Pay with MTN MoMo, Airtel Money or card.",
   domain: "reclain.com",
   url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
   email: "hello@reclain.com",
@@ -31,9 +31,13 @@ export const site = {
   leadGraceMinutes: 15, // a slot shown at 60 minutes still books if checkout takes a while
   bookingWindowDays: 14, // how far ahead customers can book
   freeCancellationHours: 4, // shown in the policy text
-  pendingPaymentMinutes: 30,
-  latePaymentMinutes: 15, // after a hold ends, how long a payment may still turn up // an unpaid MoMo booking holds its slot this long
+  pendingPaymentMinutes: 30, // an unpaid MoMo booking holds its slot this long
+  latePaymentMinutes: 15, // after a hold ends, how long a payment may still turn up
   reminderHourLocal: 18, // day-before SMS reminders go out around 18:00
 } as const;
 
 export type Site = typeof site;
+
+// Security businesses get an extra check (a registered company), so moving a live page into
+// this category sends it back for review. Matches guard_business_update in the database.
+export const SECURITY_CATEGORY = "escort";

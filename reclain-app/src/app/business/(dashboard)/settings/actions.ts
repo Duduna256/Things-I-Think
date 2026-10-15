@@ -33,13 +33,17 @@ export async function saveSettingsAction(_prev: FormResult, formData: FormData):
   });
   if (!parsed.ok) return { message: "Check the highlighted fields and try again.", errors: parsed.errors };
 
+  let updated;
   try {
-    await data.updateBusiness(business.id, parsed.value);
+    updated = await data.updateBusiness(business.id, parsed.value);
   } catch (e) {
     if (isDataError(e)) return { message: e.message };
     console.error("updateBusiness failed", e);
     return { message: "We couldn't save those changes just now. Try again in a minute." };
   }
   refreshBusiness(business.slug);
+  if (business.status === "published" && updated.status === "pending") {
+    return { ok: true, message: "Saved. Security businesses are checked before they go live, so your page is with our team for a quick look." };
+  }
   return { ok: true, message: business.status === "published" ? "Saved. Your public page is up to date." : "Saved." };
 }

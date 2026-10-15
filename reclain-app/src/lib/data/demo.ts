@@ -6,7 +6,7 @@ import "server-only";
 import seed from "./seed-data.json";
 import { getSessionUser, DEMO_USERS, setDemoProfile } from "../auth";
 import { slugify } from "../format";
-import { site } from "../../config/site";
+import { SECURITY_CATEGORY, site } from "../../config/site";
 import { features } from "../../config/features";
 import { latestStart, priceBooking, effectiveLocation } from "../booking/rules";
 import { addDays, localParts, parseHHMM, toInstant, todayLocal } from "../time";
@@ -47,6 +47,7 @@ interface Store {
   profiles: Record<string, { fullName: string | null; phone: string | null }>;
   sms: unknown[];
   ratingSums: Record<string, number>; // exact totals behind each rounded average
+  staffTallies: Record<string, { sum: number; count: number }>; // the same for each professional
 }
 
 let counter = 0;
@@ -66,6 +67,7 @@ function buildStore(): Store {
     profiles: {},
     sms: [],
     ratingSums: {},
+    staffTallies: {},
   };
   for (const b of seed.businesses) {
     const id = `biz-${b.slug}`;
@@ -223,6 +225,10 @@ function addSampleBookings(s: Store, now: Date = new Date()) {
     });
   });
 }
+
+// A sample professional's rating stands for this many earlier reviews, so one new review
+// nudges it instead of replacing it (the database migration uses the same number).
+const SAMPLE_STAFF_REVIEWS = 20;
 
 // Keep one store across hot reloads in development.
 const g = globalThis as unknown as { __reclainDemo?: Store };
@@ -501,6 +507,14 @@ export const demoSource: DataSource = {
     db().ratingSums[biz.id] = sum;
     biz.ratingCount += 1;
     biz.ratingAvg = Math.round((sum / biz.ratingCount) * 10) / 10;
+    // The professional's own rating moves too. A sample rating counts as earlier reviews.
+    const pro = db().staff.find(s => s.id === b.staffId);
+    if (pro) {
+      const tally = (db().staffTallies[pro.id] ??= pro.rating > 0 ? { sum: pro.rating * SAMPLE_STAFF_REVIEWS, count: SAMPLE_STAFF_REVIEWS } : { sum: 0, count: 0 });
+      tally.sum += review.rating;
+      tally.count += 1;
+      pro.rating = Math.round((tally.sum / tally.count) * 10) / 10;
+    }
     return review;
   },
 
@@ -558,6 +572,10 @@ export const demoSource: DataSource = {
     if (!b) throw new DataError("not_found", "Business not found.");
     const next = { ...b, ...patch, coverWord: (patch.coverWord ?? b.coverWord).slice(0, 12) };
     if (parseHHMM(next.closesAt) <= parseHHMM(next.opensAt)) throw new DataError("invalid", "Closing time must be after opening time.");
+    // Moving a live page into Security sends it back for review (the database does the same).
+    if (!user.isAdmin && features.businessApproval && b.status === "published" && next.categoryId === SECURITY_CATEGORY && b.categoryId !== SECURITY_CATEGORY) {
+      next.status = "pending";
+    }
     Object.assign(b, next);
     return b;
   },

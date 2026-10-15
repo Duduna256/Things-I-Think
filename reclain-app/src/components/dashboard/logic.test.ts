@@ -184,7 +184,10 @@ test("readiness lists what's left before review", () => {
   const items = readiness({ services: [], staff: [{ active: true }], phone: null, blurb: "", address: "", visitMode: "salon" });
   assert.equal(items.find(i => i.key === "service")?.done, false);
   assert.equal(items.find(i => i.key === "team")?.done, true);
-  assert.equal(missingSentence(items), "add at least one service and add a phone number so we can text you new bookings");
+  assert.equal(
+    missingSentence(items),
+    "add at least one service, add a phone number so we can text you new bookings and add your address so customers can find you",
+  );
   const mobile = readiness({ services: [{ active: true }], staff: [{ active: true }], phone: "772123456", blurb: "Hi", address: "", visitMode: "mobile" });
   assert.equal(mobile.some(i => i.key === "address"), false);
   assert.equal(missingSentence(mobile), "");

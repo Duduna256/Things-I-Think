@@ -156,12 +156,16 @@ export function BookingFlow(props: BookingFlowProps) {
       return { error: `We couldn't reach ${site.shortName}. Check your connection and try again.`, kind: "unavailable" };
     }
     if (res?.kind === "conflict") {
-      // Someone else got there first: back to Time with fresh slots.
+      // Someone else got there first: back to Time with fresh slots. In a transition so the
+      // step change lands with the result, once the form is no longer inert; otherwise the
+      // Time heading can't take focus and keyboard users are left at the top of the page.
       autoJump.current = false;
-      setSlot(null);
-      setNotice(res.error);
-      setReloadToken(t => t + 1);
-      setStepIndex(steps.indexOf("time"));
+      startTransition(() => {
+        setSlot(null);
+        setNotice(res.error);
+        setReloadToken(t => t + 1);
+        setStepIndex(steps.indexOf("time"));
+      });
     } else if (res?.field && res.field !== "pay") {
       const f = res.field;
       setTouched(t => ({ ...t, [f]: true }));

@@ -291,7 +291,7 @@ export function readiness(b: {
     { key: "blurb", label: "write a line or two about what you do", done: b.blurb.trim().length > 0, required: false },
     ...(b.visitMode === "mobile"
       ? []
-      : [{ key: "address" as const, label: "add your address so customers can find you", done: b.address.trim().length > 0, required: false }]),
+      : [{ key: "address" as const, label: "add your address so customers can find you", done: b.address.trim().length > 0, required: true }]),
   ];
 }
 

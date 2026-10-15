@@ -65,7 +65,11 @@ function visitInfo(b: BusinessDetail, place: string) {
         : `Visit them${place ? ` in ${place}` : ""}, or choose “At my place” when you book. Home visits cost nothing extra.`,
     };
   }
-  return { badge: "At the venue", icon: "store", note: "The address is on your booking page once you've booked." };
+  return {
+    badge: "At the venue",
+    icon: "store",
+    note: b.address ? `Find them at ${b.address}${place ? `, ${place}` : ""}.` : `You go to them${place ? `, in ${place}` : ""}.`,
+  };
 }
 
 export default async function VenuePage({ params }: Props) {

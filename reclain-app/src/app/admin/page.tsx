@@ -1,6 +1,7 @@
 import "@/styles/dashboard.css";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { SECURITY_CATEGORY } from "@/config/site";
 import { requireAdmin } from "@/lib/auth";
 import { data } from "@/lib/data";
 import { internationalMsisdn, prettyMsisdn } from "@/lib/phone";
@@ -44,7 +45,10 @@ export default async function AdminPage({ searchParams }: Props) {
         <h1 className="page-title dash-title">
           Business <span className="em">approvals</span>
         </h1>
-        <p className="dash-lede muted">Check each one is real and its menu makes sense, then let it in.</p>
+        <p className="dash-lede muted">
+          Check each one is real and its menu makes sense, then let it in. Security businesses also need to be a registered
+          company: ask for their registration before you approve.
+        </p>
 
         <nav aria-label="Businesses by status">
           <ul className="chips dash-tabs">
@@ -100,6 +104,9 @@ export default async function AdminPage({ searchParams }: Props) {
                             </a>
                           )}
                           {b.blurb && <small className="muted adm-blurb">{b.blurb}</small>}
+                          {b.categoryId === SECURITY_CATEGORY && b.status === "pending" && (
+                            <small className="adm-check">Security: check their company registration first.</small>
+                          )}
                         </div>
                       </div>
                     </th>

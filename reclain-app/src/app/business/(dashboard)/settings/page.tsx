@@ -38,6 +38,7 @@ export default async function SettingsPage() {
         categories={categories.map(c => ({ id: c.id, name: c.name }))}
         areas={areas.map(a => ({ id: a.id, name: a.name, region: a.region }))}
         flags={{ homeVisits: features.homeVisits, cash: features.cashPayments }}
+        live={b.status === "published"}
       />
     </>
   );
