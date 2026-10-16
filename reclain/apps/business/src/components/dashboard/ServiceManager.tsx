@@ -5,12 +5,13 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { deleteServiceAction, saveServiceAction } from "@/app/(dashboard)/services/actions";
-import { durationLabel, ugx } from "@shared/lib/format";
+import { durationLabel, plural, ugx } from "@shared/lib/format";
 import { Icon } from "@shared/components/Icon";
-import type { Service } from "@shared/lib/types";
+import type { Resource, Service, ServiceResourceNeed } from "@shared/lib/types";
 import { FieldError, FormMessage, invalid, useSubmit } from "@shared/components/form-bits";
 import { useAnnounce } from "@shared/components/Toast";
 import { durationOptions, halfHours } from "./options";
+import { PEOPLE_NEEDED_MAX, resourceField } from "../equipment/fields";
 
 interface Group {
   name: string;
@@ -28,22 +29,41 @@ function groupServices(services: Service[]): Group[] {
   return groups;
 }
 
+// What a service needs beyond one person, in words: "2 people · 2 massage tables".
+export function needsText(service: Pick<Service, "peopleNeeded">, needs: ServiceResourceNeed[], resources: Resource[]): string {
+  const parts: string[] = [];
+  if (service.peopleNeeded > 1) parts.push(`${service.peopleNeeded} people`);
+  for (const n of needs) {
+    const r = resources.find(x => x.id === n.resourceId);
+    if (!r) continue;
+    parts.push(plural(n.quantity, r.name.toLowerCase()));
+  }
+  return parts.join(" · ");
+}
+
 export function ServiceManager({
   businessId,
   services,
   opensAt,
   closesAt,
+  teamSize,
+  resources,
+  needs,
 }: {
   businessId: string;
   services: Service[];
   opensAt: string;
   closesAt: string;
+  teamSize: number; // people taking bookings, so a service can't quietly need more than that
+  resources: Resource[]; // the business's equipment and vehicles
+  needs: Record<string, ServiceResourceNeed[]>; // what each service uses now, by service id
 }) {
   const [editing, setEditing] = useState<string | null>(null); // a service id, "new" or nothing
   const announce = useAnnounce();
   const addBtn = useRef<HTMLButtonElement>(null);
   const groups = groupServices(services);
   const groupNames = groups.map(g => g.name);
+  const shared = { teamSize, resources };
 
   // The form or row that had focus closes, so the toast takes it (see Toast.tsx).
   const done = (text: string) => {
@@ -73,6 +93,8 @@ export function ServiceManager({
           groupNames={groupNames}
           opensAt={opensAt}
           closesAt={closesAt}
+          {...shared}
+          needs={[]}
           onCancel={() => {
             setEditing(null);
             requestAnimationFrame(() => addBtn.current?.focus());
@@ -101,6 +123,8 @@ export function ServiceManager({
                     groupNames={groupNames}
                     opensAt={opensAt}
                     closesAt={closesAt}
+                    {...shared}
+                    needs={needs[s.id] ?? []}
                     onCancel={() => {
                       setEditing(null);
                       requestAnimationFrame(() => document.getElementById(`edit-${s.id}`)?.focus());
@@ -108,7 +132,13 @@ export function ServiceManager({
                     onDone={done}
                   />
                 ) : (
-                  <ServiceRow service={s} businessId={businessId} onEdit={() => setEditing(s.id)} onDeleted={done} />
+                  <ServiceRow
+                    service={s}
+                    businessId={businessId}
+                    needs={needsText(s, needs[s.id] ?? [], resources)}
+                    onEdit={() => setEditing(s.id)}
+                    onDeleted={done}
+                  />
                 )}
               </li>
             ))}
@@ -121,7 +151,19 @@ export function ServiceManager({
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
-function ServiceRow({ service: s, businessId, onEdit, onDeleted }: { service: Service; businessId: string; onEdit: () => void; onDeleted: (msg: string) => void }) {
+function ServiceRow({
+  service: s,
+  businessId,
+  needs,
+  onEdit,
+  onDeleted,
+}: {
+  service: Service;
+  businessId: string;
+  needs: string; // "2 people · 1 patrol car", or empty
+  onEdit: () => void;
+  onDeleted: (msg: string) => void;
+}) {
   const [confirming, setConfirming] = useState(false);
   const { result, pending, submit, messageRef } = useSubmit(deleteServiceAction, { onDone: r => onDeleted(r.message ?? "Deleted.") });
   const question = useRef<HTMLParagraphElement>(null);
@@ -148,6 +190,12 @@ function ServiceRow({ service: s, businessId, onEdit, onDeleted }: { service: Se
         </h3>
         {s.description && <p className="muted">{s.description}</p>}
         {s.latestStart && <p className="dash-row-note">Last start {s.latestStart}</p>}
+        {needs && (
+          <p className="muted">
+            <Icon name="users" className="ic dash-row-ic" />
+            Needs {needs}
+          </p>
+        )}
       </div>
       <p className="dash-row-len">
         <Icon name="clock" />
@@ -193,6 +241,9 @@ function ServiceForm({
   groupNames,
   opensAt,
   closesAt,
+  teamSize,
+  resources,
+  needs,
   onCancel,
   onDone,
 }: {
@@ -201,6 +252,9 @@ function ServiceForm({
   groupNames: string[];
   opensAt: string;
   closesAt: string;
+  teamSize: number;
+  resources: Resource[];
+  needs: ServiceResourceNeed[];
   onCancel: () => void;
   onDone: (msg: string) => void;
 }) {
@@ -295,6 +349,43 @@ function ServiceForm({
           </small>
           <FieldError id={e("latestStart")} error={error("latestStart")} />
         </div>
+        <div className="field">
+          <label htmlFor={f("people")}>People on the job</label>
+          <select id={f("people")} name="peopleNeeded" defaultValue={String(service?.peopleNeeded ?? 1)} aria-describedby={error("peopleNeeded") ? e("peopleNeeded") : f("people-hint")} aria-invalid={error("peopleNeeded") ? true : undefined}>
+            {Array.from({ length: PEOPLE_NEEDED_MAX }, (_, i) => i + 1).map(n => (
+              <option key={n} value={n}>
+                {n === 1 ? "1 person" : `${n} people`}
+                {n > teamSize ? " (more than your team)" : ""}
+              </option>
+            ))}
+          </select>
+          <small className="hint" id={f("people-hint")}>
+            A time is only offered when this many of your team are free. You have {teamSize} taking bookings.
+          </small>
+          <FieldError id={e("peopleNeeded")} error={error("peopleNeeded")} />
+        </div>
+        {resources.length > 0 && (
+          <fieldset className="field full dash-needs">
+            <legend>
+              Equipment and vehicles it uses <span className="hint">(0 for none)</span>
+            </legend>
+            <div className="dash-needs-grid">
+              {resources.map(r => {
+                const key = resourceField(r.id);
+                const current = needs.find(n => n.resourceId === r.id)?.quantity ?? 0;
+                return (
+                  <div className="field" key={r.id}>
+                    <label htmlFor={f(key)}>
+                      {r.name} <span className="hint">(you have {r.active ? r.quantity : `${r.quantity}, hidden`})</span>
+                    </label>
+                    <input id={f(key)} name={key} inputMode="numeric" defaultValue={String(current)} maxLength={3} {...invalid(e(key), error(key))} />
+                    <FieldError id={e(key)} error={error(key)} />
+                  </div>
+                );
+              })}
+            </div>
+          </fieldset>
+        )}
         <label className="check full">
           <input type="checkbox" name="active" defaultChecked={service?.active ?? true} />
           Show on your menu

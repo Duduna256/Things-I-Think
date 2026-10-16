@@ -3,8 +3,9 @@
 
 import { z } from "zod";
 import { availableSlots, latestStart, priceBooking, type SlotsResult } from "@shared/lib/booking/rules";
+import { combineNeeds, type ResourceNeed } from "@shared/lib/capacity/plan";
 import { addDays, toInstant } from "@shared/lib/time";
-import type { BusinessDetail, BusySlot } from "@shared/lib/types";
+import type { BusinessDetail, BusyResource, BusySlot, ServiceNeed } from "@shared/lib/types";
 import type { AvailabilityResponse } from "../../../components/booking/types";
 
 export const NEXT_AVAILABLE_DAYS = 21;
@@ -28,16 +29,24 @@ export interface SlotPlan {
   closedDays: number[];
   blockMin: number;
   latestStartMin: number | null;
-  staffIds: string[];
+  staffIds: string[]; // who may lead: the chosen professional, or everyone
+  // Crew and equipment (see lib/capacity): everyone who could be on the job, how many people
+  // the services need, and the units of each resource they use.
+  teamIds: string[];
+  peopleNeeded: number;
+  resources: ResourceNeed[];
 }
 
 type PlanResult = { ok: true; plan: SlotPlan } | { ok: false; error: string };
 
-// Checks the services and professional against the venue and works out how long to hold.
+// Checks the services and professional against the venue and works out how long to hold, how
+// many people the job takes and what equipment it uses. `needs` comes from getServiceNeeds;
+// without it only the people count is known (the venue's services carry it).
 export function planFor(
   venue: Pick<BusinessDetail, "visitMode" | "homeVisitFee" | "opensAt" | "closesAt" | "closedDays" | "services" | "staff">,
   serviceIds: string[],
   staff: string,
+  needs: ServiceNeed[] = [],
 ): PlanResult {
   const chosen = serviceIds.map(id => venue.services.find(s => s.id === id));
   if (!chosen.length || chosen.some(s => !s)) {
@@ -51,6 +60,7 @@ export function planFor(
 
   // Where it happens changes the price, not how long the slot is held.
   const { blockMin } = priceBooking(venue, services, "venue");
+  const combined = combineNeeds(needs.filter(n => serviceIds.includes(n.serviceId)));
   return {
     ok: true,
     plan: {
@@ -60,6 +70,9 @@ export function planFor(
       blockMin,
       latestStartMin: latestStart(services),
       staffIds,
+      teamIds: venue.staff.map(s => s.id),
+      peopleNeeded: Math.max(combined.peopleNeeded, ...services.map(s => s.peopleNeeded)),
+      resources: combined.resources,
     },
   };
 }
@@ -75,7 +88,7 @@ export interface SlotOptions {
   minLeadMin: number;
 }
 
-export function slotsFor(plan: SlotPlan, date: string, busy: BusySlot[], opts: SlotOptions): SlotsResult {
+export function slotsFor(plan: SlotPlan, date: string, busy: BusySlot[], opts: SlotOptions, busyResources: BusyResource[] = []): SlotsResult {
   return availableSlots({
     date,
     opensAt: plan.opensAt,
@@ -84,7 +97,11 @@ export function slotsFor(plan: SlotPlan, date: string, busy: BusySlot[], opts: S
     blockMin: plan.blockMin,
     latestStartMin: plan.latestStartMin,
     staffIds: plan.staffIds,
+    teamIds: plan.teamIds,
+    peopleNeeded: plan.peopleNeeded,
+    resources: plan.resources,
     busy,
+    busyResources,
     now: opts.now,
     stepMin: opts.stepMin,
     minLeadMin: opts.minLeadMin,
@@ -102,9 +119,9 @@ export function worthSearching(result: SlotsResult): boolean {
   return result.kind === "closed" || result.kind === "full" || result.kind === "too_late";
 }
 
-export function nextAvailableDate(plan: SlotPlan, candidates: string[], busy: BusySlot[], opts: SlotOptions): string | null {
+export function nextAvailableDate(plan: SlotPlan, candidates: string[], busy: BusySlot[], opts: SlotOptions, busyResources: BusyResource[] = []): string | null {
   for (const d of candidates) {
-    if (slotsFor(plan, d, busy, opts).kind === "ok") return d;
+    if (slotsFor(plan, d, busy, opts, busyResources).kind === "ok") return d;
   }
   return null;
 }

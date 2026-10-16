@@ -260,7 +260,23 @@ export const supabaseSource: DataSource = {
     const q = input.id
       ? sb.from("services").update(row).eq("id", input.id).eq("business_id", businessId).select().single()
       : sb.from("services").insert(row).select().single();
-    return mapService(await must(q, "We couldn't save that service."));
+    const service = mapService(await must(q, "We couldn't save that service."));
+
+    // What it uses replaces what was set before. The database refuses another business's
+    // equipment (service_resources_guard), so there's nothing to check here beyond the numbers.
+    const needs = new Map<string, number>();
+    for (const need of input.resources) {
+      if (need.quantity > 0) needs.set(need.resourceId, Math.max(needs.get(need.resourceId) ?? 0, Math.min(need.quantity, 999)));
+    }
+    const cleared = await sb.from("service_resources").delete().eq("service_id", service.id);
+    if (cleared.error) throw fromPostgrest(cleared.error, "We couldn't save what that service uses.");
+    if (needs.size) {
+      const inserted = await sb
+        .from("service_resources")
+        .insert([...needs].map(([resource_id, quantity]) => ({ service_id: service.id, resource_id, quantity })));
+      if (inserted.error) throw fromPostgrest(inserted.error, "We couldn't save what that service uses.");
+    }
+    return service;
   },
 
   async deleteService(id) {

@@ -1,0 +1,64 @@
+/* Equipment and vehicles (/equipment) and the capacity bits of the service form. Everything
+   here is prefixed eq- or dash-needs-; shared pieces (.dash-row, .dash-form, .field, .check,
+   .pill, .empty, .card) come from dashboard.css and globals.css. */
+
+/* ---------- The list ---------- */
+.eq-row { grid-template-columns: 44px minmax(0, 1fr) auto auto; grid-template-areas: "icon main len btns"; }
+.eq-icon {
+  grid-area: icon; display: inline-flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; border-radius: 12px; background: var(--jac-soft); color: var(--jac-ink);
+}
+.eq-icon .ic { width: 22px; height: 22px; }
+.eq-row.is-hidden .eq-icon { background: var(--soft); color: var(--muted); }
+.eq-used { font-size: 0.88rem !important; }
+.eq-qty { font-size: 1.3rem; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
+.eq-row .dash-row-len { white-space: normal; }
+
+/* ---------- The add/edit form ---------- */
+.eq-kind { border: 0; padding: 0; margin: 0; }
+.eq-kind legend, .dash-needs legend, .eq-check-services legend { padding: 0; margin-bottom: 6px; font-weight: 600; font-size: 0.92rem; }
+.eq-kind-options { display: flex; flex-wrap: wrap; gap: 6px 22px; }
+.eq-kind-options .hint, .dash-form .check .hint { font-weight: 500; }
+
+/* The service form: how many of each item a service uses. */
+.dash-needs { border: 0; padding: 0; margin: 0; }
+.dash-needs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+.dash-row-ic { width: 16px; height: 16px; vertical-align: -3px; margin-right: 4px; color: var(--muted); }
+
+/* ---------- The slot checker ---------- */
+.eq-checker { margin-top: 12px; }
+.eq-check-form { display: grid; gap: 18px; }
+.eq-check-services { border: 0; padding: 0; margin: 0; }
+.eq-check-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0 20px; }
+.eq-check-grid .check { min-height: 44px; }
+.eq-check-grid .hint { font-weight: 500; }
+.eq-check-row { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+.eq-check-row .field { flex: 1 1 200px; min-width: 0; }
+.eq-check-row .btn { height: 48px; }
+
+.eq-report { display: grid; gap: 14px; }
+.eq-report-needs { display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--ink-2); }
+.eq-report-needs .ic { width: 18px; height: 18px; color: var(--muted); flex: none; }
+.eq-report-title { font-size: 1.15rem; font-weight: 750; letter-spacing: -0.01em; }
+.eq-slots { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.eq-slot {
+  display: grid; grid-template-columns: 5.5ch minmax(0, 1fr); gap: 12px; align-items: baseline;
+  padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); font-size: 0.95rem;
+}
+.eq-slot-time { font-weight: 800; font-variant-numeric: tabular-nums; }
+.eq-slot-why { overflow-wrap: anywhere; color: var(--ink-2); }
+.eq-slot.is-free { background: var(--ok-soft); border-color: transparent; }
+.eq-slot.is-free .eq-slot-why { color: #0b5b41; font-weight: 700; }
+.eq-slot.is-busy { background: var(--white); }
+.eq-slot.is-busy .eq-slot-why { color: var(--warn); font-weight: 600; }
+.eq-slot.is-past { background: var(--soft); border-color: transparent; color: var(--muted); }
+.eq-slot.is-past .eq-slot-time, .eq-slot.is-past .eq-slot-why { color: var(--muted); font-weight: 500; }
+.eq-next { font-weight: 600; }
+
+@media (max-width: 760px) {
+  .eq-row { grid-template-columns: 44px minmax(0, 1fr); grid-template-areas: "icon main" "len len" "btns btns"; }
+  .eq-check-row .btn { width: 100%; }
+}
+@media (max-width: 380px) {
+  .eq-slot { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+}
