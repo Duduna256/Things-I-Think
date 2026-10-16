@@ -3,31 +3,25 @@ import "server-only";
 // It follows the same rules as the database functions so the app behaves the same.
 // Data resets when the server restarts. Nothing here is used once Supabase keys are set.
 
-import seed from "./seed-data.json";
-import { getSessionUser, DEMO_USERS, setDemoProfile } from "../auth";
+import { getSessionUser, setDemoProfile } from "../auth";
 import { slugify } from "../format";
 import { SECURITY_CATEGORY, site } from "../../config/site";
 import { features } from "../../config/features";
 import { latestStart, priceBooking, effectiveLocation } from "../booking/rules";
-import { addDays, localParts, parseHHMM, toInstant, todayLocal } from "../time";
+import { addDays, localParts, parseHHMM, todayLocal } from "../time";
 import { DataError } from "./errors";
 import { applyFilter } from "./search";
 import type { DataSource, ServiceIndexEntry } from "./source";
 import type {
-  Area,
-  Booking,
   BookingStatus,
   Business,
-  BusinessDetail,
-  Category,
   Payment,
   Review,
   ReviewWithBusiness,
   Service,
-  SessionUser,
   Staff,
 } from "../types";
-import { StoredBooking, GRACE_MIN, Store, counter, newId, now, buildStore, addSampleBookings, SAMPLE_STAFF_REVIEWS, g, db, me, withServiceNames, detail, hydrate, owns, holding, releaseExpired, overlaps, findBooking } from "./demo-store";
+import { StoredBooking, GRACE_MIN, newId, now, SAMPLE_STAFF_REVIEWS, db, me, withServiceNames, detail, hydrate, owns, holding, releaseExpired, overlaps, findBooking } from "./demo-store";
 
 import { demoBooks } from "./demo-books";
 import { demoCapacity } from "./demo-capacity";

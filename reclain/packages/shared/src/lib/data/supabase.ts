@@ -9,19 +9,11 @@ import { applyFilter } from "./search";
 import type { DataSource } from "./source";
 import type {
   Area,
-  Booking,
-  Business,
-  BusinessDetail,
-  BusinessInput,
   Category,
-  Payment,
   Profile,
-  Review,
   ReviewWithBusiness,
-  Service,
-  Staff,
 } from "../types";
-import { Row, hhmm, mapBusiness, mapService, mapStaff, mapDetail, mapReview, BOOKING_SELECT, mapBooking, mapPayment, businessRow, must, uid } from "./supabase-core";
+import { Row, mapBusiness, mapService, mapStaff, mapDetail, mapReview, BOOKING_SELECT, mapBooking, mapPayment, businessRow, must, uid } from "./supabase-core";
 
 import { supabaseBooks } from "./supabase-books";
 import { supabaseCapacity } from "./supabase-capacity";

@@ -20,7 +20,6 @@ import type {
   Resource,
   ResourceInput,
   ServiceNeed,
-  ServiceResourceNeed,
   SpendInput,
   UploadFile,
   BusinessDetail,

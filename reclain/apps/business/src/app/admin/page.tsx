@@ -9,6 +9,7 @@ import { formatDate, localParts } from "@shared/lib/time";
 import { Cover } from "@shared/components/Cover";
 import { placeName } from "@shared/lib/places";
 import { AdminActions } from "@/components/dashboard/AdminActions";
+import { AdminNav } from "@/components/admin/AdminNav";
 import { PillTag } from "@/components/dashboard/BookingCard";
 import { ADMIN_TABS, adminOps, BUSINESS_STATUS, parseAdminTab } from "@/components/dashboard/logic";
 import { ToastProvider } from "@shared/components/Toast";
@@ -42,6 +43,7 @@ export default async function AdminPage({ searchParams }: Props) {
     <ToastProvider>
       <div className="wrap page dash">
         <p className="eyebrow">Admin</p>
+        <AdminNav current="/admin" />
         <h1 className="page-title dash-title">
           Business <span className="em">approvals</span>
         </h1>

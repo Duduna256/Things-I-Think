@@ -4,25 +4,27 @@ import "server-only";
 // Data resets when the server restarts. Nothing here is used once Supabase keys are set.
 
 import seed from "./seed-data.json";
-import { getSessionUser, DEMO_USERS, setDemoProfile } from "../auth";
-import { slugify } from "../format";
-import { SECURITY_CATEGORY, site } from "../../config/site";
-import { features } from "../../config/features";
-import { latestStart, priceBooking, effectiveLocation } from "../booking/rules";
-import { addDays, localParts, parseHHMM, toInstant, todayLocal } from "../time";
+import { getSessionUser, DEMO_USERS } from "../auth";
+import { site } from "../../config/site";
+import { priceBooking } from "../booking/rules";
+import { addDays, parseHHMM, toInstant, todayLocal } from "../time";
 import { DataError } from "./errors";
-import { applyFilter } from "./search";
-import type { DataSource, ServiceIndexEntry } from "./source";
 import type {
   Area,
   Booking,
   BookingStatus,
   Business,
+  BusinessCheck,
   BusinessDetail,
+  BusinessTier,
   Category,
+  JobEvent,
+  LedgerAccount,
+  LedgerEntry,
   Payment,
+  Payout,
+  Resource,
   Review,
-  ReviewWithBusiness,
   Service,
   SessionUser,
   Staff,
@@ -48,7 +50,24 @@ export interface Store {
   sms: unknown[];
   ratingSums: Record<string, number>; // exact totals behind each rounded average
   staffTallies: Record<string, { sum: number; count: number }>; // the same for each professional
+  // Crew and equipment (mirrors resources, service_resources, booking_resources, booking_crew).
+  resources: Resource[];
+  serviceResources: { serviceId: string; resourceId: string; quantity: number }[];
+  bookingResources: { bookingId: string; resourceId: string; quantity: number }[];
+  bookingCrew: { bookingId: string; staffId: string }[];
+  // The job log (mirrors job_events and the job-photos bucket).
+  jobEvents: JobEvent[];
+  files: Record<string, { type: string; bytes: Uint8Array }>; // path -> file, for photos and evidence
+  // Books (mirrors ledger_accounts, ledger_entries + ledger_lines, payouts).
+  accounts: LedgerAccount[];
+  entries: LedgerEntry[];
+  payouts: Payout[];
+  // Verification (mirrors business_checks).
+  checks: BusinessCheck[];
 }
+
+// Sample tiers so the badges have something to show. Everyone else starts at "registered".
+const SAMPLE_TIERS: Record<string, BusinessTier> = { "braid-republic": "verified", kneaded: "certified", guardline: "guaranteed" };
 
 export let counter = 0;
 export const newId = (prefix: string) => `${prefix}-${Date.now().toString(36)}${(counter++).toString(36)}`;
@@ -68,6 +87,16 @@ export function buildStore(): Store {
     sms: [],
     ratingSums: {},
     staffTallies: {},
+    resources: [],
+    serviceResources: [],
+    bookingResources: [],
+    bookingCrew: [],
+    jobEvents: [],
+    files: {},
+    accounts: [],
+    entries: [],
+    payouts: [],
+    checks: [],
   };
   for (const b of seed.businesses) {
     const id = `biz-${b.slug}`;
@@ -97,7 +126,7 @@ export function buildStore(): Store {
       isNew: b.isNew,
       ratingAvg: b.ratingAvg,
       ratingCount: b.ratingCount,
-      tier: "registered",
+      tier: SAMPLE_TIERS[b.slug] ?? "registered",
       sort: b.sort,
       createdAt: "2026-10-01T00:00:00Z",
     });
@@ -150,6 +179,7 @@ export function buildStore(): Store {
     coverWord: "nails",
     palette: ["#3d1430", "#c2447a", "#ffc9da"],
     status: "pending",
+    tier: "registered",
     isFeatured: false,
     isNew: true,
     ratingAvg: 0,
