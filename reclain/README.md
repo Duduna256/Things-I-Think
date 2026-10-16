@@ -2,7 +2,17 @@
 
 Everyday services in Kampala, booked in seconds: home cleaning, laundry, repairs, hair and
 barbers, massage, nails, licensed security and more. Pay with MTN MoMo, Airtel Money, card or
-cash. Businesses run their bookings, menu and team from one dashboard. (Said "reclaim".)
+cash. (Said "reclaim".)
+
+It is two apps on one database:
+
+| App | Address | Folder | For |
+|---|---|---|---|
+| reClain | reclain.com | `apps/customer` | Customers: find a venue, book, pay, review |
+| reClain Business | business.reclain.com | `apps/business` | Businesses: bookings, menu, team, equipment, job log, money, verification. Admins: `/admin` |
+
+One account works on both. `packages/shared` holds the code they share: the database access,
+log-in, the booking rules and the shared components.
 
 ## Start here
 
@@ -17,15 +27,17 @@ cash. Businesses run their bookings, menu and team from one dashboard. (Said "re
 
 ```bash
 npm install
-npm run dev        # http://localhost:3000
+npm run dev             # the customer site:  http://localhost:3000
+npm run dev:business    # reClain Business:   http://localhost:3001  (second terminal)
 ```
 
-No keys needed: without Supabase keys the app runs in **demo mode** with sample venues, pretend
-payments and three pretend people to log in as. Copy `.env.example` to `.env.local` and fill it
-in to connect the real database.
+No keys needed: without Supabase keys both apps run in **demo mode** with sample venues, pretend
+payments and three pretend people to log in as. Copy `apps/customer/.env.example` to
+`apps/customer/.env.local` (and the same in `apps/business`) and fill them in to connect the
+real database.
 
 ```bash
-npm test           # booking rules, phone numbers, payments, SMS
+npm test                # booking rules, capacity, books, phone numbers, payments, SMS
 npm run typecheck
 npm run lint
 npm run build
@@ -33,5 +45,5 @@ npm run build
 
 ## Stack
 
-Next.js 16 (App Router) · Supabase (Postgres, Auth, Row Level Security) · Flutterwave
-(mobile money and cards) · Africa's Talking (SMS) · Vercel (hosting and daily reminder cron).
+Next.js 16 (App Router) · Supabase (Postgres, Auth, Storage, Row Level Security) · Flutterwave
+(mobile money and cards) · Africa's Talking (SMS) · Vercel (hosting and the daily reminder cron).
