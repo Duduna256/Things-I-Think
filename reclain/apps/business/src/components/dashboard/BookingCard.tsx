@@ -1,8 +1,11 @@
 // One booking as the venue sees it: when, who (with a tap-to-call number), what, where,
 // the money and the buttons. Rendered on the server; the buttons are a client island.
 
+import "@/styles/jobs.css";
+import Link from "next/link";
 import { Icon } from "@shared/components/Icon";
 import { duration, shortName, ugx } from "@shared/lib/format";
+import { joinNames } from "@shared/lib/jobs/rules";
 import { internationalMsisdn, prettyMsisdn } from "@shared/lib/phone";
 import { formatDate, formatTime, localParts } from "@shared/lib/time";
 import type { Booking } from "@shared/lib/types";
@@ -76,6 +79,21 @@ export function BookingCard({
             <Icon name="user" />
             <span>With {b.staffName}</span>
           </p>
+        )}
+        {b.crewNames.length > 0 && (
+          <p className="dash-bk-line">
+            <Icon name="users" />
+            <span>
+              {b.staffName ? "with " : "With "}
+              {joinNames(b.crewNames)}
+            </span>
+          </p>
+        )}
+        {(b.status === "confirmed" || b.status === "completed") && (
+          <Link className="dash-bk-joblog" href={`/bookings/${b.id}`}>
+            <Icon name="list" />
+            Job log<span className="sr-only"> for {name || "this booking"}</span>
+          </Link>
         )}
       </div>
 
