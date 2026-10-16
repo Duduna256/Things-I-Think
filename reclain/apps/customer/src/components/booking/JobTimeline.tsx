@@ -6,7 +6,7 @@ import { KIND_LABEL, locationWording } from "@shared/lib/jobs/rules";
 import { formatDate, formatTime, localParts } from "@shared/lib/time";
 import type { JobEvent, JobEventKind } from "@shared/lib/types";
 
-const ICON: Record<JobEventKind, IconName> = { checked_in: "pin", checked_out: "check", photo: "eye", note: "chat" };
+const ICON: Record<JobEventKind, IconName> = { checked_in: "pin", checked_out: "check", photo: "camera", note: "chat" };
 
 export function JobTimeline({ events, bookingDate }: { events: JobEvent[]; bookingDate: string }) {
   if (!events.length) return null;

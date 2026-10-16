@@ -102,7 +102,10 @@ export async function createBookingAction(_prev: BookingActionResult, formData: 
     // The time must be one the flow offers: on the slot grid, after the lead time, before any
     // cut-off and with someone free. The database still has the final say on clashes.
     const staffId = venue.skipProfessional || !input.staffId || input.staffId === "any" ? null : input.staffId;
-    const planned = planFor(venue, input.serviceIds, staffId ?? "any");
+    // Crew and equipment count too: a job that needs the only massage table can't start while
+    // another one is using it.
+    const needs = await data.capacity.getServiceNeeds(venue.id, input.serviceIds);
+    const planned = planFor(venue, input.serviceIds, staffId ?? "any", needs);
     if (!planned.ok) return { error: planned.error, kind: "invalid" };
     const now = new Date();
     const startsAt = new Date(input.startsAt).toISOString();
@@ -111,11 +114,14 @@ export async function createBookingAction(_prev: BookingActionResult, formData: 
       return { error: `Pick a day in the next ${site.bookingWindowDays} days.`, kind: "invalid" };
     }
     const range = dayRange(day);
-    const busy = await data.getBusySlots(venue.id, range.fromIso, range.toIso);
+    const [busy, busyResources] = await Promise.all([
+      data.getBusySlots(venue.id, range.fromIso, range.toIso),
+      planned.plan.resources.length ? data.capacity.getBusyResources(venue.id, range.fromIso, range.toIso) : Promise.resolve([]),
+    ]);
     // The grace matches create_booking(): a slot that was offered stays bookable while the
     // customer fills in their details.
     const minLeadMin = Math.max(site.minLeadMinutes - site.leadGraceMinutes, 0);
-    const free = slotsFor(planned.plan, day, busy, { now, stepMin: site.slotStepMinutes, minLeadMin });
+    const free = slotsFor(planned.plan, day, busy, { now, stepMin: site.slotStepMinutes, minLeadMin }, busyResources);
     if (free.kind !== "ok" || !free.slots.some(s => s.startsAt === startsAt)) {
       return { error: "That time has just gone. Pick another one.", kind: "conflict" };
     }

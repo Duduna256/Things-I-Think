@@ -84,7 +84,7 @@ export function JobActions({ businessId, bookingId, allowed }: { businessId: str
           {allowed.check_in && <CheckButton action="check_in" businessId={businessId} bookingId={bookingId} onDone={done} />}
           {allowed.photo && (
             <button ref={photoBtn} type="button" className="btn btn-ghost" onClick={() => setOpen("photo")}>
-              <Icon name="eye" />
+              <Icon name="camera" />
               Add photo
             </button>
           )}

@@ -5,7 +5,7 @@ export type IconName =
   | "search" | "pin" | "cal" | "left" | "right" | "close" | "check" | "plus" | "minus" | "clock" | "home" | "store"
   | "menu" | "user" | "users" | "star" | "scissors" | "braid" | "comb" | "stones" | "polish" | "ring" | "shirt"
   | "sparkle" | "shield" | "wrench" | "money" | "chat" | "id" | "arrow" | "phone" | "card" | "logout" | "edit"
-  | "trash" | "chart" | "settings" | "list" | "alert" | "eye" | "mail" | "google";
+  | "trash" | "chart" | "settings" | "list" | "alert" | "eye" | "mail" | "google" | "camera";
 
 export function Icon({ name, className = "ic", label }: { name: IconName | string; className?: string; label?: string }) {
   return (
@@ -18,6 +18,7 @@ export function Icon({ name, className = "ic", label }: { name: IconName | strin
 export function IconSprite() {
   return (
     <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true" focusable="false">
+      <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8.5h3.2l1.6-2.5h6.4l1.6 2.5H20v10.5H4z" /><circle cx="12" cy="13.5" r="3.2" /></symbol>
       <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.6-3.6" /></symbol>
       <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z" /><circle cx="12" cy="9.5" r="2.5" /></symbol>
       <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5" /><path d="M3.5 10h17M8 3v4M16 3v4" /></symbol>
