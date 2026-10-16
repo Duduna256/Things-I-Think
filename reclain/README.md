@@ -1,40 +1,37 @@
-# Reclain.com
+# reClain Services
 
-Services booking marketplace with hair dressing as the headline category
-(braids, locs, cuts, wigs, bridal), plus massage & spa, laundry, beauty,
-security escorts, cleaning and repairs.
+Everyday services in Kampala, booked in seconds: home cleaning, laundry, repairs, hair and
+barbers, massage, nails, licensed security and more. Pay with MTN MoMo, Airtel Money, card or
+cash. Businesses run their bookings, menu and team from one dashboard. (Said "reclaim".)
 
-Static site: open `index.html` in a browser, or deploy the folder to any
-static host (Netlify, Vercel, GitHub Pages, cPanel).
+## Start here
 
-- `index.html` – page structure
-- `styles.css` – design (responsive, mobile-first breakpoints)
-- `app.js` – service catalogue, stylists, booking modal, search
+| Read | For |
+|---|---|
+| [PLAN.md](PLAN.md) | What the app does, for whom, and the rules that keep it safe |
+| [docs/GO-LIVE.md](docs/GO-LIVE.md) | Supabase, Flutterwave, Africa's Talking, Vercel and reclain.com, step by step |
+| [docs/CHANGING-THINGS.md](docs/CHANGING-THINGS.md) | Turning features on and off, and one-sentence recipes for new ones |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Where everything lives in the code |
 
-## Business dashboard preview
+## Run it
 
-Add `#dashboard` to the address (or use "Try the business dashboard" in the
-menu, the business band or the log-in box) to click through the business side
-as The Braid Republic, owned by Aisha Namuli: overview, bookings by day,
-services, team and settings, copied from `reclain-app/src/app/business`. It
-runs on sample bookings in memory, in Kampala time, and resets on reload.
-Bookings made at The Braid Republic on the customer side show up there too.
-Its styles sit at the end of `styles.css` and its script at the end of
-`app.js`, prefixed `dash-` and `pv-`.
+```bash
+npm install
+npm run dev        # http://localhost:3000
+```
 
-Services, prices (UGX) and stylists live in `CATEGORIES` and `PROS` at the
-top of `app.js`. Bookings are currently saved only in the visitor's browser;
-connect a backend (e.g. Supabase) and SMS confirmations before launch.
+No keys needed: without Supabase keys the app runs in **demo mode** with sample venues, pretend
+payments and three pretend people to log in as. Copy `.env.example` to `.env.local` and fill it
+in to connect the real database.
 
-## Payments
+```bash
+npm test           # booking rules, phone numbers, payments, SMS
+npm run typecheck
+npm run lint
+npm run build
+```
 
-The booking form offers MTN MoMo, Airtel Money, card and cash. Mobile money
-numbers are checked against the chosen network (MTN 076/077/078/039, Airtel
-070/074/075/020). `requestMobileMoneyPayment()` in `app.js` is a placeholder:
-no money moves yet. To take real payments, have your backend call:
+## Stack
 
-- MTN MoMo Collections API (`requesttopay`): https://momodeveloper.mtn.com
-- Airtel Money Collections API (USSD push): https://developers.airtel.africa
-
-or a Ugandan aggregator that wraps both (e.g. Flutterwave, Pesapal). Keep API
-keys on the server, never in `app.js`.
+Next.js 16 (App Router) · Supabase (Postgres, Auth, Row Level Security) · Flutterwave
+(mobile money and cards) · Africa's Talking (SMS) · Vercel (hosting and daily reminder cron).

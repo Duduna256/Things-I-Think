@@ -1,0 +1,8 @@
+/* The business app's own shell. Everything else comes from the shared styles and dashboard.css. */
+.biz-tag {
+  display: inline-block; margin-left: 8px; vertical-align: 3px; padding: 2px 8px; border-radius: 999px;
+  background: var(--jac-soft); color: var(--jac-ink); font: 700 0.72rem/1.4 var(--font); letter-spacing: 0.04em; text-transform: uppercase;
+}
+.biz-user { display: inline-flex; align-items: center; gap: 10px; }
+.biz-foot { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-block: 28px; color: var(--muted); font-size: 0.9rem; }
+.biz-foot a { color: inherit; }

@@ -1,0 +1,20 @@
+{
+  "name": "@reclain/shared",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Code both reClain apps use: database access, accounts, formatting and shared components.",
+  "scripts": {
+    "test": "node --import tsx --test \"src/**/*.test.ts\"",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src"
+  },
+  "peerDependencies": {
+    "@supabase/ssr": "*",
+    "@supabase/supabase-js": "*",
+    "next": "*",
+    "react": "*",
+    "react-dom": "*",
+    "server-only": "*",
+    "zod": "*"
+  }
+}
