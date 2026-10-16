@@ -1,6 +1,6 @@
 -- Smoke test for Row Level Security and the booking functions.
 -- Paste the whole file into the Supabase SQL editor and run it in one go.
--- It ends by raising an error whose message lists the results: every "ok" should be true (45 checks).
+-- It ends by raising an error whose message lists the results: every "ok" should be true (55 checks).
 -- Because it all runs as one transaction, that final error rolls everything back.
 
 create temp table t_results (n serial, step text, ok boolean, detail text);
@@ -273,6 +273,93 @@ do $$ declare b public.bookings; r record; again record; begin
    where e.booking_id = r.booking_id and e.kind = 'receipt' and l.debit > 0;
   select * into again from public.record_payment_result('TEST-TX-1', 'paid', 'MOCK-1', 50000, '{"ok":true}');
   insert into t_results (step, ok, detail) values ('a repeated webhook changes nothing', not again.became_paid, again.became_paid::text);
+end $$;
+reset role;
+
+-- ---------- crew and equipment: a booking reserves people and kit ----------
+-- The owner adds one hooded dryer, says cornrows uses it and takes two people. A booking then
+-- reserves a second pair of hands and the dryer, and nobody else can take either at that time.
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"33333333-3333-3333-3333-333333333333","role":"authenticated"}', true);
+-- The new hire from earlier is not taking bookings yet, so the team is the three seeded braiders.
+update public.staff set active = false where business_id = (select biz from t_ctx) and name = 'New Hire';
+do $$ declare r uuid; begin
+  insert into public.resources (business_id, kind, name, quantity) values ((select biz from t_ctx), 'equipment', 'Hooded dryer', 1) returning id into r;
+  perform set_config('test.dryer', r::text, false);
+  insert into public.service_resources (service_id, resource_id, quantity) values ((select svc from t_ctx), r, 1);
+  update public.services set people_needed = 2 where id = (select svc from t_ctx);
+  insert into t_results (step, ok, detail)
+  select 'owner adds equipment and says what cornrows needs', people_needed = 2 and resource_id = r and resource_quantity = 1 and needed = 1, people_needed::text || ' people, ' || coalesce(needed, 0)::text || ' of ' || coalesce(resource_quantity, 0)::text
+    from public.service_needs((select biz from t_ctx), array[(select svc from t_ctx)]);
+exception when others then
+  insert into t_results (step, ok, detail) values ('owner adds equipment and says what cornrows needs', false, sqlerrm);
+end $$;
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"22222222-2222-2222-2222-222222222222","role":"authenticated"}', true);
+do $$ declare b public.bookings; begin
+  b := public.create_booking((select biz from t_ctx), array[(select svc from t_ctx)], null, (select slot from t_ctx) + interval '1 day', 'venue', '', '', 'Ivan Test', '0772000002', 'cash');
+  perform set_config('test.booking3', b.id::text, false);
+  -- Remembered here because customer 1, who books next, is not allowed to see this booking or its crew.
+  perform set_config('test.booking3_lead', b.staff_id::text, false);
+  perform set_config('test.booking3_crew', coalesce((select staff_id::text from public.booking_crew where booking_id = b.id limit 1), ''), false);
+  insert into t_results (step, ok, detail)
+  values ('a two-person job reserves a second pair of hands and the dryer',
+    (select count(*) from public.booking_crew where booking_id = b.id) = 1 and (select coalesce(sum(quantity), 0) from public.booking_resources where booking_id = b.id) = 1,
+    b.status::text);
+exception when others then
+  insert into t_results (step, ok, detail) values ('a two-person job reserves a second pair of hands and the dryer', false, sqlerrm);
+end $$;
+insert into t_results (step, ok, detail)
+select 'busy_resources shows the dryer taken', count(*) = 1 and coalesce(sum(quantity), 0) = 1, count(*)::text
+  from public.busy_resources((select biz from t_ctx), (select slot from t_ctx) + interval '1 day', (select slot from t_ctx) + interval '1 day 2 hours');
+insert into t_results (step, ok, detail)
+select 'busy_slots counts the crew member as busy too', count(distinct staff_id) = 2, count(distinct staff_id)::text
+  from public.busy_slots((select biz from t_ctx), (select slot from t_ctx) + interval '1 day', (select slot from t_ctx) + interval '1 day 2 hours');
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}', true);
+do $$ begin
+  perform public.create_booking((select biz from t_ctx), array[(select svc from t_ctx)], null, (select slot from t_ctx) + interval '1 day', 'venue', '', '', 'Grace Test', '0772123456', 'cash');
+  insert into t_results (step, ok, detail) values ('the only dryer cannot be booked twice at once', false, 'booked');
+exception when others then
+  insert into t_results (step, ok, detail) values ('the only dryer cannot be booked twice at once', sqlerrm like '%just taken%', sqlerrm);
+end $$;
+reset role;
+
+-- A second dryer arrives, but two of the three braiders are already on the first job.
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"33333333-3333-3333-3333-333333333333","role":"authenticated"}', true);
+update public.resources set quantity = 2 where id = current_setting('test.dryer')::uuid;
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}', true);
+do $$ begin
+  perform public.create_booking((select biz from t_ctx), array[(select svc from t_ctx)], null, (select slot from t_ctx) + interval '1 day', 'venue', '', '', 'Grace Test', '0772123456', 'cash');
+  insert into t_results (step, ok, detail) values ('a two-person job is refused when only one braider is free', false, 'booked');
+exception when others then
+  insert into t_results (step, ok, detail) values ('a two-person job is refused when only one braider is free', sqlerrm like '%just taken%', sqlerrm);
+end $$;
+reset role;
+
+-- Cornrows goes back to a one-person job: the last braider and the second dryer are enough.
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"33333333-3333-3333-3333-333333333333","role":"authenticated"}', true);
+update public.services set people_needed = 1 where id = (select svc from t_ctx);
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}', true);
+do $$ declare b public.bookings; begin
+  b := public.create_booking((select biz from t_ctx), array[(select svc from t_ctx)], null, (select slot from t_ctx) + interval '1 day', 'venue', '', '', 'Grace Test', '0772123456', 'cash');
+  insert into t_results (step, ok, detail)
+  values ('a one-person job takes the last braider and the second dryer',
+    (select count(*) from public.booking_crew where booking_id = b.id) = 0 and (select coalesce(sum(quantity), 0) from public.booking_resources where booking_id = b.id) = 1
+    and b.staff_id::text not in (current_setting('test.booking3_lead'), current_setting('test.booking3_crew')),
+    b.status::text);
+exception when others then
+  insert into t_results (step, ok, detail) values ('a one-person job takes the last braider and the second dryer', false, sqlerrm);
 end $$;
 reset role;
 
