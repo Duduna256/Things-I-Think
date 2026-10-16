@@ -21,7 +21,15 @@ export async function saveServiceAction(_prev: FormResult, formData: FormData): 
     return { message: `Your menu already has ${MAX_SERVICES} services. Delete or reuse one before adding more.` };
   }
 
-  const parsed = parseServiceForm(formData, business);
+  // What the service may say it uses: this business's own equipment and vehicles, nothing else.
+  let resources;
+  try {
+    resources = await data.capacity.listResources(business.id);
+  } catch (e) {
+    if (isDataError(e)) return { message: e.message };
+    throw e;
+  }
+  const parsed = parseServiceForm(formData, business, resources);
   if (!parsed.ok) return { message: "Check the highlighted fields and try again.", errors: parsed.errors };
 
   // New services go to the end of the menu.

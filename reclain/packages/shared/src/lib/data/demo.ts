@@ -21,7 +21,25 @@ import type {
   Service,
   Staff,
 } from "../types";
-import { StoredBooking, GRACE_MIN, newId, now, SAMPLE_STAFF_REVIEWS, db, me, withServiceNames, detail, hydrate, owns, holding, releaseExpired, overlaps, findBooking } from "./demo-store";
+import {
+  StoredBooking,
+  GRACE_MIN,
+  newId,
+  now,
+  SAMPLE_STAFF_REVIEWS,
+  db,
+  me,
+  withServiceNames,
+  detail,
+  hydrate,
+  owns,
+  holding,
+  releaseExpired,
+  overlaps,
+  findBooking,
+  liveBookingsIn,
+  resourceUnitsInUse,
+} from "./demo-store";
 
 import { demoBooks } from "./demo-books";
 import { demoCapacity } from "./demo-capacity";
@@ -72,9 +90,13 @@ export const demoSource: DataSource = {
       .map((sv): ServiceIndexEntry => ({ businessId: sv.businessId, name: sv.name, price: sv.price }));
   },
   async getBusySlots(businessId, fromIso, toIso) {
-    return db()
-      .bookings.filter(b => b.businessId === businessId && holding(b) && b.startsAt < toIso && b.endsAt > fromIso)
-      .map(b => ({ staffId: b.staffId, startsAt: b.startsAt, endsAt: b.endsAt }));
+    // The lead on each live booking, and the extra crew on it (busy_slots in the database).
+    return liveBookingsIn(businessId, fromIso, toIso).flatMap(b => [
+      { staffId: b.staffId, startsAt: b.startsAt, endsAt: b.endsAt },
+      ...db()
+        .bookingCrew.filter(c => c.bookingId === b.id)
+        .map(c => ({ staffId: c.staffId, startsAt: b.startsAt, endsAt: b.endsAt })),
+    ]);
   },
 
   // ---- Customer ----
@@ -149,6 +171,25 @@ export const demoSource: DataSource = {
       if (!staffId) throw new DataError("conflict", "That slot was just taken. Pick another time.");
     }
 
+    // Extra crew, when a service needs more than one person: the next free people in team order.
+    const peopleNeeded = Math.max(1, ...services.map(s => s.peopleNeeded));
+    const crew = team.filter(s => s.id !== staffId && !overlaps(s.id, startIso, endIso)).slice(0, peopleNeeded - 1);
+    if (crew.length < peopleNeeded - 1) throw new DataError("conflict", "That slot was just taken. Pick another time.");
+
+    // Equipment and vehicles: enough free units of everything the services use (the most any one
+    // service needs of each), counting what overlapping live bookings have reserved.
+    const needs = new Map<string, number>();
+    for (const sr of db().serviceResources) {
+      if (ids.includes(sr.serviceId)) needs.set(sr.resourceId, Math.max(needs.get(sr.resourceId) ?? 0, sr.quantity));
+    }
+    for (const [resourceId, needed] of needs) {
+      const r = db().resources.find(x => x.id === resourceId);
+      const stock = r && r.active ? r.quantity : 0;
+      if (stock - resourceUnitsInUse(biz.id, resourceId, startIso, endIso) < needed) {
+        throw new DataError("conflict", "That slot was just taken. Pick another time.");
+      }
+    }
+
     const cash = method === "cash";
     const id = newId("bk");
     const stored: StoredBooking = {
@@ -180,6 +221,8 @@ export const demoSource: DataSource = {
       items: services.map(s => ({ id: newId("item"), serviceId: s.id, name: s.name, price: s.price, durationMin: s.durationMin })),
     };
     db().bookings.push(stored);
+    for (const c of crew) db().bookingCrew.push({ bookingId: id, staffId: c.id });
+    for (const [resourceId, quantity] of needs) db().bookingResources.push({ bookingId: id, resourceId, quantity });
     return hydrate(stored);
   },
 
@@ -335,14 +378,31 @@ export const demoSource: DataSource = {
       peopleNeeded: input.peopleNeeded,
       active: input.active,
     };
-    if (input.id) {
-      const s = db().services.find(x => x.id === input.id && x.businessId === businessId);
-      if (!s) throw new DataError("not_found", "Service not found.");
-      Object.assign(s, fields, input.sort !== undefined ? { sort: input.sort } : {});
-      return s;
+    // The same checks as the services and service_resources tables.
+    if (!Number.isInteger(fields.peopleNeeded) || fields.peopleNeeded < 1 || fields.peopleNeeded > 20) {
+      throw new DataError("invalid", "A service needs 1 to 20 people.");
     }
-    const s: Service = { id: newId("svc"), businessId, sort: input.sort ?? db().services.filter(x => x.businessId === businessId).length, ...fields };
-    db().services.push(s);
+    const needs = new Map<string, number>();
+    for (const need of input.resources) {
+      if (need.quantity <= 0) continue; // 0 means the service doesn't use it
+      if (!Number.isInteger(need.quantity) || need.quantity > 999) throw new DataError("invalid", "A service can use 1 to 999 of each item.");
+      const r = db().resources.find(x => x.id === need.resourceId);
+      if (!r || r.businessId !== businessId) throw new DataError("invalid", "That equipment belongs to another business.");
+      needs.set(r.id, Math.max(needs.get(r.id) ?? 0, need.quantity));
+    }
+    let s: Service;
+    if (input.id) {
+      const found = db().services.find(x => x.id === input.id && x.businessId === businessId);
+      if (!found) throw new DataError("not_found", "Service not found.");
+      Object.assign(found, fields, input.sort !== undefined ? { sort: input.sort } : {});
+      s = found;
+    } else {
+      s = { id: newId("svc"), businessId, sort: input.sort ?? db().services.filter(x => x.businessId === businessId).length, ...fields };
+      db().services.push(s);
+    }
+    // What it uses replaces what was set before.
+    db().serviceResources = db().serviceResources.filter(x => x.serviceId !== s.id);
+    for (const [resourceId, quantity] of needs) db().serviceResources.push({ serviceId: s.id, resourceId, quantity });
     return s;
   },
   async deleteService(id) {
@@ -350,6 +410,7 @@ export const demoSource: DataSource = {
     const s = db().services.find(x => x.id === id);
     if (!s || !owns(user, s.businessId)) throw new DataError("not_found", "Service not found.");
     db().services = db().services.filter(x => x.id !== id);
+    db().serviceResources = db().serviceResources.filter(x => x.serviceId !== id);
   },
   async upsertStaff(businessId, input) {
     const user = await me();

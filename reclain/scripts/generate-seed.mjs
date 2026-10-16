@@ -1,8 +1,8 @@
-// Builds supabase/seed.sql from src/lib/data/seed-data.json (the same sample data demo mode uses).
+// Builds supabase/seed.sql from packages/shared/src/lib/data/seed-data.json (the same sample data demo mode uses).
 // Run: node scripts/generate-seed.mjs   (then paste supabase/seed.sql into the Supabase SQL editor)
 import { readFileSync, writeFileSync } from "node:fs";
 
-const seed = JSON.parse(readFileSync(new URL("../src/lib/data/seed-data.json", import.meta.url), "utf8"));
+const seed = JSON.parse(readFileSync(new URL("../packages/shared/src/lib/data/seed-data.json", import.meta.url), "utf8"));
 const q = v => (v === null || v === undefined ? "null" : `'${String(v).replace(/'/g, "''")}'`);
 const arr = (a, type) => `'{${a.map(x => (type === "text" ? `"${x}"` : x)).join(",")}}'::${type}[]`;
 // Stable ids so re-running the seed updates rows instead of duplicating them.
@@ -26,9 +26,9 @@ out.push(upsert("businesses", bizCols, seed.businesses.map(b => [
   "'published'", b.isFeatured, b.isNew, b.ratingAvg, b.ratingCount, b.sort,
 ]), "slug", bizCols.filter(c => !["id", "slug", "status"].includes(c))));
 
-const svcCols = ["id", "business_id", "group_name", "name", "description", "duration_min", "duration_label", "price", "latest_start", "sort"];
+const svcCols = ["id", "business_id", "group_name", "name", "description", "duration_min", "duration_label", "price", "latest_start", "people_needed", "sort"];
 out.push(upsert("services", svcCols, seed.businesses.flatMap(b => b.services.map(s => [
-  id(`svc:${b.slug}:${s.key}`), id("biz:" + b.slug), q(s.groupName), q(s.name), q(s.description), s.durationMin, q(s.durationLabel), s.price, q(s.latestStart), s.sort,
+  id(`svc:${b.slug}:${s.key}`), id("biz:" + b.slug), q(s.groupName), q(s.name), q(s.description), s.durationMin, q(s.durationLabel), s.price, q(s.latestStart), s.peopleNeeded ?? 1, s.sort,
 ])), "id", svcCols.slice(2)));
 
 // A sample rating stands for 20 earlier reviews (as in demo.ts and migration 8), so a real review
@@ -39,6 +39,17 @@ out.push(upsert("staff", staffCols, seed.businesses.flatMap(b => b.staff.map(st 
   id(`staff:${b.slug}:${st.sort}`), id("biz:" + b.slug), q(st.name), q(st.role), st.rating,
   st.rating > 0 ? SAMPLE_STAFF_REVIEWS : 0, st.rating > 0 ? +(st.rating * SAMPLE_STAFF_REVIEWS).toFixed(1) : 0, st.sort,
 ])), "id", ["name", "role", "sort"]));
+
+// Equipment and vehicles, and what each service uses (the capacity engine, migration 10).
+const resCols = ["id", "business_id", "kind", "name", "quantity", "notes", "sort"];
+const resources = seed.businesses.flatMap(b => (b.resources ?? []).map((r, i) => [
+  id(`res:${b.slug}:${r.key}`), id("biz:" + b.slug), q(r.kind), q(r.name), r.quantity, q(r.notes ?? ""), i,
+]));
+if (resources.length) out.push(upsert("resources", resCols, resources, "id", resCols.slice(2)));
+const needs = seed.businesses.flatMap(b => b.services.flatMap(s => (s.resources ?? []).map(n => [
+  id(`svc:${b.slug}:${s.key}`), id(`res:${b.slug}:${n.key}`), n.quantity,
+])));
+if (needs.length) out.push(upsert("service_resources", ["service_id", "resource_id", "quantity"], needs, "service_id, resource_id", ["quantity"]));
 
 // Sample reviews don't touch the rating counters (the seed already sets them).
 out.push("alter table public.reviews disable trigger reviews_rating;");

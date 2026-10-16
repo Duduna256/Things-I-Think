@@ -66,6 +66,22 @@ export interface Store {
   checks: BusinessCheck[];
 }
 
+// The capacity fields in seed-data.json are only on some businesses and services, so the
+// JSON's inferred type doesn't carry them everywhere; these views read them where they are.
+interface SeedNeed {
+  key: string;
+  quantity: number;
+}
+interface SeedResource {
+  key: string;
+  kind: string;
+  name: string;
+  quantity: number;
+  notes?: string;
+}
+type SeedServiceNeeds = { peopleNeeded?: number; resources?: SeedNeed[] };
+type SeedBusinessResources = { resources?: SeedResource[] };
+
 // Sample tiers so the badges have something to show. Everyone else starts at "registered".
 const SAMPLE_TIERS: Record<string, BusinessTier> = { "braid-republic": "verified", kneaded: "certified", guardline: "guaranteed" };
 
@@ -130,7 +146,7 @@ export function buildStore(): Store {
       sort: b.sort,
       createdAt: "2026-10-01T00:00:00Z",
     });
-    for (const sv of b.services) {
+    for (const sv of b.services as (typeof b.services[number] & SeedServiceNeeds)[]) {
       s.services.push({
         id: `svc-${b.slug}-${sv.key}`,
         businessId: id,
@@ -141,14 +157,31 @@ export function buildStore(): Store {
         durationLabel: sv.durationLabel,
         price: sv.price,
         latestStart: sv.latestStart ?? null,
-        peopleNeeded: 1,
+        peopleNeeded: sv.peopleNeeded ?? 1,
         sort: sv.sort,
         active: true,
       });
+      // What the service uses: "Couples massage takes 2 massage tables".
+      for (const need of sv.resources ?? []) {
+        s.serviceResources.push({ serviceId: `svc-${b.slug}-${sv.key}`, resourceId: `res-${b.slug}-${need.key}`, quantity: need.quantity });
+      }
     }
     for (const st of b.staff) {
       s.staff.push({ id: `staff-${b.slug}-${st.sort}`, businessId: id, name: st.name, role: st.role, rating: st.rating, sort: st.sort, active: true });
     }
+    // Equipment and vehicles, so the capacity engine has something to plan around.
+    ((b as SeedBusinessResources).resources ?? []).forEach((r, i) => {
+      s.resources.push({
+        id: `res-${b.slug}-${r.key}`,
+        businessId: id,
+        kind: r.kind as Resource["kind"],
+        name: r.name,
+        quantity: r.quantity,
+        notes: r.notes ?? "",
+        active: true,
+        sort: i,
+      });
+    });
   }
   for (const r of seed.reviews) {
     s.reviews.push({
@@ -304,8 +337,19 @@ export function hydrate(b: StoredBooking): Booking {
       phone: biz.phone,
     },
     hasReview: db().reviews.some(r => r.bookingId === b.id),
-    crewNames: [],
+    crewNames: crewNamesOf(b.id),
   };
+}
+
+// The extra people on a booking (not the lead), in team order.
+export function crewNamesOf(bookingId: string): string[] {
+  const ids = db()
+    .bookingCrew.filter(c => c.bookingId === bookingId)
+    .map(c => c.staffId);
+  return db()
+    .staff.filter(s => ids.includes(s.id))
+    .sort((a, b) => a.sort - b.sort || a.name.localeCompare(b.name))
+    .map(s => s.name);
 }
 
 export const owns = (user: SessionUser, businessId: string) =>
@@ -324,8 +368,23 @@ export function releaseExpired(businessId: string) {
   }
 }
 
+// Live bookings that overlap a window.
+export function liveBookingsIn(businessId: string, start: string, end: string, exceptId?: string): StoredBooking[] {
+  return db().bookings.filter(b => b.id !== exceptId && b.businessId === businessId && holding(b) && b.startsAt < end && b.endsAt > start);
+}
+
+// Is this person on a live booking in the window, as the lead or as crew? (staff_busy in SQL)
 export function overlaps(staffId: string, start: string, end: string, exceptId?: string) {
-  return db().bookings.some(b => b.id !== exceptId && b.staffId === staffId && holding(b) && b.startsAt < end && b.endsAt > start);
+  const crewOn = new Set(db().bookingCrew.filter(c => c.staffId === staffId).map(c => c.bookingId));
+  return db().bookings.some(b => b.id !== exceptId && (b.staffId === staffId || crewOn.has(b.id)) && holding(b) && b.startsAt < end && b.endsAt > start);
+}
+
+// Units of a resource that live bookings have reserved in the window (busy_resources in SQL).
+export function resourceUnitsInUse(businessId: string, resourceId: string, start: string, end: string, exceptId?: string): number {
+  const live = new Set(liveBookingsIn(businessId, start, end, exceptId).map(b => b.id));
+  return db()
+    .bookingResources.filter(r => r.resourceId === resourceId && live.has(r.bookingId))
+    .reduce((sum, r) => sum + r.quantity, 0);
 }
 
 export function findBooking(id: string): StoredBooking {

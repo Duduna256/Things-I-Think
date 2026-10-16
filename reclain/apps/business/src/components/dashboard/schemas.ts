@@ -5,8 +5,9 @@
 import { z } from "zod";
 import { normalizeMsisdn } from "@shared/lib/phone";
 import { parseHHMM } from "@shared/lib/time";
-import type { BusinessInput, ServiceInput, StaffInput, VisitMode } from "@shared/lib/types";
+import type { BusinessInput, Resource, ServiceInput, StaffInput, VisitMode } from "@shared/lib/types";
 import { BLURB_MAX, COVER_WORD_MAX, CURRENT_PALETTE, PALETTES } from "./options";
+import { PEOPLE_NEEDED_MAX, RESOURCE_USE_MAX, resourceField } from "../equipment/fields";
 
 export interface FormLike {
   get(name: string): FormDataEntryValue | null;
@@ -176,7 +177,14 @@ const serviceBase = z.object({
   durationLabel: z.string().trim().max(40, "Keep the length note under 40 characters."),
 });
 
-export function parseServiceForm(fd: FormLike, hours: { opensAt: string; closesAt: string }): Parsed<Omit<ServiceInput, "id" | "sort">> {
+// The business's equipment and vehicles, so a service can say what it uses.
+export type ResourceOption = Pick<Resource, "id" | "name" | "quantity">;
+
+export function parseServiceForm(
+  fd: FormLike,
+  hours: { opensAt: string; closesAt: string },
+  resources: ResourceOption[] = [],
+): Parsed<Omit<ServiceInput, "id" | "sort">> {
   const errors: Record<string, string> = {};
   const base = serviceBase.safeParse({
     groupName: text(fd, "groupName"),
@@ -208,6 +216,29 @@ export function parseServiceForm(fd: FormLike, hours: { opensAt: string; closesA
     else latestStart = latest;
   }
 
+  // People: an empty field means one person (forms from before this field existed).
+  const rawPeople = text(fd, "peopleNeeded").trim();
+  const peopleNeeded = rawPeople === "" ? 1 : /^\d{1,2}$/.test(rawPeople) ? Number(rawPeople) : NaN;
+  if (Number.isNaN(peopleNeeded) || peopleNeeded < 1 || peopleNeeded > PEOPLE_NEEDED_MAX) {
+    errors.peopleNeeded = `Pick how many people the job takes, from 1 to ${PEOPLE_NEEDED_MAX}.`;
+  }
+
+  // Equipment and vehicles: how many of each the service uses. Empty or 0 means none. Only the
+  // business's own items are offered, so anything else in the form is ignored.
+  const needs: ServiceInput["resources"] = [];
+  for (const r of resources) {
+    const raw = text(fd, resourceField(r.id)).trim();
+    if (raw === "" || raw === "0") continue;
+    const n = /^\d{1,3}$/.test(raw) ? Number(raw) : NaN;
+    if (Number.isNaN(n) || n > RESOURCE_USE_MAX) {
+      errors[resourceField(r.id)] = `Enter how many ${r.name.toLowerCase()} this uses, as a whole number, or 0 for none.`;
+    } else if (n > r.quantity) {
+      errors[resourceField(r.id)] = `You only have ${r.quantity}, so nobody could book a service that needs ${n}. Add more on the Equipment page first.`;
+    } else {
+      needs.push({ resourceId: r.id, quantity: n });
+    }
+  }
+
   if (Object.keys(errors).length || !base.success || price === null) return { ok: false, errors };
   return {
     ok: true,
@@ -219,8 +250,8 @@ export function parseServiceForm(fd: FormLike, hours: { opensAt: string; closesA
       durationLabel: base.data.durationLabel || null,
       price,
       latestStart,
-      peopleNeeded: 1,
-      resources: [],
+      peopleNeeded,
+      resources: needs,
       active: checked(fd, "active"),
     },
   };

@@ -1,8 +1,9 @@
 // Booking rules shared by the screens, the API and demo mode.
 // The database enforces the same rules in create_booking() (supabase/migrations).
 
-import type { BookingLocation, BusySlot, Service, VisitMode } from "../types";
+import type { BookingLocation, BusyResource, BusySlot, Service, VisitMode } from "../types";
 import { addDays, hhmm, localParts, parseHHMM, toInstant, weekdayOf } from "../time";
+import { checkWindow, type ResourceNeed } from "../capacity/plan";
 
 export const MIN_BLOCK_MINUTES = 30;
 
@@ -55,6 +56,11 @@ export interface SlotInput {
   latestStartMin?: number | null;
   staffIds: string[]; // who may take it: one id for a chosen pro, everyone for "any"
   busy: BusySlot[];
+  // Crew and equipment (see lib/capacity). Left out, a slot needs one free professional.
+  teamIds?: string[]; // everyone who could be crew, when a job needs more than one person
+  peopleNeeded?: number;
+  resources?: ResourceNeed[];
+  busyResources?: BusyResource[];
   now?: Date;
   stepMin?: number;
   minLeadMin?: number;
@@ -78,7 +84,6 @@ export function availableSlots(input: SlotInput): SlotsResult {
 
   const earliest = now.getTime() + lead * 60_000;
   const lastStart = Math.min(close - input.blockMin, input.latestStartMin ?? Infinity);
-  const busy = input.busy.map(b => ({ staffId: b.staffId, start: new Date(b.startsAt).getTime(), end: new Date(b.endsAt).getTime() }));
 
   const slots: Slot[] = [];
   let anyFuture = false;
@@ -87,10 +92,18 @@ export function availableSlots(input: SlotInput): SlotsResult {
     if (start.getTime() < earliest) continue;
     anyFuture = true;
     const end = start.getTime() + input.blockMin * 60_000;
-    const free = input.staffIds.filter(
-      id => !busy.some(b => b.staffId === id && b.start < end && b.end > start.getTime()),
-    );
-    if (free.length) slots.push({ minutes: t, time: hhmm(t), startsAt: start.toISOString(), staffIds: free });
+    // Enough free people (the lead plus crew) and enough free equipment.
+    const check = checkWindow({
+      start: start.getTime(),
+      end,
+      staffIds: input.staffIds,
+      teamIds: input.teamIds,
+      peopleNeeded: input.peopleNeeded,
+      resources: input.resources,
+      busy: input.busy,
+      busyResources: input.busyResources,
+    });
+    if (check.free) slots.push({ minutes: t, time: hhmm(t), startsAt: start.toISOString(), staffIds: check.leadIds });
   }
   if (slots.length) return { kind: "ok", slots };
   return anyFuture ? { kind: "full" } : { kind: "too_late" };

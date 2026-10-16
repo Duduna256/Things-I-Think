@@ -97,7 +97,7 @@ export function mapReview(r: Row): Review {
 }
 
 export const BOOKING_SELECT =
-  "*, booking_items(*), businesses(id, slug, name, area_id, category_id, cover_word, palette, address, phone), staff(name), reviews(id)";
+  "*, booking_items(*), businesses(id, slug, name, area_id, category_id, cover_word, palette, address, phone), staff(name), booking_crew(staff(name)), reviews(id)";
 
 export function mapBooking(r: Row): Booking {
   const biz = r.businesses ?? {};
@@ -141,7 +141,8 @@ export function mapBooking(r: Row): Booking {
       address: biz.address ?? "",
       phone: biz.phone ?? null,
     },
-    crewNames: Array.isArray(r.booking_crew) ? r.booking_crew.map((c: Row) => c.staff?.name).filter(Boolean) : [],
+    // The extra people on the job, from booking_crew(staff(name)); the lead is staffName.
+    crewNames: Array.isArray(r.booking_crew) ? r.booking_crew.map((c: Row) => c.staff?.name).filter((n: unknown): n is string => typeof n === "string" && n.length > 0) : [],
     hasReview: !!review,
   };
 }

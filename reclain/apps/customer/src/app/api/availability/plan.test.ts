@@ -108,6 +108,36 @@ test("only worth looking ahead when another day could help", () => {
   assert.equal(worthSearching({ kind: "too_long" }), false);
 });
 
+test("services that need more people or equipment shape the plan", () => {
+  const crewVenue = { ...venue, services: [...venue.services, { ...svc("pair", 60), peopleNeeded: 2 }] };
+  const pair = planFor(crewVenue, ["pair"], "a");
+  assert.equal(pair.ok, true);
+  if (!pair.ok) return;
+  assert.equal(pair.plan.peopleNeeded, 2);
+  assert.deepEqual(pair.plan.staffIds, ["a"]);
+  assert.deepEqual(pair.plan.teamIds, ["a", "b"]);
+  assert.deepEqual(pair.plan.resources, []);
+  // Two people needed, "a" chosen and "b" busy at 08:00: the first free start is 09:00.
+  const bBusy = [{ staffId: "b", startsAt: "2030-01-08T05:00:00Z", endsAt: "2030-01-08T06:00:00Z" }];
+  const r = slotsFor(pair.plan, DAY, bBusy, opts);
+  assert.equal(r.kind, "ok");
+  if (r.kind === "ok") assert.equal(r.slots[0].time, "09:00");
+
+  // Equipment comes from getServiceNeeds; the plan takes the most units any service needs.
+  const needs = [
+    { serviceId: "cut", peopleNeeded: 1, resources: [{ resourceId: "chair", name: "Chair", kind: "equipment" as const, stock: 1, needed: 1 }] },
+    { serviceId: "other", peopleNeeded: 3, resources: [] }, // not chosen: ignored
+  ];
+  const withNeeds = planFor(venue, ["cut"], "any", needs);
+  assert.equal(withNeeds.ok, true);
+  if (!withNeeds.ok) return;
+  assert.equal(withNeeds.plan.peopleNeeded, 1);
+  assert.deepEqual(withNeeds.plan.resources.map(x => x.resourceId), ["chair"]);
+  const chairTaken = [{ resourceId: "chair", quantity: 1, startsAt: "2030-01-08T05:00:00Z", endsAt: "2030-01-08T09:00:00Z" }];
+  assert.equal(slotsFor(withNeeds.plan, DAY, [], opts, chairTaken).kind, "full");
+  assert.equal(nextAvailableDate(withNeeds.plan, [DAY, "2030-01-09"], [], opts, chairTaken), "2030-01-09");
+});
+
 test("the JSON answer", () => {
   const r = slotsFor(plan(["cut"]), DAY, [], opts);
   const body = toResponse(DAY, r, null);

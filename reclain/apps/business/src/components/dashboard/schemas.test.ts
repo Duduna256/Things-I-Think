@@ -148,6 +148,42 @@ test("service form", () => {
   assert.equal(hidden.ok && hidden.value.active === false && hidden.value.latestStart === "10:00", true);
 });
 
+test("a service says how many people it needs and what it uses", () => {
+  const hours = { opensAt: "08:00", closesAt: "20:00" };
+  const resources = [
+    { id: "res-table", name: "Massage table", quantity: 2 },
+    { id: "res-car", name: "Patrol car", quantity: 1 },
+  ];
+  const base = { name: "Couples massage", durationMin: "60", price: "150000", active: "on" };
+  // Nothing said: one person, no equipment (older forms and the demo's seed services).
+  const plain = parseServiceForm(form(base), hours, resources);
+  assert.equal(plain.ok, true);
+  if (plain.ok) assert.deepEqual([plain.value.peopleNeeded, plain.value.resources], [1, []]);
+
+  const r = parseServiceForm(form({ ...base, peopleNeeded: "2", "resource:res-table": "2", "resource:res-car": "0" }), hours, resources);
+  assert.equal(r.ok, true);
+  if (r.ok) {
+    assert.equal(r.value.peopleNeeded, 2);
+    assert.deepEqual(r.value.resources, [{ resourceId: "res-table", quantity: 2 }]);
+  }
+  // Fields for equipment the business doesn't have are ignored, not trusted.
+  const stray = parseServiceForm(form({ ...base, "resource:res-other": "3" }), hours, resources);
+  assert.equal(stray.ok && stray.value.resources.length, 0);
+
+  const tooMany = parseServiceForm(form({ ...base, peopleNeeded: "21", "resource:res-table": "3" }), hours, resources);
+  assert.equal(tooMany.ok, false);
+  if (!tooMany.ok) {
+    assert.match(tooMany.errors.peopleNeeded, /1 to 20/);
+    assert.match(tooMany.errors["resource:res-table"], /only have 2/);
+  }
+  const nonsense = parseServiceForm(form({ ...base, peopleNeeded: "two", "resource:res-car": "one" }), hours, resources);
+  assert.equal(nonsense.ok, false);
+  if (!nonsense.ok) {
+    assert.ok(nonsense.errors.peopleNeeded);
+    assert.match(nonsense.errors["resource:res-car"], /whole number/);
+  }
+});
+
 test("staff form", () => {
   const r = parseStaffForm(form({ name: " Joy Kemigisha ", role: "Braider", active: "on" }));
   assert.deepEqual(r, { ok: true, value: { name: "Joy Kemigisha", role: "Braider", active: true } });

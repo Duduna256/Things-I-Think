@@ -594,7 +594,13 @@
           "durationLabel": null,
           "price": 80000,
           "sort": 0,
-          "latestStart": null
+          "latestStart": null,
+          "resources": [
+            {
+              "key": "massage-table",
+              "quantity": 1
+            }
+          ]
         },
         {
           "key": "deep-tissue",
@@ -605,7 +611,13 @@
           "durationLabel": null,
           "price": 95000,
           "sort": 1,
-          "latestStart": null
+          "latestStart": null,
+          "resources": [
+            {
+              "key": "massage-table",
+              "quantity": 1
+            }
+          ]
         },
         {
           "key": "hot-stone",
@@ -616,7 +628,13 @@
           "durationLabel": null,
           "price": 110000,
           "sort": 2,
-          "latestStart": null
+          "latestStart": null,
+          "resources": [
+            {
+              "key": "massage-table",
+              "quantity": 1
+            }
+          ]
         },
         {
           "key": "sports",
@@ -627,7 +645,13 @@
           "durationLabel": null,
           "price": 90000,
           "sort": 3,
-          "latestStart": null
+          "latestStart": null,
+          "resources": [
+            {
+              "key": "massage-table",
+              "quantity": 1
+            }
+          ]
         },
         {
           "key": "reflexology",
@@ -638,7 +662,13 @@
           "durationLabel": null,
           "price": 50000,
           "sort": 100,
-          "latestStart": null
+          "latestStart": null,
+          "resources": [
+            {
+              "key": "massage-table",
+              "quantity": 1
+            }
+          ]
         },
         {
           "key": "couples",
@@ -649,7 +679,14 @@
           "durationLabel": null,
           "price": 170000,
           "sort": 200,
-          "latestStart": null
+          "latestStart": null,
+          "peopleNeeded": 2,
+          "resources": [
+            {
+              "key": "massage-table",
+              "quantity": 2
+            }
+          ]
         }
       ],
       "staff": [
@@ -670,6 +707,15 @@
           "role": "Reflexologist",
           "rating": 4.9,
           "sort": 2
+        }
+      ],
+      "resources": [
+        {
+          "key": "massage-table",
+          "kind": "equipment",
+          "name": "Massage table",
+          "quantity": 2,
+          "notes": "Two treatment rooms, one table each."
         }
       ]
     },
@@ -816,7 +862,13 @@
           "durationLabel": "Back next working day",
           "price": 25000,
           "sort": 0,
-          "latestStart": null
+          "latestStart": null,
+          "resources": [
+            {
+              "key": "washing-machine",
+              "quantity": 1
+            }
+          ]
         },
         {
           "key": "wash-iron",
@@ -827,7 +879,13 @@
           "durationLabel": "Back next working day",
           "price": 35000,
           "sort": 1,
-          "latestStart": null
+          "latestStart": null,
+          "resources": [
+            {
+              "key": "washing-machine",
+              "quantity": 1
+            }
+          ]
         },
         {
           "key": "express",
@@ -838,7 +896,13 @@
           "durationLabel": "Back by 18:00",
           "price": 45000,
           "sort": 2,
-          "latestStart": "10:00"
+          "latestStart": "10:00",
+          "resources": [
+            {
+              "key": "washing-machine",
+              "quantity": 1
+            }
+          ]
         },
         {
           "key": "dry-clean",
@@ -860,7 +924,13 @@
           "durationLabel": "Back in 2 working days",
           "price": 40000,
           "sort": 101,
-          "latestStart": null
+          "latestStart": null,
+          "resources": [
+            {
+              "key": "washing-machine",
+              "quantity": 1
+            }
+          ]
         }
       ],
       "staff": [
@@ -869,6 +939,15 @@
           "role": "Riders",
           "rating": 4.8,
           "sort": 0
+        }
+      ],
+      "resources": [
+        {
+          "key": "washing-machine",
+          "kind": "equipment",
+          "name": "Washing machine",
+          "quantity": 3,
+          "notes": "Industrial front-loaders, 15 kg each."
         }
       ]
     },
@@ -1004,7 +1083,14 @@
           "durationLabel": null,
           "price": 120000,
           "sort": 1,
-          "latestStart": null
+          "latestStart": null,
+          "peopleNeeded": 2,
+          "resources": [
+            {
+              "key": "patrol-car",
+              "quantity": 1
+            }
+          ]
         },
         {
           "key": "school-run",
@@ -1026,7 +1112,14 @@
           "durationLabel": null,
           "price": 100000,
           "sort": 100,
-          "latestStart": null
+          "latestStart": null,
+          "peopleNeeded": 4,
+          "resources": [
+            {
+              "key": "radio",
+              "quantity": 4
+            }
+          ]
         }
       ],
       "staff": [
@@ -1047,6 +1140,28 @@
           "role": "Event security lead",
           "rating": 4.7,
           "sort": 2
+        },
+        {
+          "name": "Robert Kaggwa",
+          "role": "Security officer",
+          "rating": 4.8,
+          "sort": 3
+        }
+      ],
+      "resources": [
+        {
+          "key": "patrol-car",
+          "kind": "vehicle",
+          "name": "Patrol car",
+          "quantity": 1,
+          "notes": "Marked Toyota Hilux, radio-equipped."
+        },
+        {
+          "key": "radio",
+          "kind": "equipment",
+          "name": "Two-way radio",
+          "quantity": 6,
+          "notes": ""
         }
       ]
     },
@@ -1108,7 +1223,13 @@
           "durationLabel": null,
           "price": 60000,
           "sort": 2,
-          "latestStart": null
+          "latestStart": null,
+          "resources": [
+            {
+              "key": "van",
+              "quantity": 1
+            }
+          ]
         },
         {
           "key": "tv-mount",
@@ -1119,7 +1240,13 @@
           "durationLabel": null,
           "price": 40000,
           "sort": 100,
-          "latestStart": null
+          "latestStart": null,
+          "resources": [
+            {
+              "key": "van",
+              "quantity": 1
+            }
+          ]
         },
         {
           "key": "solar",
@@ -1130,7 +1257,13 @@
           "durationLabel": null,
           "price": 90000,
           "sort": 101,
-          "latestStart": null
+          "latestStart": null,
+          "resources": [
+            {
+              "key": "van",
+              "quantity": 1
+            }
+          ]
         }
       ],
       "staff": [
@@ -1145,6 +1278,15 @@
           "role": "Appliance technician",
           "rating": 4.6,
           "sort": 1
+        }
+      ],
+      "resources": [
+        {
+          "key": "van",
+          "kind": "vehicle",
+          "name": "Service van",
+          "quantity": 1,
+          "notes": "Carries the ladder, the big tools and spare parts."
         }
       ]
     },

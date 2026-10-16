@@ -89,3 +89,29 @@ test("Ugandan mobile numbers", () => {
   assert.match(mobileMoneyError("mtn", "0752123456"), /is on Airtel Money/);
   assert.match(mobileMoneyError("airtel", "0712"), /valid Ugandan mobile number/);
 });
+
+test("a job that needs two people is only free when two are free", () => {
+  const busy = [{ staffId: "a", startsAt: toInstant(DAY, 8 * 60).toISOString(), endsAt: toInstant(DAY, 9 * 60).toISOString() }];
+  const r = availableSlots({ ...base, blockMin: 60, peopleNeeded: 2, busy });
+  assert.equal(r.kind, "ok");
+  if (r.kind !== "ok") return;
+  assert.equal(r.slots[0].time, "09:00");
+  // Booking "b" as the lead still needs "a" free as crew, so the same applies.
+  const lead = availableSlots({ ...base, blockMin: 60, staffIds: ["b"], teamIds: ["a", "b"], peopleNeeded: 2, busy });
+  assert.equal(lead.kind, "ok");
+  if (lead.kind !== "ok") return;
+  assert.equal(lead.slots[0].time, "09:00");
+  assert.deepEqual(lead.slots[0].staffIds, ["b"]);
+  // Three people can never be found in a team of two.
+  assert.equal(availableSlots({ ...base, blockMin: 60, peopleNeeded: 3 }).kind, "full");
+});
+
+test("equipment on other bookings blocks a slot until it's free again", () => {
+  const table = { resourceId: "table", name: "Massage table", kind: "equipment" as const, stock: 1, needed: 1 };
+  const busyResources = [{ resourceId: "table", quantity: 1, startsAt: toInstant(DAY, 8 * 60).toISOString(), endsAt: toInstant(DAY, 10 * 60).toISOString() }];
+  const r = availableSlots({ ...base, blockMin: 60, resources: [table], busyResources });
+  assert.equal(r.kind, "ok");
+  if (r.kind !== "ok") return;
+  assert.equal(r.slots[0].time, "10:00");
+  assert.equal(availableSlots({ ...base, blockMin: 60, resources: [{ ...table, stock: 0 }] }).kind, "full");
+});
