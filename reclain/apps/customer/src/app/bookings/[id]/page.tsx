@@ -1,4 +1,5 @@
 import "@/styles/booking.css";
+import "@/components/booking/job-timeline.css";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -8,12 +9,13 @@ import { requireUser } from "@shared/lib/auth";
 import { data, isDataError } from "@shared/lib/data";
 import { duration, ugx } from "@shared/lib/format";
 import { internationalMsisdn, prettyMsisdn } from "@shared/lib/phone";
-import { formatInstant, formatTime } from "@shared/lib/time";
-import type { Booking } from "@shared/lib/types";
+import { formatInstant, formatTime, localParts } from "@shared/lib/time";
+import type { Booking, JobEvent } from "@shared/lib/types";
 import { Cover } from "@shared/components/Cover";
 import { Icon } from "@shared/components/Icon";
 import { placeName } from "@/components/VenueCard";
 import { CancelBooking, PayNowButton, ReviewForm } from "@/components/booking/BookingActions";
+import { JobTimeline } from "@/components/booking/JobTimeline";
 import {
   bannerFor,
   canCancel,
@@ -43,6 +45,17 @@ async function loadBooking(id: string): Promise<Booking | null> {
   } catch (e) {
     // A malformed id is refused by the database; treat it like any booking that isn't yours.
     if (isDataError(e)) return null;
+    throw e;
+  }
+}
+
+// What the business recorded on the job, if anything. A log that can't be read right now
+// just stays out of the page rather than taking the booking down with it.
+async function loadJobLog(bookingId: string): Promise<JobEvent[]> {
+  try {
+    return await data.jobs.listJobEvents(bookingId);
+  } catch (e) {
+    if (isDataError(e)) return [];
     throw e;
   }
 }
@@ -219,7 +232,7 @@ export default async function BookingPage({ params, searchParams }: Props) {
   if (!booking || booking.customerId !== user.id) notFound();
   const b = booking;
 
-  const areas = await data.listAreas();
+  const [areas, jobLog] = await Promise.all([data.listAreas(), loadJobLog(b.id)]);
   const now = new Date();
   const banner = bannerFor(
     b,
@@ -355,6 +368,14 @@ export default async function BookingPage({ params, searchParams }: Props) {
           <span>{ugx(b.total)}</span>
         </div>
       </section>
+
+      {jobLog.length > 0 && (
+        <section className="card bkd-card" aria-labelledby="bkd-joblog">
+          <h2 id="bkd-joblog">Job log</h2>
+          <p className="jl-intro">What {b.business.name} recorded on the day: when they arrived and left, and any photos and notes. Times are Kampala time.</p>
+          <JobTimeline events={jobLog} bookingDate={localParts(b.startsAt).date} />
+        </section>
+      )}
 
       <div className="bkd-actions">
         {showPay && <PayNowButton bookingId={b.id} />}

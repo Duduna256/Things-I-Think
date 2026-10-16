@@ -1,0 +1,96 @@
+/* The job log: one booking's page (summary, buttons, timeline) and the "Job log" link on a
+   booking card. Built for a phone in one hand: big tap targets, nothing narrower than 320px. */
+
+/* ---------- Link on the booking card ---------- */
+.dash-bk-joblog {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 44px;
+  color: var(--jac-ink); font-weight: 700; text-decoration: none;
+}
+.dash-bk-joblog .ic { width: 16px; height: 16px; }
+.dash-bk-joblog:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+/* ---------- The job page ---------- */
+.job-back { margin-bottom: -8px; }
+.job-back a {
+  display: inline-flex; align-items: center; gap: 4px; min-height: 44px;
+  color: var(--ink-2); font-weight: 600; text-decoration: none; font-size: 0.95rem;
+}
+.job-back a:hover { color: var(--jac-ink); text-decoration: underline; text-underline-offset: 3px; }
+.job-back .ic { width: 18px; height: 18px; }
+
+.job-summary { display: grid; gap: 0; padding: 4px 20px; }
+.job-rows { margin: 0; display: grid; }
+.job-row { display: grid; grid-template-columns: minmax(0, 120px) minmax(0, 1fr); gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); }
+.job-row:first-child { border-top: 0; }
+.job-row dt { color: var(--muted); font-weight: 600; font-size: 0.92rem; padding-top: 2px; }
+.job-row dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; }
+.job-row dd .ic { width: 16px; height: 16px; color: var(--muted); flex: none; }
+.job-row dd .muted { font-weight: 500; }
+.job-row dd .dash-bk-notes { display: block; width: 100%; }
+.job-tel {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 44px;
+  color: var(--jac-ink); font-weight: 700; text-decoration: none; font-variant-numeric: tabular-nums;
+}
+.job-tel:hover { text-decoration: underline; text-underline-offset: 3px; }
+.job-pills { justify-content: flex-start; align-items: center; }
+
+/* ---------- Buttons and forms ---------- */
+.job-log { margin-top: 8px; }
+.job-actions { display: grid; gap: 12px; min-width: 0; }
+.job-btns { display: flex; flex-wrap: wrap; gap: 10px; }
+.job-btns .btn { flex: 1 1 140px; }
+.job-check { display: grid; gap: 8px; flex: 1 1 140px; min-width: 0; }
+.job-check .btn { width: 100%; }
+.job-form h3 { font-size: 1.15rem; font-weight: 750; letter-spacing: -0.02em; }
+.job-form input[type="file"] {
+  width: 100%; min-height: 48px; border: 1px dashed var(--ink-2); border-radius: 12px; padding: 12px 14px;
+  background: var(--soft); font: 500 0.95rem var(--font); color: var(--ink);
+}
+.job-form input[type="file"]::file-selector-button {
+  border: 0; border-radius: 999px; padding: 8px 14px; margin-right: 12px;
+  background: var(--ink); color: var(--white); font: 600 0.92rem var(--font); cursor: pointer;
+}
+.job-form input[type="file"][aria-invalid="true"] { border-color: var(--err); }
+.job-preparing { font-weight: 600; }
+.job-preview { margin: 0; display: grid; gap: 6px; justify-items: start; }
+.job-preview img { max-width: 100%; max-height: 320px; border-radius: 12px; border: 1px solid var(--line); object-fit: contain; }
+.job-preview figcaption { font-size: 0.88rem; }
+
+.job-nudge { align-items: flex-start; }
+.job-nudge > div { display: grid; gap: 10px; justify-items: start; min-width: 0; }
+.job-nudge p { font-weight: 600; }
+
+/* ---------- Timeline ---------- */
+.job-tl { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; position: relative; }
+.job-tl::before { content: ""; position: absolute; left: 17px; top: 20px; bottom: 20px; width: 2px; border-radius: 2px; background: var(--line); }
+.job-ev { position: relative; display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 12px; align-items: start; min-width: 0; }
+.job-ev-icon {
+  width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; position: relative;
+  background: var(--soft); color: var(--ink-2); border: 2px solid var(--white); box-shadow: 0 0 0 1px var(--line);
+}
+.job-ev-icon .ic { width: 18px; height: 18px; }
+.job-ev-checked_in .job-ev-icon, .job-ev-checked_out .job-ev-icon { background: var(--ok-soft); color: #0b5b41; }
+.job-ev-photo .job-ev-icon { background: var(--jac-soft); color: var(--jac-ink); }
+.job-ev-body {
+  display: grid; gap: 6px; min-width: 0; padding: 12px 14px;
+  border: 1px solid var(--line); border-radius: 14px; background: var(--white);
+}
+.job-ev-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; align-items: baseline; }
+.job-ev-head b { font-weight: 750; }
+.job-ev-head time { font-variant-numeric: tabular-nums; color: var(--ink-2); font-weight: 600; white-space: nowrap; }
+.job-ev-loc { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-size: 0.9rem; }
+.job-ev-loc .ic { width: 14px; height: 14px; }
+.job-ev-loc a { color: var(--jac-ink); font-weight: 600; min-height: 32px; display: inline-flex; align-items: center; }
+.job-photo { display: block; max-width: 100%; justify-self: start; border-radius: 12px; overflow: hidden; }
+.job-photo img { display: block; max-width: 100%; max-height: 360px; border-radius: 12px; border: 1px solid var(--line); object-fit: contain; background: var(--soft); }
+.job-ev-note { white-space: pre-line; overflow-wrap: anywhere; color: var(--ink-2); }
+.job-ev-who { font-size: 0.88rem; }
+
+@media (max-width: 600px) {
+  .job-summary { padding: 0 16px; }
+  .job-row { grid-template-columns: minmax(0, 1fr); gap: 2px; padding: 10px 0; }
+  .job-btns .btn, .job-check { flex-basis: 100%; }
+  .job-ev { grid-template-columns: 32px minmax(0, 1fr); gap: 10px; }
+  .job-ev-icon { width: 32px; height: 32px; }
+  .job-tl::before { left: 15px; }
+}
