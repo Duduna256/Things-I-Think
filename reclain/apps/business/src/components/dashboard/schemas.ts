@@ -219,6 +219,8 @@ export function parseServiceForm(fd: FormLike, hours: { opensAt: string; closesA
       durationLabel: base.data.durationLabel || null,
       price,
       latestStart,
+      peopleNeeded: 1,
+      resources: [],
       active: checked(fd, "active"),
     },
   };

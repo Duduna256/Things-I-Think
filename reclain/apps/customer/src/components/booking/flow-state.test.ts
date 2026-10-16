@@ -37,6 +37,7 @@ const ctx: FlowContext = {
 const svc = (id: string, groupName: string): Service => ({
   id,
   businessId: "b",
+  peopleNeeded: 1,
   groupName,
   name: id,
   description: "",

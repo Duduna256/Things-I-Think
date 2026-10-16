@@ -49,6 +49,8 @@ export interface Business {
   ratingCount: number;
   sort: number;
   createdAt: string;
+  // How far the reClain team has checked this business. Granted by the team, never by the owner.
+  tier: BusinessTier;
   // Lowercased service names, used by search. Filled by listBusinesses().
   serviceNames?: string[];
 }
@@ -64,6 +66,8 @@ export interface Service {
   price: number;
   // Latest start time ("10:00") for services with a cut-off, like express laundry.
   latestStart: string | null;
+  // How many people from the team the job takes (a deep clean might need two).
+  peopleNeeded: number;
   sort: number;
   active: boolean;
 }
@@ -151,6 +155,8 @@ export interface Booking {
   items: BookingItem[];
   business: BookingBusiness;
   hasReview: boolean;
+  // Extra people on the job beyond the lead professional (staffName).
+  crewNames: string[];
 }
 
 export interface Payment {
@@ -225,6 +231,9 @@ export interface ServiceInput {
   durationLabel: string | null;
   price: number;
   latestStart: string | null;
+  peopleNeeded: number;
+  // Equipment and vehicles the service uses, replacing what was set before.
+  resources: ServiceResourceNeed[];
   sort?: number;
   active: boolean;
 }
@@ -246,4 +255,158 @@ export interface BusinessFilter {
   // Only venues open on at least one of these weekdays (0 = Sunday).
   openOn?: number[];
   limit?: number;
+}
+
+// ---------- Crew and equipment (the capacity engine) ----------
+export type ResourceKind = "equipment" | "vehicle";
+
+export interface Resource {
+  id: string;
+  businessId: string;
+  kind: ResourceKind;
+  name: string;
+  quantity: number; // how many units the business has
+  notes: string;
+  active: boolean;
+  sort: number;
+}
+
+export interface ResourceInput {
+  id?: string;
+  kind: ResourceKind;
+  name: string;
+  quantity: number;
+  notes: string;
+  active: boolean;
+  sort?: number;
+}
+
+// "This service uses 2 of resource X."
+export interface ServiceResourceNeed {
+  resourceId: string;
+  quantity: number;
+}
+
+// Everything the planner needs to know about one service: people and equipment, with stock.
+export interface ServiceNeed {
+  serviceId: string;
+  peopleNeeded: number;
+  resources: { resourceId: string; name: string; kind: ResourceKind; stock: number; needed: number }[];
+}
+
+// Units of one resource that a live booking has reserved.
+export interface BusyResource {
+  resourceId: string;
+  startsAt: string;
+  endsAt: string;
+  quantity: number;
+}
+
+// ---------- The job log ----------
+export type JobEventKind = "checked_in" | "checked_out" | "photo" | "note";
+
+export interface JobEvent {
+  id: string;
+  bookingId: string;
+  businessId: string;
+  actorId: string | null;
+  kind: JobEventKind;
+  occurredAt: string;
+  lat: number | null;
+  lng: number | null;
+  accuracyM: number | null;
+  locationMissing: boolean;
+  photoPath: string | null;
+  photoHash: string | null;
+  // A short-lived address to show the photo (a signed URL, or a data URL in demo mode).
+  photoUrl: string | null;
+  note: string;
+  staffIds: string[];
+}
+
+export interface JobEventInput {
+  bookingId: string;
+  kind: Exclude<JobEventKind, "photo">;
+  lat?: number | null;
+  lng?: number | null;
+  accuracyM?: number | null;
+  locationMissing?: boolean;
+  note?: string;
+  staffIds?: string[];
+}
+
+// A file sent up through a Server Action.
+export interface UploadFile {
+  name: string;
+  type: string;
+  bytes: Uint8Array;
+}
+
+// ---------- Money and books ----------
+export type AccountType = "asset" | "liability" | "equity" | "income" | "expense";
+
+export interface LedgerAccount {
+  id: string;
+  businessId: string;
+  code: string; // "1000" cash in hand, "4000" service income, ...
+  name: string;
+  type: AccountType;
+}
+
+export type EntryKind = "income" | "receipt" | "fee" | "refund" | "payout" | "expense" | "wage" | "supplier" | "money_in";
+
+export interface LedgerLine {
+  accountId: string;
+  code: string;
+  debit: number;
+  credit: number;
+}
+
+export interface LedgerEntry {
+  id: string;
+  businessId: string;
+  bookingId: string | null;
+  kind: EntryKind;
+  memo: string;
+  occurredOn: string; // YYYY-MM-DD
+  reference: string | null;
+  createdAt: string;
+  lines: LedgerLine[];
+}
+
+export interface Payout {
+  id: string;
+  businessId: string;
+  amount: number;
+  periodFrom: string;
+  periodTo: string;
+  reference: string;
+  sentAt: string;
+}
+
+// Money the owner spent, or put into the business. `from` is the cash or mobile money account.
+export interface SpendInput {
+  businessId: string;
+  code: string;
+  amount: number;
+  from: "1000" | "1010";
+  memo: string;
+  on: string; // YYYY-MM-DD
+}
+
+// ---------- Verification tiers ----------
+export type BusinessTier = "registered" | "verified" | "guaranteed" | "certified";
+export type CheckKind = "identity" | "references" | "address" | "competence" | "registration" | "certification";
+export type CheckStatus = "submitted" | "passed" | "failed";
+
+export interface BusinessCheck {
+  id: string;
+  businessId: string;
+  kind: CheckKind;
+  status: CheckStatus;
+  note: string;
+  evidencePath: string | null;
+  submittedAt: string;
+  reviewedAt: string | null;
+  reviewNote: string;
 }

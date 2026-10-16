@@ -7,6 +7,7 @@ import { dayRange, laterDates, nextAvailableDate, planFor, querySchema, slotsFor
 const svc = (id: string, durationMin: number, latestStart: string | null = null): Service => ({
   id,
   businessId: "b",
+  peopleNeeded: 1,
   groupName: "Menu",
   name: id,
   description: "",

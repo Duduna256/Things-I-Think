@@ -26,6 +26,7 @@ test("week rows start on Monday and mark today", () => {
 const svc = (over: Partial<Service>): Service => ({
   id: "x",
   businessId: "b",
+  peopleNeeded: 1,
   groupName: "Cuts",
   name: "Cut",
   description: "",

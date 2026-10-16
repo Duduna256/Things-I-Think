@@ -19,6 +19,7 @@ const booking: Booking = {
   id: "0b5c8e0e-8a7f-4f3e-9b8e-1c2d3e4f5a6b",
   ref: "RCL-AB12CD",
   businessId: "biz-1",
+  crewNames: [],
   customerId: "cust-1",
   staffId: null,
   staffName: null,

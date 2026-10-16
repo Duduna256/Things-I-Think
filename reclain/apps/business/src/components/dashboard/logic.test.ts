@@ -34,6 +34,7 @@ function booking(over: Partial<Booking> = {}): Booking {
     id: "bk-1",
     ref: "RCL-ABC123",
     businessId: "biz-1",
+    crewNames: [],
     customerId: "cust-1",
     staffId: "st-1",
     staffName: "Aisha",

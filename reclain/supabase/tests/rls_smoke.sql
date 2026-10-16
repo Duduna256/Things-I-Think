@@ -1,6 +1,6 @@
 -- Smoke test for Row Level Security and the booking functions.
 -- Paste the whole file into the Supabase SQL editor and run it in one go.
--- It ends by raising an error whose message lists the results: every "ok" should be true.
+-- It ends by raising an error whose message lists the results: every "ok" should be true (45 checks).
 -- Because it all runs as one transaction, that final error rolls everything back.
 
 create temp table t_results (n serial, step text, ok boolean, detail text);
@@ -39,6 +39,7 @@ select set_config('request.jwt.claims', '{"role":"anon"}', true);
 insert into t_results (step, ok, detail) select 'anon sees 13 published venues', count(*) = 13, count(*)::text from public.businesses;
 insert into t_results (step, ok, detail) select 'anon sees services', count(*) = 67, count(*)::text from public.services;
 insert into t_results (step, ok, detail) select 'anon cannot see bookings', count(*) = 0, count(*)::text from public.bookings;
+insert into t_results (step, ok, detail) select 'anon cannot see equipment', count(*) = 0, count(*)::text from public.resources;
 do $$ begin
   perform public.create_booking((select biz from t_ctx), array[(select svc from t_ctx)], null, (select slot from t_ctx), 'venue', '', '', 'x', '0772000000', 'cash');
   insert into t_results (step, ok, detail) values ('anon cannot book', false, 'booking was created');
@@ -79,6 +80,7 @@ exception when others then
 end $$;
 insert into t_results (step, ok, detail) select 'customer sees own 2 bookings', count(*) = 2, count(*)::text from public.bookings;
 insert into t_results (step, ok, detail) select 'customer sees booking items', count(*) = 2, count(*)::text from public.booking_items;
+insert into t_results (step, ok, detail) select 'busy slots list both bookings', count(*) = 2, count(*)::text from public.busy_slots((select biz from t_ctx), (select slot from t_ctx) - interval '1 day', (select slot from t_ctx) + interval '1 day');
 do $$ begin
   update public.bookings set total = 1 where id = current_setting('test.booking1')::uuid;
   insert into t_results (step, ok, detail) select 'customer cannot edit price directly', b.total = 40000, b.total::text from public.bookings b where b.id = current_setting('test.booking1')::uuid;
@@ -90,6 +92,12 @@ do $$ begin
   insert into t_results (step, ok, detail) values ('customer cannot make themselves admin', false, 'became admin');
 exception when others then
   insert into t_results (step, ok, detail) values ('customer cannot make themselves admin', true, sqlerrm);
+end $$;
+do $$ begin
+  insert into public.job_events (booking_id, business_id, kind) values (current_setting('test.booking1')::uuid, (select biz from t_ctx), 'checked_in');
+  insert into t_results (step, ok, detail) values ('customer cannot write the job log', false, 'inserted');
+exception when others then
+  insert into t_results (step, ok, detail) values ('customer cannot write the job log', true, sqlerrm);
 end $$;
 reset role;
 
@@ -117,6 +125,47 @@ do $$ begin
 exception when others then
   insert into t_results (step, ok, detail) values ('owner cannot complete a booking that has not started', sqlerrm like '%hasn''t started%', sqlerrm);
 end $$;
+-- The job log, the tier, the checks and the books: what an owner can and can't do.
+do $$ begin
+  insert into public.job_events (booking_id, business_id, kind, lat, lng, accuracy_m) values (current_setting('test.booking1')::uuid, (select biz from t_ctx), 'checked_in', 0.35, 32.6, 12);
+  insert into t_results (step, ok, detail) select 'owner checks in with location', count(*) = 1 and bool_and(actor_id = '33333333-3333-3333-3333-333333333333'), count(*)::text from public.job_events where booking_id = current_setting('test.booking1')::uuid;
+exception when others then
+  insert into t_results (step, ok, detail) values ('owner checks in with location', false, sqlerrm);
+end $$;
+do $$ begin
+  insert into public.job_events (booking_id, business_id, kind) values (current_setting('test.booking1')::uuid, (select biz from t_ctx), 'checked_in');
+  insert into t_results (step, ok, detail) values ('a second check-in is refused', false, 'inserted');
+exception when others then
+  insert into t_results (step, ok, detail) values ('a second check-in is refused', sqlerrm like '%already checked in%', sqlerrm);
+end $$;
+do $$ begin
+  update public.job_events set note = 'edited' where booking_id = current_setting('test.booking1')::uuid;
+  insert into t_results (step, ok, detail) values ('the job log cannot be edited', false, 'updated');
+exception when others then
+  insert into t_results (step, ok, detail) values ('the job log cannot be edited', true, sqlerrm);
+end $$;
+do $$ begin
+  update public.businesses set tier = 'certified' where slug = 'braid-republic';
+  insert into t_results (step, ok, detail) select 'owner cannot grant themselves a tier', tier = 'registered', tier from public.businesses where slug = 'braid-republic';
+end $$;
+do $$ begin
+  insert into public.business_checks (business_id, kind, status, note) values ((select biz from t_ctx), 'identity', 'passed', 'my ID');
+  insert into t_results (step, ok, detail) select 'owner sends a check but cannot pass it', status = 'submitted', status from public.business_checks where business_id = (select biz from t_ctx) and kind = 'identity';
+exception when others then
+  insert into t_results (step, ok, detail) values ('owner sends a check but cannot pass it', false, sqlerrm);
+end $$;
+do $$ declare e uuid; begin
+  e := public.record_spend((select biz from t_ctx), '5200', 25000, '1000', 'Braiding hair', (now() at time zone 'Africa/Kampala')::date);
+  insert into t_results (step, ok, detail) select 'owner records a supplier payment that balances', sum(debit) = 25000 and sum(credit) = 25000, sum(debit)::text from public.ledger_lines where entry_id = e;
+exception when others then
+  insert into t_results (step, ok, detail) values ('owner records a supplier payment that balances', false, sqlerrm);
+end $$;
+do $$ begin
+  insert into public.ledger_entries (business_id, kind, occurred_on) values ((select biz from t_ctx), 'income', current_date);
+  insert into t_results (step, ok, detail) values ('owner cannot write ledger entries directly', false, 'inserted');
+exception when others then
+  insert into t_results (step, ok, detail) values ('owner cannot write ledger entries directly', true, sqlerrm);
+end $$;
 reset role;
 -- The appointment happens: move booking 1 into the past.
 update public.bookings set starts_at = now() - interval '3 hours', ends_at = now() - interval '90 minutes' where id = current_setting('test.booking1')::uuid;
@@ -127,6 +176,14 @@ do $$ declare b public.bookings; begin
   insert into t_results (step, ok, detail) values ('owner marks booking completed', b.status = 'completed', b.status::text);
 exception when others then
   insert into t_results (step, ok, detail) values ('owner marks booking completed', false, sqlerrm);
+end $$;
+do $$ declare b public.bookings; begin
+  b := public.mark_cash_paid(current_setting('test.booking1')::uuid);
+  insert into t_results (step, ok, detail)
+  select 'completed cash booking posts income and a receipt', count(distinct e.kind) = 2 and sum(l.debit) = 80000 and sum(l.credit) = 80000, string_agg(distinct e.kind, ',')
+    from public.ledger_entries e join public.ledger_lines l on l.entry_id = e.id where e.booking_id = current_setting('test.booking1')::uuid;
+exception when others then
+  insert into t_results (step, ok, detail) values ('completed cash booking posts income and a receipt', false, sqlerrm);
 end $$;
 do $$ begin
   update public.businesses set status = 'draft' where slug = 'braid-republic';
@@ -182,6 +239,7 @@ do $$ begin
     s.rating_count = 21 and s.rating = round((b.rating * 20 + 1) / 21, 1),
     s.rating::text || ' / ' || s.rating_count::text
   from public.staff s, t_staff_before b where s.id = (select aisha from t_ctx);
+  insert into t_results (step, ok, detail) select 'customer can read the job log of their booking', count(*) = 1, count(*)::text from public.job_events where booking_id = current_setting('test.booking1')::uuid;
 exception when others then
   insert into t_results (step, ok, detail) values ('review of completed booking updates rating', false, sqlerrm);
 end $$;
@@ -209,6 +267,10 @@ do $$ declare b public.bookings; r record; again record; begin
   select * into r from public.record_payment_result('TEST-TX-1', 'paid', 'MOCK-1', 50000, '{"ok":true}');
   select * into b from public.bookings where id = r.booking_id;
   insert into t_results (step, ok, detail) values ('paid webhook confirms booking, once', b.status = 'confirmed' and b.payment_status = 'paid' and r.became_paid, b.status || '/' || b.payment_status || '/' || r.became_paid);
+  insert into t_results (step, ok, detail)
+  select 'online payment posts money held by reClain', count(*) = 1 and bool_and(a.code = '1200' and l.debit = 50000), count(*)::text
+    from public.ledger_entries e join public.ledger_lines l on l.entry_id = e.id join public.ledger_accounts a on a.id = l.account_id
+   where e.booking_id = r.booking_id and e.kind = 'receipt' and l.debit > 0;
   select * into again from public.record_payment_result('TEST-TX-1', 'paid', 'MOCK-1', 50000, '{"ok":true}');
   insert into t_results (step, ok, detail) values ('a repeated webhook changes nothing', not again.became_paid, again.became_paid::text);
 end $$;

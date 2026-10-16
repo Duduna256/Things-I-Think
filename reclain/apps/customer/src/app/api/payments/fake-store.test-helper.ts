@@ -13,6 +13,7 @@ export function makeBooking(over: Partial<Booking> = {}): Booking {
     id: "bk-1",
     ref: "RCL-AB12CD",
     businessId: "biz-1",
+    crewNames: [],
     customerId: "cust-1",
     staffId: "staff-1",
     staffName: "Aisha",

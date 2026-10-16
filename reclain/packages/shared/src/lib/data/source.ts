@@ -7,6 +7,22 @@ import type {
   Booking,
   BookingStatus,
   Business,
+  BusinessCheck,
+  BusinessTier,
+  BusyResource,
+  CheckKind,
+  CheckStatus,
+  JobEvent,
+  JobEventInput,
+  LedgerAccount,
+  LedgerEntry,
+  Payout,
+  Resource,
+  ResourceInput,
+  ServiceNeed,
+  ServiceResourceNeed,
+  SpendInput,
+  UploadFile,
   BusinessDetail,
   BusinessFilter,
   BusinessInput,
@@ -50,8 +66,54 @@ export interface SmsLogEntry {
   error?: string | null;
 }
 
+// ---- Crew and equipment ----
+export interface CapacitySource {
+  listResources(businessId: string): Promise<Resource[]>; // owner: active and inactive
+  upsertResource(businessId: string, input: ResourceInput): Promise<Resource>;
+  deleteResource(id: string): Promise<void>;
+  // Public: what these services need, and the business's stock of each resource.
+  getServiceNeeds(businessId: string, serviceIds: string[]): Promise<ServiceNeed[]>;
+  // Public: units of each resource that live bookings have reserved in a window.
+  getBusyResources(businessId: string, fromIso: string, toIso: string): Promise<BusyResource[]>;
+}
+
+// ---- The job log ----
+export interface JobsSource {
+  listJobEvents(bookingId: string): Promise<JobEvent[]>; // the customer or the business
+  addJobEvent(input: JobEventInput): Promise<JobEvent>; // the business
+  addJobPhoto(
+    bookingId: string,
+    file: UploadFile,
+    meta: { lat?: number | null; lng?: number | null; accuracyM?: number | null; locationMissing?: boolean; note?: string },
+  ): Promise<JobEvent>;
+}
+
+// ---- Money and books ----
+export interface BooksSource {
+  listAccounts(businessId: string): Promise<LedgerAccount[]>;
+  listEntries(businessId: string, fromDate: string, toDate: string): Promise<LedgerEntry[]>; // inclusive YYYY-MM-DD
+  recordSpend(input: SpendInput): Promise<LedgerEntry>;
+  listPayouts(businessId: string): Promise<Payout[]>;
+  adminRecordPayout(input: { businessId: string; amount: number; periodFrom: string; periodTo: string; reference: string }): Promise<Payout>;
+}
+
+// ---- Verification tiers ----
+export interface VerificationSource {
+  listChecks(businessId: string): Promise<BusinessCheck[]>; // owner or admin
+  submitCheck(input: { businessId: string; kind: CheckKind; note: string }, file: UploadFile | null): Promise<BusinessCheck>;
+  getEvidenceUrl(check: BusinessCheck): Promise<string | null>; // short-lived; owner or admin
+  adminReviewCheck(checkId: string, status: CheckStatus, note: string): Promise<BusinessCheck>;
+  adminSetTier(businessId: string, tier: BusinessTier): Promise<Business>;
+}
+
 export interface DataSource {
   mode: "supabase" | "demo";
+
+  // The business tools, each in its own file (data/<backend>-<feature>.ts).
+  capacity: CapacitySource;
+  jobs: JobsSource;
+  books: BooksSource;
+  verification: VerificationSource;
 
   // ---- Public (anyone) ----
   listCategories(): Promise<Category[]>;
