@@ -1,0 +1,1490 @@
+{
+  "categories": [
+    {
+      "id": "cleaning",
+      "name": "Home cleaning",
+      "icon": "sparkle",
+      "isNew": false,
+      "sort": 0
+    },
+    {
+      "id": "laundry",
+      "name": "Laundry",
+      "icon": "shirt",
+      "isNew": true,
+      "sort": 1
+    },
+    {
+      "id": "repairs",
+      "name": "Repairs",
+      "icon": "wrench",
+      "isNew": false,
+      "sort": 2
+    },
+    {
+      "id": "hair",
+      "name": "Hair salons",
+      "icon": "scissors",
+      "isNew": false,
+      "sort": 3
+    },
+    {
+      "id": "barber",
+      "name": "Barbers",
+      "icon": "comb",
+      "isNew": false,
+      "sort": 4
+    },
+    {
+      "id": "braids",
+      "name": "Braids & locs",
+      "icon": "braid",
+      "isNew": false,
+      "sort": 5
+    },
+    {
+      "id": "massage",
+      "name": "Massage & spa",
+      "icon": "stones",
+      "isNew": true,
+      "sort": 6
+    },
+    {
+      "id": "nails",
+      "name": "Nails & beauty",
+      "icon": "polish",
+      "isNew": false,
+      "sort": 7
+    },
+    {
+      "id": "escort",
+      "name": "Security",
+      "icon": "shield",
+      "isNew": true,
+      "sort": 8
+    },
+    {
+      "id": "bridal",
+      "name": "Bridal & events",
+      "icon": "ring",
+      "isNew": false,
+      "sort": 9
+    }
+  ],
+  "areas": [
+    {
+      "id": "kololo",
+      "name": "Kololo",
+      "region": "Kampala",
+      "sort": 0
+    },
+    {
+      "id": "nakasero",
+      "name": "Nakasero",
+      "region": "Kampala",
+      "sort": 1
+    },
+    {
+      "id": "wandegeya",
+      "name": "Wandegeya",
+      "region": "Kampala",
+      "sort": 2
+    },
+    {
+      "id": "ntinda",
+      "name": "Ntinda",
+      "region": "Kampala",
+      "sort": 3
+    },
+    {
+      "id": "bukoto",
+      "name": "Bukoto",
+      "region": "Kampala",
+      "sort": 4
+    },
+    {
+      "id": "muyenga",
+      "name": "Muyenga",
+      "region": "Kampala",
+      "sort": 5
+    },
+    {
+      "id": "munyonyo",
+      "name": "Munyonyo",
+      "region": "Kampala",
+      "sort": 6
+    },
+    {
+      "id": "kira",
+      "name": "Kira",
+      "region": "Wakiso",
+      "sort": 7
+    },
+    {
+      "id": "naalya",
+      "name": "Naalya",
+      "region": "Wakiso",
+      "sort": 8
+    },
+    {
+      "id": "entebbe",
+      "name": "Entebbe",
+      "region": "Wakiso",
+      "sort": 9
+    },
+    {
+      "id": "mukono",
+      "name": "Mukono",
+      "region": "Mukono",
+      "sort": 10
+    }
+  ],
+  "businesses": [
+    {
+      "slug": "braid-republic",
+      "name": "The Braid Republic",
+      "categoryId": "braids",
+      "areaId": "ntinda",
+      "blurb": "Neat parts, gentle hands and a playlist good enough for a six-hour boho. Snacks encouraged.",
+      "visitMode": "both",
+      "opensAt": "08:00",
+      "closesAt": "20:00",
+      "closedDays": [],
+      "homeVisitFee": 10000,
+      "acceptsCash": true,
+      "skipProfessional": false,
+      "coverWord": "braids",
+      "palette": [
+        "#2b1a4a",
+        "#7b4fd6",
+        "#f6b9a3"
+      ],
+      "isFeatured": true,
+      "isNew": false,
+      "ratingAvg": 4.9,
+      "ratingCount": 1284,
+      "sort": 0,
+      "services": [
+        {
+          "key": "knotless",
+          "groupName": "Braids",
+          "name": "Knotless braids (mid-back)",
+          "description": "Medium parts. Braiding hair included in the colour of your choice.",
+          "durationMin": 330,
+          "durationLabel": null,
+          "price": 120000,
+          "sort": 0,
+          "latestStart": null
+        },
+        {
+          "key": "boho",
+          "groupName": "Braids",
+          "name": "Boho knotless braids",
+          "description": "Knotless with curly human-hair pieces left out. Clear your afternoon.",
+          "durationMin": 390,
+          "durationLabel": null,
+          "price": 160000,
+          "sort": 1,
+          "latestStart": null
+        },
+        {
+          "key": "twists",
+          "groupName": "Braids",
+          "name": "Passion twists",
+          "description": "Light, bouncy and unbothered by rainy season.",
+          "durationMin": 240,
+          "durationLabel": null,
+          "price": 100000,
+          "sort": 2,
+          "latestStart": null
+        },
+        {
+          "key": "cornrows",
+          "groupName": "Braids",
+          "name": "Cornrows",
+          "description": "Straight-back or freestyle. Edges laid, not fried.",
+          "durationMin": 90,
+          "durationLabel": null,
+          "price": 40000,
+          "sort": 3,
+          "latestStart": null
+        },
+        {
+          "key": "locs-retwist",
+          "groupName": "Locs",
+          "name": "Locs retwist & style",
+          "description": "Palm roll, retwist and a style of your choice.",
+          "durationMin": 150,
+          "durationLabel": null,
+          "price": 60000,
+          "sort": 100,
+          "latestStart": null
+        },
+        {
+          "key": "starter-locs",
+          "groupName": "Locs",
+          "name": "Starter locs",
+          "description": "Comb coils or two-strand twists to start the journey.",
+          "durationMin": 240,
+          "durationLabel": null,
+          "price": 150000,
+          "sort": 101,
+          "latestStart": null
+        },
+        {
+          "key": "wash-blow",
+          "groupName": "Care",
+          "name": "Wash, treat & blow-dry",
+          "description": "Deep-conditioning treatment and a bouncy finish.",
+          "durationMin": 75,
+          "durationLabel": null,
+          "price": 45000,
+          "sort": 200,
+          "latestStart": null
+        }
+      ],
+      "staff": [
+        {
+          "name": "Aisha Nakato",
+          "role": "Senior braider",
+          "rating": 4.9,
+          "sort": 0
+        },
+        {
+          "name": "Nana Achan",
+          "role": "Braider",
+          "rating": 4.8,
+          "sort": 1
+        },
+        {
+          "name": "Joy Kemigisha",
+          "role": "Locs specialist",
+          "rating": 5,
+          "sort": 2
+        }
+      ]
+    },
+    {
+      "slug": "fade-kings",
+      "name": "Fade Kings Barbershop",
+      "categoryId": "barber",
+      "areaId": "wandegeya",
+      "blurb": "Fades so clean your old barber will hear about it. They'll come to your office at lunch, too.",
+      "visitMode": "both",
+      "opensAt": "07:00",
+      "closesAt": "21:00",
+      "closedDays": [],
+      "homeVisitFee": 10000,
+      "acceptsCash": true,
+      "skipProfessional": false,
+      "coverWord": "fade",
+      "palette": [
+        "#141416",
+        "#3c3b48",
+        "#e0b252"
+      ],
+      "isFeatured": true,
+      "isNew": false,
+      "ratingAvg": 4.8,
+      "ratingCount": 2031,
+      "sort": 1,
+      "services": [
+        {
+          "key": "cut-fade",
+          "groupName": "Cuts",
+          "name": "Skin fade",
+          "description": "Clean fade, sharp edge-up and a hot towel finish.",
+          "durationMin": 45,
+          "durationLabel": null,
+          "price": 20000,
+          "sort": 0,
+          "latestStart": null
+        },
+        {
+          "key": "cut-beard",
+          "groupName": "Cuts",
+          "name": "Haircut & beard sculpt",
+          "description": "Cut plus beard shape, line-up and oil.",
+          "durationMin": 60,
+          "durationLabel": null,
+          "price": 30000,
+          "sort": 1,
+          "latestStart": null
+        },
+        {
+          "key": "kids-cut",
+          "groupName": "Cuts",
+          "name": "Kids' cut (under 12)",
+          "description": "Patience included. Lollipop negotiable.",
+          "durationMin": 30,
+          "durationLabel": null,
+          "price": 12000,
+          "sort": 2,
+          "latestStart": null
+        },
+        {
+          "key": "shave",
+          "groupName": "Shaves & beards",
+          "name": "Hot towel shave",
+          "description": "Straight razor, hot towels and zero rush.",
+          "durationMin": 30,
+          "durationLabel": null,
+          "price": 15000,
+          "sort": 100,
+          "latestStart": null
+        },
+        {
+          "key": "beard-dye",
+          "groupName": "Shaves & beards",
+          "name": "Beard dye",
+          "description": "Covers the grey. Keeps the wisdom.",
+          "durationMin": 30,
+          "durationLabel": null,
+          "price": 15000,
+          "sort": 101,
+          "latestStart": null
+        }
+      ],
+      "staff": [
+        {
+          "name": "Brian Okello",
+          "role": "Master barber",
+          "rating": 4.9,
+          "sort": 0
+        },
+        {
+          "name": "Kato Musa",
+          "role": "Barber",
+          "rating": 4.8,
+          "sort": 1
+        },
+        {
+          "name": "Ronald Ssewanyana",
+          "role": "Barber",
+          "rating": 4.7,
+          "sort": 2
+        }
+      ]
+    },
+    {
+      "slug": "silk-press-society",
+      "name": "Silk Press Society",
+      "categoryId": "hair",
+      "areaId": "kololo",
+      "blurb": "Natural hair, pressed like it has somewhere important to be. Heat protection is not optional here.",
+      "visitMode": "salon",
+      "opensAt": "09:00",
+      "closesAt": "19:00",
+      "closedDays": [
+        0
+      ],
+      "homeVisitFee": 0,
+      "acceptsCash": true,
+      "skipProfessional": false,
+      "coverWord": "silk",
+      "palette": [
+        "#3b1d2a",
+        "#c0587a",
+        "#ffd3c2"
+      ],
+      "isFeatured": true,
+      "isNew": false,
+      "ratingAvg": 5,
+      "ratingCount": 412,
+      "sort": 2,
+      "services": [
+        {
+          "key": "silk-press",
+          "groupName": "Styling",
+          "name": "Silk press",
+          "description": "Wash, deep condition and a glass-smooth press.",
+          "durationMin": 120,
+          "durationLabel": null,
+          "price": 75000,
+          "sort": 0,
+          "latestStart": null
+        },
+        {
+          "key": "wash-blow",
+          "groupName": "Styling",
+          "name": "Wash, treat & blow-dry",
+          "description": "Deep-conditioning treatment and a bouncy finish.",
+          "durationMin": 75,
+          "durationLabel": null,
+          "price": 52000,
+          "sort": 1,
+          "latestStart": null
+        },
+        {
+          "key": "trim",
+          "groupName": "Styling",
+          "name": "Trim & treatment",
+          "description": "A dusting of the ends and a moisture treatment.",
+          "durationMin": 60,
+          "durationLabel": null,
+          "price": 40000,
+          "sort": 2,
+          "latestStart": null
+        },
+        {
+          "key": "colour",
+          "groupName": "Colour & chemical",
+          "name": "Full-head colour",
+          "description": "Single-process colour with bond protection.",
+          "durationMin": 150,
+          "durationLabel": null,
+          "price": 138000,
+          "sort": 100,
+          "latestStart": null
+        },
+        {
+          "key": "relaxer",
+          "groupName": "Colour & chemical",
+          "name": "Relaxer retouch",
+          "description": "Scalp-protected retouch with treatment and set.",
+          "durationMin": 120,
+          "durationLabel": null,
+          "price": 57000,
+          "sort": 101,
+          "latestStart": null
+        },
+        {
+          "key": "wig-install",
+          "groupName": "Wigs",
+          "name": "Frontal wig install",
+          "description": "Glueless or glued, plucked, cut and styled.",
+          "durationMin": 120,
+          "durationLabel": null,
+          "price": 92000,
+          "sort": 200,
+          "latestStart": null
+        }
+      ],
+      "staff": [
+        {
+          "name": "Ruth Namubiru",
+          "role": "Natural hair specialist",
+          "rating": 5,
+          "sort": 0
+        },
+        {
+          "name": "Patience Akello",
+          "role": "Colourist",
+          "rating": 4.9,
+          "sort": 1
+        }
+      ]
+    },
+    {
+      "slug": "locs-lattes",
+      "name": "Locs & Lattes",
+      "categoryId": "braids",
+      "areaId": "kololo",
+      "blurb": "A Kisementi locs studio with a proper espresso machine. Your retwist comes with a flat white, because priorities.",
+      "visitMode": "salon",
+      "opensAt": "08:00",
+      "closesAt": "18:00",
+      "closedDays": [],
+      "homeVisitFee": 0,
+      "acceptsCash": true,
+      "skipProfessional": false,
+      "coverWord": "locs",
+      "palette": [
+        "#2a1d14",
+        "#8a5a3b",
+        "#f0c27a"
+      ],
+      "isFeatured": false,
+      "isNew": true,
+      "ratingAvg": 4.9,
+      "ratingCount": 689,
+      "sort": 3,
+      "services": [
+        {
+          "key": "locs-retwist",
+          "groupName": "Locs",
+          "name": "Locs retwist & style",
+          "description": "Palm roll, retwist and a style of your choice.",
+          "durationMin": 150,
+          "durationLabel": null,
+          "price": 63000,
+          "sort": 0,
+          "latestStart": null
+        },
+        {
+          "key": "starter-locs",
+          "groupName": "Locs",
+          "name": "Starter locs",
+          "description": "Comb coils or two-strand twists to start the journey.",
+          "durationMin": 240,
+          "durationLabel": null,
+          "price": 158000,
+          "sort": 1,
+          "latestStart": null
+        },
+        {
+          "key": "twists",
+          "groupName": "Braids",
+          "name": "Passion twists",
+          "description": "Light, bouncy and unbothered by rainy season.",
+          "durationMin": 240,
+          "durationLabel": null,
+          "price": 105000,
+          "sort": 100,
+          "latestStart": null
+        },
+        {
+          "key": "cornrows",
+          "groupName": "Braids",
+          "name": "Cornrows",
+          "description": "Straight-back or freestyle. Edges laid, not fried.",
+          "durationMin": 90,
+          "durationLabel": null,
+          "price": 42000,
+          "sort": 101,
+          "latestStart": null
+        }
+      ],
+      "staff": [
+        {
+          "name": "Moses Kizito",
+          "role": "Loctician",
+          "rating": 4.9,
+          "sort": 0
+        },
+        {
+          "name": "Faith Atuhaire",
+          "role": "Loctician",
+          "rating": 4.8,
+          "sort": 1
+        }
+      ]
+    },
+    {
+      "slug": "kneaded",
+      "name": "Kneaded Massage & Spa",
+      "categoryId": "massage",
+      "areaId": "muyenga",
+      "blurb": "Certified therapists, hot towels and a view of the lake from the top of Muyenga Hill. Or at home, if the hill is too much.",
+      "visitMode": "both",
+      "opensAt": "09:00",
+      "closesAt": "21:00",
+      "closedDays": [],
+      "homeVisitFee": 10000,
+      "acceptsCash": true,
+      "skipProfessional": false,
+      "coverWord": "knead",
+      "palette": [
+        "#0f3b33",
+        "#2f8f78",
+        "#cde9c9"
+      ],
+      "isFeatured": true,
+      "isNew": true,
+      "ratingAvg": 4.9,
+      "ratingCount": 530,
+      "sort": 4,
+      "services": [
+        {
+          "key": "swedish",
+          "groupName": "Massage",
+          "name": "Swedish massage",
+          "description": "Full-body relaxation from a certified therapist.",
+          "durationMin": 60,
+          "durationLabel": null,
+          "price": 80000,
+          "sort": 0,
+          "latestStart": null
+        },
+        {
+          "key": "deep-tissue",
+          "groupName": "Massage",
+          "name": "Deep tissue massage",
+          "description": "Firm pressure for the knots a week of boda rides left behind.",
+          "durationMin": 90,
+          "durationLabel": null,
+          "price": 95000,
+          "sort": 1,
+          "latestStart": null
+        },
+        {
+          "key": "hot-stone",
+          "groupName": "Massage",
+          "name": "Hot stone massage",
+          "description": "Warm basalt stones to melt stiffness and stress.",
+          "durationMin": 75,
+          "durationLabel": null,
+          "price": 110000,
+          "sort": 2,
+          "latestStart": null
+        },
+        {
+          "key": "sports",
+          "groupName": "Massage",
+          "name": "Sports & recovery massage",
+          "description": "Before the Kampala marathon or after it. We won't judge.",
+          "durationMin": 60,
+          "durationLabel": null,
+          "price": 90000,
+          "sort": 3,
+          "latestStart": null
+        },
+        {
+          "key": "reflexology",
+          "groupName": "Feet",
+          "name": "Foot reflexology",
+          "description": "Pressure-point foot and lower-leg massage.",
+          "durationMin": 45,
+          "durationLabel": null,
+          "price": 50000,
+          "sort": 100,
+          "latestStart": null
+        },
+        {
+          "key": "couples",
+          "groupName": "For two",
+          "name": "Couples massage",
+          "description": "Two therapists, side by side. Anniversary sorted.",
+          "durationMin": 60,
+          "durationLabel": null,
+          "price": 170000,
+          "sort": 200,
+          "latestStart": null
+        }
+      ],
+      "staff": [
+        {
+          "name": "Esther Achieng",
+          "role": "Certified massage therapist",
+          "rating": 4.9,
+          "sort": 0
+        },
+        {
+          "name": "Paul Waiswa",
+          "role": "Sports therapist",
+          "rating": 4.8,
+          "sort": 1
+        },
+        {
+          "name": "Mary Nantongo",
+          "role": "Reflexologist",
+          "rating": 4.9,
+          "sort": 2
+        }
+      ]
+    },
+    {
+      "slug": "polished",
+      "name": "Polished Nail Bar",
+      "categoryId": "nails",
+      "areaId": "nakasero",
+      "blurb": "Gels that last longer than most group chats. Walk in tired, leave with ten tiny works of art.",
+      "visitMode": "salon",
+      "opensAt": "09:00",
+      "closesAt": "20:00",
+      "closedDays": [],
+      "homeVisitFee": 0,
+      "acceptsCash": true,
+      "skipProfessional": false,
+      "coverWord": "gloss",
+      "palette": [
+        "#4a1030",
+        "#e0457b",
+        "#ffd0dc"
+      ],
+      "isFeatured": false,
+      "isNew": false,
+      "ratingAvg": 4.7,
+      "ratingCount": 944,
+      "sort": 5,
+      "services": [
+        {
+          "key": "gel-mani",
+          "groupName": "Nails",
+          "name": "Gel manicure",
+          "description": "Shaped, buffed and gel-polished to last three weeks.",
+          "durationMin": 60,
+          "durationLabel": null,
+          "price": 35000,
+          "sort": 0,
+          "latestStart": null
+        },
+        {
+          "key": "pedi",
+          "groupName": "Nails",
+          "name": "Spa pedicure",
+          "description": "Soak, scrub, massage and polish.",
+          "durationMin": 60,
+          "durationLabel": null,
+          "price": 40000,
+          "sort": 1,
+          "latestStart": null
+        },
+        {
+          "key": "acrylic",
+          "groupName": "Nails",
+          "name": "Acrylic full set",
+          "description": "Any length, any shape, typing ability not guaranteed.",
+          "durationMin": 90,
+          "durationLabel": null,
+          "price": 60000,
+          "sort": 2,
+          "latestStart": null
+        },
+        {
+          "key": "lashes",
+          "groupName": "Lashes & brows",
+          "name": "Classic lash extensions",
+          "description": "Natural-looking lashes, applied one by one.",
+          "durationMin": 90,
+          "durationLabel": null,
+          "price": 50000,
+          "sort": 100,
+          "latestStart": null
+        },
+        {
+          "key": "brows",
+          "groupName": "Lashes & brows",
+          "name": "Brow shape & tint",
+          "description": "Threaded and tinted so they're sisters, not twins.",
+          "durationMin": 30,
+          "durationLabel": null,
+          "price": 20000,
+          "sort": 101,
+          "latestStart": null
+        },
+        {
+          "key": "makeup",
+          "groupName": "Make-up",
+          "name": "Soft glam make-up",
+          "description": "Camera-ready, sweat-proof, wedding-proof.",
+          "durationMin": 60,
+          "durationLabel": null,
+          "price": 60000,
+          "sort": 200,
+          "latestStart": null
+        }
+      ],
+      "staff": [
+        {
+          "name": "Sandra Nabirye",
+          "role": "Nail technician",
+          "rating": 4.8,
+          "sort": 0
+        },
+        {
+          "name": "Gloria Auma",
+          "role": "Lash & brow artist",
+          "rating": 4.7,
+          "sort": 1
+        }
+      ]
+    },
+    {
+      "slug": "fresh-fold",
+      "name": "Fresh Fold Laundry",
+      "categoryId": "laundry",
+      "areaId": "bukoto",
+      "blurb": "We collect, wash, press and bring it back folded like a department store. You do literally nothing.",
+      "visitMode": "mobile",
+      "opensAt": "07:00",
+      "closesAt": "19:00",
+      "closedDays": [
+        0
+      ],
+      "homeVisitFee": 0,
+      "acceptsCash": true,
+      "skipProfessional": true,
+      "coverWord": "fold",
+      "palette": [
+        "#0d2c4d",
+        "#2f7fd1",
+        "#bfe3ff"
+      ],
+      "isFeatured": true,
+      "isNew": true,
+      "ratingAvg": 4.8,
+      "ratingCount": 1502,
+      "sort": 6,
+      "services": [
+        {
+          "key": "wash-fold",
+          "groupName": "Laundry",
+          "name": "Wash & fold (5 kg bag)",
+          "description": "Free pickup and delivery. Weighed at your gate, so no guessing.",
+          "durationMin": 0,
+          "durationLabel": "Back next working day",
+          "price": 25000,
+          "sort": 0,
+          "latestStart": null
+        },
+        {
+          "key": "wash-iron",
+          "groupName": "Laundry",
+          "name": "Wash & iron (5 kg bag)",
+          "description": "Shirts, trousers and dresses, pressed sharp.",
+          "durationMin": 0,
+          "durationLabel": "Back next working day",
+          "price": 35000,
+          "sort": 1,
+          "latestStart": null
+        },
+        {
+          "key": "express",
+          "groupName": "Laundry",
+          "name": "Express same-day (5 kg bag)",
+          "description": "Collected by 10:00, back by 18:00 the same day.",
+          "durationMin": 0,
+          "durationLabel": "Back by 18:00",
+          "price": 45000,
+          "sort": 2,
+          "latestStart": "10:00"
+        },
+        {
+          "key": "dry-clean",
+          "groupName": "Specialist",
+          "name": "Dry cleaning (per item)",
+          "description": "Suits, gomesi, kanzu and delicate fabrics.",
+          "durationMin": 0,
+          "durationLabel": "Back in 2 working days",
+          "price": 20000,
+          "sort": 100,
+          "latestStart": null
+        },
+        {
+          "key": "bedding",
+          "groupName": "Specialist",
+          "name": "Bedding & curtains",
+          "description": "Duvets, sheets, blankets and curtains.",
+          "durationMin": 0,
+          "durationLabel": "Back in 2 working days",
+          "price": 40000,
+          "sort": 101,
+          "latestStart": null
+        }
+      ],
+      "staff": [
+        {
+          "name": "Pickup crew",
+          "role": "Riders",
+          "rating": 4.8,
+          "sort": 0
+        }
+      ]
+    },
+    {
+      "slug": "spotless",
+      "name": "Spotless Kampala",
+      "categoryId": "cleaning",
+      "areaId": "naalya",
+      "blurb": "Two-person crews, their own supplies and a strict no-shortcuts policy. They move the sofa.",
+      "visitMode": "mobile",
+      "opensAt": "07:00",
+      "closesAt": "18:00",
+      "closedDays": [
+        0
+      ],
+      "homeVisitFee": 0,
+      "acceptsCash": true,
+      "skipProfessional": false,
+      "coverWord": "shine",
+      "palette": [
+        "#123a2b",
+        "#3cae84",
+        "#e3f6c8"
+      ],
+      "isFeatured": false,
+      "isNew": false,
+      "ratingAvg": 4.7,
+      "ratingCount": 803,
+      "sort": 7,
+      "services": [
+        {
+          "key": "clean-std",
+          "groupName": "Home",
+          "name": "Standard home clean",
+          "description": "Floors, kitchen, bathrooms and dusting for a 2–3 bedroom home.",
+          "durationMin": 180,
+          "durationLabel": null,
+          "price": 70000,
+          "sort": 0,
+          "latestStart": null
+        },
+        {
+          "key": "clean-deep",
+          "groupName": "Home",
+          "name": "Deep clean",
+          "description": "Inside cupboards, under beds, along the skirting. The works.",
+          "durationMin": 300,
+          "durationLabel": null,
+          "price": 150000,
+          "sort": 1,
+          "latestStart": null
+        },
+        {
+          "key": "post-party",
+          "groupName": "Home",
+          "name": "After-party clean",
+          "description": "After the kwanjula, the graduation, the birthday. We've seen worse.",
+          "durationMin": 240,
+          "durationLabel": null,
+          "price": 120000,
+          "sort": 2,
+          "latestStart": null
+        },
+        {
+          "key": "sofa",
+          "groupName": "Furniture",
+          "name": "Sofa & carpet steam clean",
+          "description": "Removes stains, smells and that one mystery spot.",
+          "durationMin": 150,
+          "durationLabel": null,
+          "price": 90000,
+          "sort": 100,
+          "latestStart": null
+        }
+      ],
+      "staff": [
+        {
+          "name": "Crew Peter",
+          "role": "Peter Ssali & team",
+          "rating": 4.8,
+          "sort": 0
+        },
+        {
+          "name": "Crew Annet",
+          "role": "Annet Nakku & team",
+          "rating": 4.7,
+          "sort": 1
+        }
+      ]
+    },
+    {
+      "slug": "guardline",
+      "name": "Guardline Security",
+      "categoryId": "escort",
+      "areaId": "kololo",
+      "blurb": "Licensed, uniformed or plain-clothes guards from a registered security company. Calm, punctual and very hard to argue with.",
+      "visitMode": "mobile",
+      "opensAt": "06:00",
+      "closesAt": "22:00",
+      "closedDays": [],
+      "homeVisitFee": 0,
+      "acceptsCash": true,
+      "skipProfessional": false,
+      "coverWord": "safe",
+      "palette": [
+        "#151a22",
+        "#34465c",
+        "#9fb4cc"
+      ],
+      "isFeatured": true,
+      "isNew": true,
+      "ratingAvg": 4.8,
+      "ratingCount": 211,
+      "sort": 8,
+      "services": [
+        {
+          "key": "escort-personal",
+          "groupName": "Security cover",
+          "name": "Personal security guard",
+          "description": "A licensed guard with you for meetings, the bank or an event. Up to 4 hours.",
+          "durationMin": 240,
+          "durationLabel": null,
+          "price": 150000,
+          "sort": 0,
+          "latestStart": null
+        },
+        {
+          "key": "escort-airport",
+          "groupName": "Security cover",
+          "name": "Airport pickup with security",
+          "description": "Meet-and-greet at Entebbe with a vetted driver and escort.",
+          "durationMin": 180,
+          "durationLabel": null,
+          "price": 120000,
+          "sort": 1,
+          "latestStart": null
+        },
+        {
+          "key": "school-run",
+          "groupName": "Security cover",
+          "name": "School-run security (weekly)",
+          "description": "A vetted guard for the morning and afternoon run, Mon–Fri. Pick the first morning; we keep that time all week.",
+          "durationMin": 60,
+          "durationLabel": null,
+          "price": 300000,
+          "sort": 2,
+          "latestStart": null
+        },
+        {
+          "key": "event-guard",
+          "groupName": "Events",
+          "name": "Event security guard",
+          "description": "Per guard for weddings, parties and introductions.",
+          "durationMin": 480,
+          "durationLabel": null,
+          "price": 100000,
+          "sort": 100,
+          "latestStart": null
+        }
+      ],
+      "staff": [
+        {
+          "name": "Daniel Okot",
+          "role": "Senior security officer",
+          "rating": 4.9,
+          "sort": 0
+        },
+        {
+          "name": "Grace Apio",
+          "role": "Security officer",
+          "rating": 4.8,
+          "sort": 1
+        },
+        {
+          "name": "Isaac Mugisha",
+          "role": "Event security lead",
+          "rating": 4.7,
+          "sort": 2
+        }
+      ]
+    },
+    {
+      "slug": "fix-it-fred",
+      "name": "Fix-It Fred",
+      "categoryId": "repairs",
+      "areaId": "kira",
+      "blurb": "Fred and his team fix the things that have been “almost working” since last year. Call-out fee covers the first hour.",
+      "visitMode": "mobile",
+      "opensAt": "08:00",
+      "closesAt": "18:00",
+      "closedDays": [
+        0
+      ],
+      "homeVisitFee": 0,
+      "acceptsCash": true,
+      "skipProfessional": false,
+      "coverWord": "fixed",
+      "palette": [
+        "#3a2408",
+        "#c8741c",
+        "#ffd88a"
+      ],
+      "isFeatured": false,
+      "isNew": false,
+      "ratingAvg": 4.6,
+      "ratingCount": 377,
+      "sort": 9,
+      "services": [
+        {
+          "key": "plumbing",
+          "groupName": "Call-outs",
+          "name": "Plumbing call-out",
+          "description": "Leaks, blockages and installations. Parts quoted on site.",
+          "durationMin": 60,
+          "durationLabel": null,
+          "price": 50000,
+          "sort": 0,
+          "latestStart": null
+        },
+        {
+          "key": "electrical",
+          "groupName": "Call-outs",
+          "name": "Electrical call-out",
+          "description": "Sockets, lights, wiring and fault finding.",
+          "durationMin": 60,
+          "durationLabel": null,
+          "price": 50000,
+          "sort": 1,
+          "latestStart": null
+        },
+        {
+          "key": "appliance",
+          "groupName": "Call-outs",
+          "name": "Appliance repair",
+          "description": "Fridges, washers and cookers brought back to life.",
+          "durationMin": 90,
+          "durationLabel": null,
+          "price": 60000,
+          "sort": 2,
+          "latestStart": null
+        },
+        {
+          "key": "tv-mount",
+          "groupName": "Installs",
+          "name": "TV wall mounting",
+          "description": "Level, secure and cables hidden. Bracket not included.",
+          "durationMin": 60,
+          "durationLabel": null,
+          "price": 40000,
+          "sort": 100,
+          "latestStart": null
+        },
+        {
+          "key": "solar",
+          "groupName": "Installs",
+          "name": "Solar system check",
+          "description": "Panels, batteries and inverter tested and cleaned.",
+          "durationMin": 120,
+          "durationLabel": null,
+          "price": 90000,
+          "sort": 101,
+          "latestStart": null
+        }
+      ],
+      "staff": [
+        {
+          "name": "Fred Lubega",
+          "role": "Electrician & plumber",
+          "rating": 4.7,
+          "sort": 0
+        },
+        {
+          "name": "Simon Opio",
+          "role": "Appliance technician",
+          "rating": 4.6,
+          "sort": 1
+        }
+      ]
+    },
+    {
+      "slug": "crown-comb",
+      "name": "Crown & Comb Kids",
+      "categoryId": "hair",
+      "areaId": "entebbe",
+      "blurb": "A kids' salon with cartoons, patience and stylists who can braid a moving target.",
+      "visitMode": "both",
+      "opensAt": "09:00",
+      "closesAt": "18:00",
+      "closedDays": [],
+      "homeVisitFee": 10000,
+      "acceptsCash": true,
+      "skipProfessional": false,
+      "coverWord": "crowns",
+      "palette": [
+        "#1d2f5a",
+        "#5a7be0",
+        "#ffe08a"
+      ],
+      "isFeatured": false,
+      "isNew": true,
+      "ratingAvg": 4.9,
+      "ratingCount": 268,
+      "sort": 10,
+      "services": [
+        {
+          "key": "kids-braids",
+          "groupName": "Kids",
+          "name": "Kids' braids",
+          "description": "Gentle hands, cartoons on, tears optional.",
+          "durationMin": 120,
+          "durationLabel": null,
+          "price": 43000,
+          "sort": 0,
+          "latestStart": null
+        },
+        {
+          "key": "kids-cut",
+          "groupName": "Kids",
+          "name": "Kids' cut (under 12)",
+          "description": "Patience included. Lollipop negotiable.",
+          "durationMin": 30,
+          "durationLabel": null,
+          "price": 11000,
+          "sort": 1,
+          "latestStart": null
+        },
+        {
+          "key": "cornrows",
+          "groupName": "Kids",
+          "name": "Cornrows",
+          "description": "Straight-back or freestyle. Edges laid, not fried.",
+          "durationMin": 90,
+          "durationLabel": null,
+          "price": 38000,
+          "sort": 2,
+          "latestStart": null
+        },
+        {
+          "key": "wash-blow",
+          "groupName": "Care",
+          "name": "Wash, treat & blow-dry",
+          "description": "Deep-conditioning treatment and a bouncy finish.",
+          "durationMin": 75,
+          "durationLabel": null,
+          "price": 43000,
+          "sort": 100,
+          "latestStart": null
+        }
+      ],
+      "staff": [
+        {
+          "name": "Lydia Namata",
+          "role": "Kids' stylist",
+          "rating": 4.9,
+          "sort": 0
+        },
+        {
+          "name": "Hope Birungi",
+          "role": "Kids' stylist",
+          "rating": 4.8,
+          "sort": 1
+        }
+      ]
+    },
+    {
+      "slug": "glow-bridal",
+      "name": "Glow Bridal Studio",
+      "categoryId": "bridal",
+      "areaId": "munyonyo",
+      "blurb": "Weddings and kwanjulas, from the trial run to the last photo. Doors open at 06:00 because brides start early.",
+      "visitMode": "both",
+      "opensAt": "06:00",
+      "closesAt": "20:00",
+      "closedDays": [],
+      "homeVisitFee": 10000,
+      "acceptsCash": true,
+      "skipProfessional": false,
+      "coverWord": "I do",
+      "palette": [
+        "#3a2a20",
+        "#b48a6a",
+        "#f7e3cf"
+      ],
+      "isFeatured": true,
+      "isNew": false,
+      "ratingAvg": 5,
+      "ratingCount": 156,
+      "sort": 11,
+      "services": [
+        {
+          "key": "bridal-hair",
+          "groupName": "Bridal",
+          "name": "Bridal hair (on the day)",
+          "description": "Includes a trial session the week before.",
+          "durationMin": 180,
+          "durationLabel": null,
+          "price": 250000,
+          "sort": 0,
+          "latestStart": null
+        },
+        {
+          "key": "bridal-makeup",
+          "groupName": "Bridal",
+          "name": "Bridal make-up",
+          "description": "Long-wear make-up with lashes and touch-up kit.",
+          "durationMin": 120,
+          "durationLabel": null,
+          "price": 200000,
+          "sort": 1,
+          "latestStart": null
+        },
+        {
+          "key": "kwanjula",
+          "groupName": "Bridal",
+          "name": "Kwanjula look (hair & make-up)",
+          "description": "Hair and make-up that lasts from the arrival to the last gift procession. Gomesi not included.",
+          "durationMin": 150,
+          "durationLabel": null,
+          "price": 220000,
+          "sort": 2,
+          "latestStart": null
+        },
+        {
+          "key": "bridesmaid",
+          "groupName": "Party",
+          "name": "Bridesmaid styling",
+          "description": "Per person. Booking the whole squad? Add names in the notes and the studio confirms a group price.",
+          "durationMin": 60,
+          "durationLabel": null,
+          "price": 70000,
+          "sort": 100,
+          "latestStart": null
+        },
+        {
+          "key": "makeup",
+          "groupName": "Party",
+          "name": "Soft glam make-up",
+          "description": "Camera-ready, sweat-proof, wedding-proof.",
+          "durationMin": 60,
+          "durationLabel": null,
+          "price": 60000,
+          "sort": 101,
+          "latestStart": null
+        }
+      ],
+      "staff": [
+        {
+          "name": "Joan Atim",
+          "role": "Bridal hair & make-up",
+          "rating": 5,
+          "sort": 0
+        },
+        {
+          "name": "Carol Namuli",
+          "role": "Make-up artist",
+          "rating": 4.9,
+          "sort": 1
+        }
+      ]
+    },
+    {
+      "slug": "cuts-curls",
+      "name": "Cuts & Curls Mukono",
+      "categoryId": "barber",
+      "areaId": "mukono",
+      "blurb": "Barbers and stylists under one roof, ten minutes from Mukono taxi park.",
+      "visitMode": "salon",
+      "opensAt": "08:00",
+      "closesAt": "20:00",
+      "closedDays": [],
+      "homeVisitFee": 0,
+      "acceptsCash": true,
+      "skipProfessional": false,
+      "coverWord": "curls",
+      "palette": [
+        "#1f1a3a",
+        "#4a3fa0",
+        "#ff9e7a"
+      ],
+      "isFeatured": false,
+      "isNew": true,
+      "ratingAvg": 4.7,
+      "ratingCount": 98,
+      "sort": 12,
+      "services": [
+        {
+          "key": "cut-fade",
+          "groupName": "Cuts",
+          "name": "Skin fade",
+          "description": "Clean fade, sharp edge-up and a hot towel finish.",
+          "durationMin": 45,
+          "durationLabel": null,
+          "price": 18000,
+          "sort": 0,
+          "latestStart": null
+        },
+        {
+          "key": "cut-beard",
+          "groupName": "Cuts",
+          "name": "Haircut & beard sculpt",
+          "description": "Cut plus beard shape, line-up and oil.",
+          "durationMin": 60,
+          "durationLabel": null,
+          "price": 27000,
+          "sort": 1,
+          "latestStart": null
+        },
+        {
+          "key": "kids-cut",
+          "groupName": "Cuts",
+          "name": "Kids' cut (under 12)",
+          "description": "Patience included. Lollipop negotiable.",
+          "durationMin": 30,
+          "durationLabel": null,
+          "price": 11000,
+          "sort": 2,
+          "latestStart": null
+        },
+        {
+          "key": "wash-blow",
+          "groupName": "Hair",
+          "name": "Wash, treat & blow-dry",
+          "description": "Deep-conditioning treatment and a bouncy finish.",
+          "durationMin": 75,
+          "durationLabel": null,
+          "price": 41000,
+          "sort": 100,
+          "latestStart": null
+        },
+        {
+          "key": "relaxer",
+          "groupName": "Hair",
+          "name": "Relaxer retouch",
+          "description": "Scalp-protected retouch with treatment and set.",
+          "durationMin": 120,
+          "durationLabel": null,
+          "price": 45000,
+          "sort": 101,
+          "latestStart": null
+        },
+        {
+          "key": "cornrows",
+          "groupName": "Hair",
+          "name": "Cornrows",
+          "description": "Straight-back or freestyle. Edges laid, not fried.",
+          "durationMin": 90,
+          "durationLabel": null,
+          "price": 36000,
+          "sort": 102,
+          "latestStart": null
+        }
+      ],
+      "staff": [
+        {
+          "name": "Eric Ssekandi",
+          "role": "Barber",
+          "rating": 4.7,
+          "sort": 0
+        },
+        {
+          "name": "Brenda Nalwoga",
+          "role": "Stylist",
+          "rating": 4.7,
+          "sort": 1
+        }
+      ]
+    }
+  ],
+  "reviews": [
+    {
+      "businessSlug": "braid-republic",
+      "authorName": "Grace N.",
+      "authorArea": "Ntinda",
+      "title": "Five hours felt like two",
+      "body": "Aisha did my knotless braids at home on a Sunday. On time, neat parts, and she brought her own ring light. Next set already booked.",
+      "rating": 5
+    },
+    {
+      "businessSlug": "fade-kings",
+      "authorName": "Daniel O.",
+      "authorArea": "Kololo",
+      "title": "My barber now comes to the office",
+      "body": "Every second Friday at 1pm. Clean fade, no queue, and my boss thinks I have a personal stylist. Technically, I do.",
+      "rating": 5
+    },
+    {
+      "businessSlug": "spotless",
+      "authorName": "Sharon A.",
+      "authorArea": "Kira",
+      "title": "The kwanjula aftermath, handled",
+      "body": "Two cleaners, four hours, and the house looked like 200 guests never came. Paid with Airtel Money from the sofa they had just cleaned.",
+      "rating": 5
+    },
+    {
+      "businessSlug": "fresh-fold",
+      "authorName": "Ivan M.",
+      "authorArea": "Bukoto",
+      "title": "My shirts have never been this confident",
+      "body": "Picked up at 8, back by 6, pressed sharper than my presentation. Weighed at the gate, so no arguments about the bill.",
+      "rating": 5
+    },
+    {
+      "businessSlug": "kneaded",
+      "authorName": "Peace K.",
+      "authorArea": "Muyenga",
+      "title": "Ninety minutes, seven years of knots",
+      "body": "Esther found knots I'd been carrying since 2019. I paid with MoMo, then had a nap I'd describe as spiritual.",
+      "rating": 5
+    },
+    {
+      "businessSlug": "guardline",
+      "authorName": "Brian K.",
+      "authorArea": "Nakasero",
+      "title": "A bank run with backup",
+      "body": "Needed security to bank our fundraising cash. Licensed, punctual, and nobody looked twice at the bag.",
+      "rating": 5
+    }
+  ]
+}
