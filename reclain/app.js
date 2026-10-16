@@ -35,7 +35,7 @@ const OCCASIONS = [
   { title: "In-laws arrive Friday", sub: "A deep clean. Yes, behind the fridge too.", q: "deep clean", tone: "mint", ic: "sparkle" },
   { title: "It's payday", sub: "You've earned a hot stone massage.", q: "massage", tone: "peach", ic: "stones" },
   { title: "Rainy season hair", sub: "Passion twists that ignore the weather.", q: "twists", tone: "sun", ic: "braid" },
-  { title: "Taking cash to the bank", sub: "A licensed escort, calm and quietly intimidating.", q: "escort", tone: "slate", ic: "shield" },
+  { title: "Taking cash to the bank", sub: "A guard from a registered security firm, calm and very hard to argue with.", q: "escort", tone: "slate", ic: "shield" },
 ];
 
 // m = minutes, p = price in UGX, lab = duration label override
@@ -570,7 +570,7 @@ function servicesHTML() {
       <button type="button" data-where="venue" aria-pressed="${flow.where === "venue"}">${icon("store")}At the venue</button>
       <button type="button" data-where="home" aria-pressed="${flow.where === "home"}">${icon("home")}At my place <small>+${ugx(HOME_FEE)}</small></button>
     </div>
-    <p class="toggle-note" id="whereNote">${flow.where === "home" ? "They bring the tools. You provide the chair." : `${esc(v.area)}. Directions come with your confirmation SMS.`}</p>`;
+    <p class="toggle-note" id="whereNote">${flow.where === "home" ? "They bring the tools. You provide the chair." : `${esc(v.area)}.`}</p>`;
   } else if (v.visit === "mobile") {
     where = `<p class="toggle-note" style="margin-top:-8px">${icon("home")} ${v.cat === "laundry" ? "Free pickup and delivery to your door." : "They come to you. Travel is included in the price."}</p>`;
   }
@@ -598,12 +598,12 @@ function svcRow(sid) {
 function proHTML() {
   const v = flow.v;
   const any = `<button type="button" class="pro-card pro-any" data-pro="any" aria-pressed="${flow.pro === "any"}">
-      <span class="avatar">${icon("user")}</span><b>Any professional</b><small>Whoever's free first. We vetted them all.</small></button>`;
+      <span class="avatar">${icon("user")}</span><b>Any professional</b><small>Whoever's free first.</small></button>`;
   const team = v.team.map(([n, role, r], i) => `<button type="button" class="pro-card" data-pro="${esc(n)}" aria-pressed="${flow.pro === n}">
       <span class="avatar" style="background:${v.pal[(i + 1) % 3]};color:${i % 3 === 0 ? "#ffffff" : "#111013"}">${initials(n)}</span>
       <b>${esc(n)}</b><small>${esc(role)}</small><span class="rating">${r.toFixed(1)} ${starsHTML(1)}</span></button>`).join("");
   return `<h2 id="flowHeading">Select a professional</h2>
-    <p class="step-note">Everyone here is ID-checked and skills-reviewed. Pick a favourite or let us match you.</p>
+    <p class="step-note">Pick someone, or let us choose whoever&apos;s free.</p>
     <div class="pro-grid">${any}${team}</div>`;
 }
 
@@ -844,7 +844,7 @@ function handleFlowClick(e) {
   if (where) {
     flow.where = where.dataset.where;
     $$("[data-where]").forEach(b => b.setAttribute("aria-pressed", b === where));
-    $("#whereNote").textContent = flow.where === "home" ? "They bring the tools. You provide the chair." : `${flow.v.area}. Directions come with your confirmation SMS.`;
+    $("#whereNote").textContent = flow.where === "home" ? "They bring the tools. You provide the chair." : `${flow.v.area}.`;
     renderSummary();
     return;
   }
